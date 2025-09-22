@@ -1,0 +1,45 @@
+{% extends "main_base.html" %}
+{% block title %}Lista de Usuarios{% endblock %}
+
+{% block content %}
+  <h1>Lista de Usuarios</h1>
+
+  <form method="get" style="margin-bottom: 20px;">
+    <input type="text" name="q" placeholder="Buscar usuario..." value="{{ q }}">
+    <button type="submit">Buscar</button>
+    <a href="{% url 'usuario_crear' %}" style="margin-left:10px;">➕ Nuevo Usuario</a>
+  </form>
+
+  {% if users %}
+    <table border="1" cellpadding="8" cellspacing="0">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Último acceso</th>
+          <th>Activo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+          <tr>
+            <td>{{ user.username }}</td>
+            <td>{{ user.first_name }} {{ user.last_name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.last_login|date:"d/m/Y H:i" }}</td>
+            <td>{% if user.is_active %}✔️{% else %}❌{% endif %}</td>
+            <td>
+              <a href="{% url 'usuario_detalle' user.pk %}">👁 Ver</a> |
+              <a href="{% url 'usuario_editar' user.pk %}">✏️ Editar</a> |
+              <a href="{% url 'usuario_eliminar' user.pk %}">🗑 Eliminar</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No hay usuarios registrados.</p>
+  {% endif %}
+{% endblock %}

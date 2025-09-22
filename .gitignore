@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Entornos
+*.env
+*.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+encuestas_env/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de Django
+*.log
+*.pot
+*.pyc
+db.sqlite3
+media/
+staticfiles/
+
+# IDE
+.vscode/
+.idea/
