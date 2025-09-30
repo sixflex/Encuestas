@@ -5,7 +5,6 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from .forms import UsuarioCrearForm, UsuarioEditarForm
 from .utils import solo_admin
-
 @login_required
 @solo_admin
 def usuarios_lista(request):

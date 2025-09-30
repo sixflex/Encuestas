@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Usuarios</h2>
+
+<form method="get" style="margin-bottom:10px">
+  <input type="text" name="q" value="{{ q }}" placeholder="Buscar usuario, nombre o correo">
+  <button type="submit">Buscar</button>
+  <a href="{% url 'usuario_crear' %}">+ Nuevo</a>
+</form>
+
+<table border="1" cellpadding="6" cellspacing="0">
+  <thead>
+    <tr>
+      <th>ID</th><th>Usuario</th><th>Nombre</th><th>Email</th><th>Activo</th><th>Staff</th><th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for u in usuarios %}
+      <tr>
+        <td>{{ u.id }}</td>
+        <td><a href="{% url 'usuario_detalle' u.id %}">{{ u.username }}</a></td>
+        <td>{{ u.first_name }} {{ u.last_name }}</td>
+        <td>{{ u.email }}</td>
+        <td>{{ u.is_active|yesno:"Sí,No" }}</td>
+        <td>{{ u.is_staff|yesno:"Sí,No" }}</td>
+        <td>
+          <a href="{% url 'usuario_editar' u.id %}">Editar</a>
+          |
+          <form action="{% url 'usuario_toggle_activo' u.id %}" method="post" style="display:inline">
+            {% csrf_token %}
+            {% if u.is_active %}
+              <button type="submit" onclick="return confirm('¿Desactivar a {{ u.username }}?')">Desactivar</button>
+            {% else %}
+              <button type="submit" onclick="return confirm('¿Activar a {{ u.username }}?')">Activar</button>
+            {% endif %}
+          </form>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7">Sin usuarios.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

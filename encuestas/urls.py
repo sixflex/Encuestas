@@ -19,9 +19,11 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 
 urlpatterns = [
-    path("", RedirectView.as_view(pattern_name="usuarios_lista", permanent=False), name="home"),
+    path("", RedirectView.as_view(pattern_name="personas:check_profile", permanent=False), name="home"),
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),
     path("core/", include("core.urls")),
     path("registration/", include(("registration.urls", "registration"), namespace="registration")),
+    path('personas/', include(('personas.urls', 'personas'), namespace='personas')),
+
 ]

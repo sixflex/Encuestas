@@ -1,20 +1,31 @@
+
 from pathlib import Path
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-j5u!=u$4@9-7u!e+#dhfs3xft6c8kdy!&oj^8&16ir88l9$9b^")
 
-DEBUG = True
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "cambia-esta-clave-en-produccion")
+
+DEBUG = os.getenv("DJANGO_DEBUG", "True") == "True"
+
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 INSTALLED_APPS = [
-    "django.contrib.admin", "django.contrib.auth", "django.contrib.contenttypes",
-    "django.contrib.sessions", "django.contrib.messages", "django.contrib.staticfiles",
-    "core", "organizacion", "encuestas_app", "incidencias", "territorial_app",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "core",
+    "organizacion",
+    "encuestas_app",
+    "incidencias",
+    "territorial_app",
     "registration",
+    "personas",
 ]
-
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -28,30 +39,33 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "encuestas.urls"
 
-TEMPLATES = [{
-    "BACKEND": "django.template.backends.django.DjangoTemplates",
-    "DIRS": [BASE_DIR / "templates"],
-    "APP_DIRS": True,
-    "OPTIONS": {
-        "context_processors": [
-            "django.template.context_processors.debug",
-            "django.template.context_processors.request",
-            "django.contrib.auth.context_processors.auth",
-            "django.contrib.messages.context_processors.messages",
-        ],
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
     },
-}]
+]
 
 WSGI_APPLICATION = "encuestas.wsgi.application"
+
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "Encuestas",
-        "USER": "administrador",
-        "PASSWORD": "autonoma2024",
-        "HOST": "localhost",
-        "PORT": "5432",
+        "NAME": os.getenv("DB_NAME", "encuestas"),
+        "USER": os.getenv("DB_USER", "postgres"),
+        "PASSWORD": os.getenv("DB_PASSWORD", ""),
+        "HOST": os.getenv("DB_HOST", "localhost"),
+        "PORT": os.getenv("DB_PORT", "5432"),
         "CONN_MAX_AGE": 60,
         "CONN_HEALTH_CHECKS": True,
     }
@@ -75,13 +89,14 @@ STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_URL = "/accounts/login/"
-LOGIN_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "/personas/check_profile/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
+
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "proyectoencuesta03@gmail.com")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "proyectoe03.")
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "tu-correo@gmail.com")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "tu-password")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
