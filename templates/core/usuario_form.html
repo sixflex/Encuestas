@@ -1,11 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>{% if modo == "crear" %}Nuevo Usuario{% else %}Editar Usuario{% endif %}</h2>
-<form method="post">{% csrf_token %}
-  <table>
-    {{ form.as_table }}
-  </table>
+<h2>{% if modo == 'crear' %}Nuevo usuario{% else %}Editar usuario{% endif %}</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
   <button type="submit">Guardar</button>
-  <a href="{% url 'usuarios_lista' %}">Cancelar</a>
+  <a href="{% url 'core:usuarios_lista' %}">Volver</a>
 </form>
 {% endblock %}

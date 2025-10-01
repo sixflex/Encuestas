@@ -1,33 +1,43 @@
+
 from django import forms
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
 
+
 ROL_CHOICES = [
     ("Administrador", "Administrador"),
-    ("dirección", "dirección"),
-    ("depto", "depto"),
-    ("jefe_cuadrilla", "jefe_cuadrilla"),
-    ("territorial", "territorial"),
+    ("Dirección", "Dirección"),
+    ("Departamento", "Departamento"),
+    ("Jefe de Cuadrilla", "Jefe de Cuadrilla"),
+    ("Territorial", "Territorial"),
 ]
 
-def validar_email_unico_ci(value):
-    # Unicidad case-insensitive
+
+def validar_email_unico_ci(value: str):
+    """
+    Valida unicidad de email sin distinguir may/min (case-insensitive).
+    """
     if User.objects.filter(email__iexact=value).exists():
-        raise ValidationError("Ya existe un usuario con este correo (no distingue mayúsculas/minúsculas).")
+        raise ValidationError(
+            "Ya existe un usuario con este correo (no distingue mayúsculas/minúsculas)."
+        )
+
 
 class UsuarioCrearForm(forms.ModelForm):
-    # Campos extra para password y rol
+    """
+    Formulario de creación de usuario con password y asignación de rol (grupo).
+    """
     password1 = forms.CharField(
         label="Contraseña",
         widget=forms.PasswordInput(render_value=False),
         required=True,
         min_length=8,
-        help_text="Mínimo 8 caracteres."
+        help_text="Mínimo 8 caracteres.",
     )
     password2 = forms.CharField(
         label="Confirmar contraseña",
         widget=forms.PasswordInput(render_value=False),
-        required=True
+        required=True,
     )
     rol = forms.ChoiceField(choices=ROL_CHOICES, required=True, label="Rol (grupo)")
 
@@ -41,7 +51,6 @@ class UsuarioCrearForm(forms.ModelForm):
 
     def clean_email(self):
         email = self.cleaned_data.get("email", "").strip()
-        # Valida formato básico y unicidad CI
         if not email:
             raise ValidationError("El correo es obligatorio.")
         validar_email_unico_ci(email)
@@ -57,11 +66,11 @@ class UsuarioCrearForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        # set_password hace hashing seguro
+        # Hash seguro
         user.set_password(self.cleaned_data["password1"])
         if commit:
             user.save()
-            # grupo/rol único
+            # Asignación de grupo (rol)
             user.groups.clear()
             group, _ = Group.objects.get_or_create(name=self.cleaned_data["rol"])
             user.groups.add(group)
@@ -69,28 +78,32 @@ class UsuarioCrearForm(forms.ModelForm):
 
 
 class UsuarioEditarForm(forms.ModelForm):
-    # Password opcional en edición
+    """
+    Edición de usuario con cambio opcional de contraseña y rol.
+    """
     password1 = forms.CharField(
         label="Nueva contraseña",
         widget=forms.PasswordInput(render_value=False),
         required=False,
         min_length=8,
-        help_text="Déjalo en blanco si no deseas cambiarla."
+        help_text="Déjalo en blanco si no deseas cambiarla.",
     )
     password2 = forms.CharField(
         label="Confirmar nueva contraseña",
         widget=forms.PasswordInput(render_value=False),
-        required=False
+        required=False,
     )
     rol = forms.ChoiceField(choices=ROL_CHOICES, required=True, label="Rol (grupo)")
 
     class Meta:
         model = User
         fields = ["username", "first_name", "last_name", "email", "is_active", "is_staff"]
+        help_texts = {
+            "is_active": "Si está desmarcado, el usuario no podrá iniciar sesión (bloqueado).",
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Preseleccionar rol actual (si tiene)
         groups = list(self.instance.groups.values_list("name", flat=True))
         if groups:
             self.fields["rol"].initial = groups[0]
@@ -99,9 +112,10 @@ class UsuarioEditarForm(forms.ModelForm):
         email = self.cleaned_data.get("email", "").strip()
         if not email:
             raise ValidationError("El correo es obligatorio.")
-        # Unicidad CI excluyendo al propio usuario
         if User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
-            raise ValidationError("Ya existe un usuario con este correo (no distingue mayúsculas/minúsculas).")
+            raise ValidationError(
+                "Ya existe un usuario con este correo (no distingue mayúsculas/minúsculas)."
+            )
         return email
 
     def clean(self):
@@ -122,8 +136,26 @@ class UsuarioEditarForm(forms.ModelForm):
             user.set_password(p1)
         if commit:
             user.save()
-            # rol
             user.groups.clear()
             group, _ = Group.objects.get_or_create(name=self.cleaned_data["rol"])
             user.groups.add(group)
         return user
+
+
+class UsuarioToggleActivoForm(forms.Form):
+    """
+    Formulario simple de confirmación para activar/desactivar (bloquear/desbloquear)
+    un usuario. No modifica datos por sí mismo; solo sirve para la vista de confirmación.
+    """
+    confirmar = forms.BooleanField(
+        required=True,
+        label="Confirmo el cambio de estado",
+        help_text="Esta acción cambiará la disponibilidad del usuario para iniciar sesión.",
+    )
+
+    def next_state_label(self, user: User) -> str:
+        """
+        Devuelve el texto que corresponde a la acción que se va a realizar,
+        útil para el template (activar o desactivar).
+        """
+        return "Desactivar" if user.is_active else "Activar"

@@ -1,45 +1,43 @@
-{% extends "main_base.html" %}
-{% block title %}Lista de Usuarios{% endblock %}
-
+{% extends "base.html" %}
 {% block content %}
-  <h1>Lista de Usuarios</h1>
+<h2>Usuarios</h2>
 
-  <form method="get" style="margin-bottom: 20px;">
-    <input type="text" name="q" placeholder="Buscar usuario..." value="{{ q }}">
-    <button type="submit">Buscar</button>
-    <a href="{% url 'usuario_crear' %}" style="margin-left:10px;">➕ Nuevo Usuario</a>
-  </form>
+<form method="get" style="margin-bottom:10px">
+  <input type="text" name="q" value="{{ q }}" placeholder="Buscar usuario, nombre o correo">
+  <button type="submit">Buscar</button>
+  <a href="{% url 'core:usuario_crear' %}">+ Nuevo</a>
+</form>
 
-  {% if users %}
-    <table border="1" cellpadding="8" cellspacing="0">
-      <thead>
-        <tr>
-          <th>Usuario</th>
-          <th>Nombre</th>
-          <th>Email</th>
-          <th>Último acceso</th>
-          <th>Activo</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for user in users %}
-          <tr>
-            <td>{{ user.username }}</td>
-            <td>{{ user.first_name }} {{ user.last_name }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.last_login|date:"d/m/Y H:i" }}</td>
-            <td>{% if user.is_active %}✔️{% else %}❌{% endif %}</td>
-            <td>
-              <a href="{% url 'usuario_detalle' user.pk %}">👁 Ver</a> |
-              <a href="{% url 'usuario_editar' user.pk %}">✏️ Editar</a> |
-              <a href="{% url 'usuario_eliminar' user.pk %}">🗑 Eliminar</a>
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p>No hay usuarios registrados.</p>
-  {% endif %}
+<table border="1" cellpadding="6" cellspacing="0">
+  <thead>
+    <tr>
+      <th>ID</th><th>Usuario</th><th>Nombre</th><th>Email</th><th>Activo</th><th>Staff</th><th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for u in usuarios %}
+      <tr>
+        <td>{{ u.id }}</td>
+        <td><a href="{% url 'core:usuario_detalle' u.id %}">{{ u.username }}</a></td>
+        <td>{{ u.first_name }} {{ u.last_name }}</td>
+        <td>{{ u.email }}</td>
+        <td>{{ u.is_active|yesno:"Sí,No" }}</td>
+        <td>{{ u.is_staff|yesno:"Sí,No" }}</td>
+        <td>
+          <a href="{% url 'core:usuario_editar' u.id %}">Editar</a> |
+          <form action="{% url 'core:usuario_toggle_activo' u.id %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            {% if u.is_active %}
+              <button type="submit" onclick="return confirm('¿Desactivar a {{u.username}}?');">Desactivar</button>
+            {% else %}
+              <button type="submit" onclick="return confirm('¿Activar a {{u.username}}?');">Activar</button>
+            {% endif %}
+          </form>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7">Sin usuarios.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
 {% endblock %}

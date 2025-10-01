@@ -1,13 +1,12 @@
 from django.urls import path
-from .views import (
-    usuarios_lista, usuario_crear, usuario_editar,
-    usuario_eliminar, usuario_detalle
-)
+from . import views
+
+app_name = "core"
 
 urlpatterns = [
-    path("usuarios/", usuarios_lista, name="usuarios_lista"),
-    path("usuarios/nuevo/", usuario_crear, name="usuario_crear"),
-    path("usuarios/<int:pk>/", usuario_detalle, name="usuario_detalle"),
-    path("usuarios/<int:pk>/editar/", usuario_editar, name="usuario_editar"),
-    path("usuarios/<int:pk>/eliminar/", usuario_eliminar, name="usuario_eliminar"),
+    path("usuarios/", views.usuarios_lista, name="usuarios_lista"),
+    path("usuarios/nuevo/", views.usuario_crear, name="usuario_crear"),
+    path("usuarios/<int:pk>/", views.usuario_detalle, name="usuario_detalle"),
+    path("usuarios/<int:pk>/editar/", views.usuario_editar, name="usuario_editar"),
+    path("usuarios/<int:pk>/toggle-activo/", views.usuario_toggle_activo, name="usuario_toggle_activo"),
 ]

@@ -61,11 +61,11 @@ WSGI_APPLICATION = "encuestas.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME", "encuestas"),
-        "USER": os.getenv("DB_USER", "postgres"),
-        "PASSWORD": os.getenv("DB_PASSWORD", ""),
-        "HOST": os.getenv("DB_HOST", "localhost"),
-        "PORT": os.getenv("DB_PORT", "5432"),
+        "NAME": ("Encuestas"),
+        "USER": ("postgres"),
+        "PASSWORD": ("hoseok15"),
+        "HOST": ("localhost"),
+        "PORT": ("5432"),
         "CONN_MAX_AGE": 60,
         "CONN_HEALTH_CHECKS": True,
     }
@@ -97,6 +97,6 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "tu-correo@gmail.com")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "tu-password")
+EMAIL_HOST_USER = ("EMAIL_HOST_USER", "tu-correo@gmail.com")
+EMAIL_HOST_PASSWORD = ("EMAIL_HOST_PASSWORD", "tu-password")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
