@@ -13,7 +13,7 @@
       Hola, {{ user.username }} |
       <a href="{% url 'personas:logout' %}">Salir</a>
       {% if user.is_superuser or user|has_group:"Administrador" %}
-        | <a href="{% url 'usuarios_lista' %}">Usuarios</a>
+        | <a href="{% url 'core:usuarios_lista' %}">Usuarios</a>
       {% endif %}
     {% else %}
       <a href="{% url 'login' %}">Entrar</a>

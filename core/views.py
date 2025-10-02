@@ -1,27 +1,33 @@
-
-from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import UsuarioCrearForm, UsuarioEditarForm
-from .utils import solo_admin 
+from .utils import solo_admin
+
 
 @login_required
 @solo_admin
 def usuarios_lista(request):
     q = request.GET.get("q", "").strip()
-    qs = User.objects.all().order_by("id")
+    qs = (
+        User.objects
+        .all()
+        .order_by("id")
+        .prefetch_related("groups")  # para mostrar rápido los grupos si los usas
+    )
     if q:
         qs = qs.filter(
-            Q(username__icontains=q) |
-            Q(first_name__icontains=q) |
-            Q(last_name__icontains=q) |
-            Q(email__icontains=q)
+            Q(username__icontains=q)
+            | Q(first_name__icontains=q)
+            | Q(last_name__icontains=q)
+            | Q(email__icontains=q)
         )
     return render(request, "core/usuarios_lista.html", {"usuarios": qs, "q": q})
+
 
 @login_required
 @solo_admin
@@ -34,8 +40,10 @@ def usuario_crear(request):
             messages.success(request, f"Usuario '{user.username}' creado.")
             return redirect("core:usuarios_lista")
     else:
+        # Puedes quitar is_staff del initial si ya no lo usas en el form
         form = UsuarioCrearForm(initial={"is_active": True, "is_staff": False})
     return render(request, "core/usuario_form.html", {"form": form, "modo": "crear"})
+
 
 @login_required
 @solo_admin
@@ -50,7 +58,12 @@ def usuario_editar(request, pk):
             return redirect("core:usuarios_lista")
     else:
         form = UsuarioEditarForm(instance=user)
-    return render(request, "core/usuario_form.html", {"form": form, "modo": "editar", "obj": user})
+    return render(
+        request,
+        "core/usuario_form.html",
+        {"form": form, "modo": "editar", "obj": user},
+    )
+
 
 @login_required
 @solo_admin
@@ -60,17 +73,33 @@ def usuario_toggle_activo(request, pk):
     Activa/Desactiva al usuario en vez de eliminarlo.
     - Si está activo -> lo desactiva (bloquea inicio de sesión).
     - Si está inactivo -> lo activa.
+
+    Nota: soporta GET **y** POST para que funcione con enlaces <a>.
+    Si prefieres forzar POST, cambia la condición a `if request.method == "POST":`
+    y usa un <form> con CSRF en el template.
     """
     user = get_object_or_404(User, pk=pk)
-    if request.method == "POST":
+
+    # No permitir que un usuario se desactive a sí mismo
+    if user.pk == request.user.pk:
+        messages.warning(request, "No puedes activarte/desactivarte a ti mismo.")
+        return redirect("core:usuarios_lista")
+
+    # No permitir que alguien que no es superusuario cambie a un superusuario
+    if user.is_superuser and not request.user.is_superuser:
+        messages.error(request, "No tienes permisos para cambiar el estado de un superusuario.")
+        return redirect("core:usuarios_lista")
+
+    if request.method in ("POST", "GET"):
         user.is_active = not user.is_active
         user.save(update_fields=["is_active"])
         estado = "activado" if user.is_active else "desactivado"
         messages.success(request, f"Usuario '{user.username}' {estado}.")
         return redirect("core:usuarios_lista")
 
-    # Confirmación simple (opcional). Puedes redirigir directo si no quieres confirmación.
+    # Si llegara por otro método HTTP, muestra confirmación simple (opcional)
     return render(request, "core/usuario_toggle_confirm.html", {"obj": user})
+
 
 @login_required
 @solo_admin
