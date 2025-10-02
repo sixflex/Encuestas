@@ -18,7 +18,7 @@
     {% for u in usuarios %}
       <tr>
         <td>{{ u.id }}</td>
-        <td><a href="{% url 'usuario_detalle' u.id %}">{{ u.username }}</a></td>
+        <td><a href="{% url 'core:usuario_detalle' u.id %}">{{ u.username }}</a></td>
         <td>{{ u.first_name }} {{ u.last_name }}</td>
         <td>{{ u.email }}</td>
         <td>{{ u.is_active|yesno:"Sí,No" }}</td>
@@ -35,6 +35,14 @@
             {% endif %}
           </form>
         </td>
+        <td>
+          <a href="{% url 'core:usuario_detalle' u.id %}">Ver</a> | 
+          <a href="{% url 'core:usuario_editar' u.id %}">Editar</a> |
+          <a href="{% url 'core:usuario_toggle_activo' u.id %}">
+            {% if u.is_active %}Desactivar{% else %}Activar{% endif %}
+          </a>
+        </td>
+
       </tr>
     {% empty %}
       <tr><td colspan="7">Sin usuarios.</td></tr>
