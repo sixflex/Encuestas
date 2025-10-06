@@ -61,9 +61,9 @@ WSGI_APPLICATION = "encuestas.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": ("Encuestas"),
+        "NAME": ("prueba"),
         "USER": ("postgres"),
-        "PASSWORD": ("hoseok15"),
+        "PASSWORD": ("mikrr0"),
         "HOST": ("localhost"),
         "PORT": ("5432"),
         "CONN_MAX_AGE": 60,

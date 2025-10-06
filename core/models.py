@@ -1,13 +1,11 @@
 from django.db import models
 from registration.models import Profile
 
-
 class Perfil(models.Model):
     rol = models.CharField(max_length=50)
 
     def __str__(self):
         return self.rol
-
 
 class Direccion(models.Model):
     nombre_direccion = models.CharField(max_length=100)

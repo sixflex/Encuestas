@@ -7,9 +7,28 @@ from django.utils.decorators import method_decorator
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django import forms
 from .models import Profile
+from django.dispatch import receiver
+from django.contrib.auth import authenticate, login, logout
+from django.db.models.signals import post_save
+
+def login_view(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect("personas:check_profile")
+        else:
+            messages.error(request, "Credenciales incorrectas")
+    return render(request, "registration/login.html")
+
+def cerrar_sesion(request):
+    logout(request)
+    return redirect("login")
 
 class SignUpView(CreateView):
     form_class = UserCreationFormWithEmail
