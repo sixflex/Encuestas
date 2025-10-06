@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.views.decorators.http import require_POST
 from .forms import UsuarioCrearForm, UsuarioEditarForm
 from .utils import solo_admin
+from core.models import Incidencia
 
 @login_required
 def dashboard_admin(request):
@@ -28,6 +29,21 @@ def dashboard_direccion(request):
 @login_required
 def dashboard_departamento(request):
     return render(request, "personas/dashboards/departamento.html")
+
+@login_required
+@solo_admin
+def dashboard_incidencias(request):
+    """Panel de incidencias con estadísticas rápidas"""
+    total_incidencias = Incidencia.objects.count()
+    abiertas = Incidencia.objects.filter(estado__iexact="Abierta").count()
+    cerradas = Incidencia.objects.filter(estado__iexact="Cerrada").count()
+
+    return render(request, "personas/dashboards/incidencias.html", {
+        "total_incidencias": total_incidencias,
+        "abiertas": abiertas,
+        "cerradas": cerradas,
+    })
+
 
 @login_required
 def check_profile(request):
@@ -53,6 +69,7 @@ def check_profile(request):
         return redirect("personas:dashboard_departamento")
     else:
         return redirect("login")
+    
 
 @login_required
 @solo_admin

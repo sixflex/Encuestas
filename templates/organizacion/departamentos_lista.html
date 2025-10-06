@@ -33,7 +33,7 @@
       </td>
       <td>
         {% if d.encargado %}
-          {{ d.encargado.username }}
+          {{ d.encargado.user.get_full_name|default:d.encargado.user.username }}
         {% else %}
           -
         {% endif %}
