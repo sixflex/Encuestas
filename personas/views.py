@@ -31,12 +31,16 @@ def dashboard_departamento(request):
 
 @login_required
 def check_profile(request):
+    user = request.user
+    if user.is_superuser:
+        return redirect("personas:dashboard_admin")
+
     try:
         profile = Profile.objects.get(user=request.user)
     except Profile.DoesNotExist:
         return redirect("login")
 
-    rol = profile.group.name
+    rol = profile.group.name.strip()
     if rol == "Administrador":
         return redirect("personas:dashboard_admin")
     elif rol == "Territorial":

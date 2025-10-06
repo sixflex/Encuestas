@@ -2,7 +2,6 @@ from django.contrib.auth.models import Group, User
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.shortcuts import get_object_or_404, redirect
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -16,7 +15,14 @@ class Profile(models.Model):
         ordering = ['user__username']
 
     def __str__(self):
-        return f"{self.user.first_name} {self.user.last_name} ({self.cargo})"
+        return f"{self.user.first_name} {self.user.last_name}" + (f" ({self.cargo})" if self.cargo else "")
 
-
-
+# crear un Profile automáticamente
+@receiver(post_save, sender=User)
+def crear_profile(sender, instance, created, **kwargs):
+    if created:
+        if instance.is_superuser:
+            grupo, _ = Group.objects.get_or_create(name="Administrador")
+        else:
+            grupo, _ = Group.objects.get_or_create(name="Usuario")
+        Profile.objects.create(user=instance, group=grupo)

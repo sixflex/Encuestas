@@ -10,7 +10,7 @@
   <li><strong>Grupos:</strong> {{ groups|join:", " }}</li>
 </ul>
 <p>
-  <a href="{% url 'usuario_editar' obj.id %}">Editar</a> |
-  <a href="{% url 'usuarios_lista' %}">Volver</a>
+  <a href="{% url 'core:usuario_editar' obj.id %}">Editar</a> |
+  <a href="{% url 'core:usuarios_lista' %}">Volver</a>
 </p>
 {% endblock %}

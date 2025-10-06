@@ -1,4 +1,4 @@
-{% extends "main_base.html" %}
+{% extends "base.html" %}
 {% block title %}Iniciar sesión{% endblock %}
 
 {% block content %}
@@ -14,13 +14,10 @@
       {{ form.as_table }}
     </table>
 
-    {% if next %}
-      <input type="hidden" name="next" value="{{ next }}">
-    {% endif %}
-
+   
     <button type="submit">Entrar</button>
   </form>
-
+  
   <p style="margin-top:10px">
     ¿Olvidaste tu contraseña?
     <a href="{% url 'password_reset' %}">Recupérala</a>
