@@ -1,6 +1,17 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="container">
   <h1>Panel Territorial</h1>
   <p>Bienvenido. Aquí puedes monitorear el trabajo en terreno y coordinar con jefes de cuadrilla.</p>
+
+  <hr>
+
+  <h3>Gestión de Incidencias</h3>
+  <p>Accede a las incidencias para validarlas, rechazarlas o reasignarlas:</p>
+
+  <div class="acciones">
+    <a href="{% url 'territorial_app:incidencias_lista' %}" class="btn btn-primary">📋 Ver todas las Incidencias</a>
+  </div>
+</div>
 {% endblock %}

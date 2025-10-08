@@ -21,7 +21,7 @@
     <th>Encargado</th>
     <td>
       {% if obj.encargado %}
-        {{ obj.encargado.user.username }}
+        {{ obj.encargado.user.get_full_name|default:obj.encargado.user.username }}
       {% else %}
         Sin encargado
       {% endif %}
@@ -29,7 +29,13 @@
   </tr>
   <tr>
     <th>Estado</th>
-    <td>{{ obj.estado|yesno:"Activo,Inactivo" }}</td>
+    <td>
+      {% if obj.estado %}
+        Activo
+      {% else %}
+        Bloqueado
+      {% endif %}
+    </td>
   </tr>
   <tr>
     <th>Creado el</th>
