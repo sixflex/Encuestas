@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
-
+from django.core.validators import RegexValidator
 
 # Los nombres deben coincidir EXACTO con los Group.name creados en tu DB
 ROL_CHOICES = [
@@ -11,8 +11,10 @@ ROL_CHOICES = [
     ("Jefe de Cuadrilla", "Jefe de Cuadrilla"),
     ("Territorial", "Territorial"),
 ]
-
-
+validar_solo_letras = RegexValidator(
+    r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$', 
+    'Este campo solo puede contener letras y espacios. Los números y caracteres especiales no están permitidos.'
+)
 # ---------- Validadores utilitarios ----------
 
 def validar_email_unico_ci(value: str, exclude_pk: int | None = None):
@@ -54,7 +56,21 @@ class UsuarioCrearForm(forms.ModelForm):
         required=True,
     )
     rol = forms.ChoiceField(choices=ROL_CHOICES, required=True, label="Rol (grupo)")
-
+    # Redefinir first_name y last_name para añadir el validador
+    
+    first_name = forms.CharField(
+        label="Nombre",
+        max_length=150,
+        required=True, # Asumo que el nombre es obligatorio
+        validators=[validar_solo_letras], 
+    )
+    last_name = forms.CharField(
+        label="Apellido",
+        max_length=150,
+        required=True, # Asumo que el apellido es obligatorio
+        validators=[validar_solo_letras],
+    )
+    
     class Meta:
         model = User
         fields = ["username", "first_name", "last_name", "email", "is_active", "is_staff"]
@@ -74,11 +90,7 @@ class UsuarioCrearForm(forms.ModelForm):
         validar_username_unico_ci(username)
         return username
 
-    def clean_first_name(self):
-        return (self.cleaned_data.get("first_name") or "").strip()
-
-    def clean_last_name(self):
-        return (self.cleaned_data.get("last_name") or "").strip()
+   
 
     def clean_email(self):
         email = (self.cleaned_data.get("email") or "").strip()
@@ -137,6 +149,21 @@ class UsuarioEditarForm(forms.ModelForm):
         required=False,
     )
     rol = forms.ChoiceField(choices=ROL_CHOICES, required=True, label="Rol (grupo)")
+     # Redefinir first_name y last_name para añadir el validador
+
+    first_name = forms.CharField(
+        label="Nombre",
+        max_length=150,
+        required=True,
+        validators=[validar_solo_letras], 
+    )
+    last_name = forms.CharField(
+        label="Apellido",
+        max_length=150,
+        required=True,
+        validators=[validar_solo_letras],
+    )
+
 
     class Meta:
         model = User
@@ -159,11 +186,7 @@ class UsuarioEditarForm(forms.ModelForm):
         validar_username_unico_ci(username, exclude_pk=self.instance.pk)
         return username
 
-    def clean_first_name(self):
-        return (self.cleaned_data.get("first_name") or "").strip()
-
-    def clean_last_name(self):
-        return (self.cleaned_data.get("last_name") or "").strip()
+    
 
     def clean_email(self):
         email = (self.cleaned_data.get("email") or "").strip()
