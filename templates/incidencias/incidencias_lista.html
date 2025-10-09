@@ -38,6 +38,8 @@
         <th>Estado</th>
         <th>Prioridad</th>
         <th>Departamento</th>
+        <th>Cuadrilla</th>
+        <th>Fecha de cierre</th>
         <th>Acciones</th>
       </tr>
     </thead>
@@ -59,6 +61,20 @@
           </td>
           <td>{{ incidencia.prioridad }}</td>
           <td>{{ incidencia.departamento.nombre_departamento }}</td>
+          <td>
+            {% if incidencia.cuadrilla %}
+              {{ incidencia.cuadrilla.nombre_cuadrilla }}
+            {% else %}
+              Sin asignar
+            {% endif %}
+          </td>
+          <td>
+            {% if incidencia.fecha_cierre %}
+              {{ incidencia.fecha_cierre|date:"d/m/Y H:i" }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
           <td class="d-flex gap-2">
             <a href="{% url 'incidencias:incidencia_editar' incidencia.id %}" class="btn btn-sm btn-info">✏️ Editar</a>
             <a href="{% url 'territorial_app:validar_incidencia' incidencia.id %}" class="btn btn-sm btn-success">✅ Validar</a>
@@ -68,7 +84,7 @@
         </tr>
       {% empty %}
         <tr>
-          <td colspan="6">No hay incidencias asignadas.</td>
+          <td colspan="8">No hay incidencias asignadas.</td>
         </tr>
       {% endfor %}
     </tbody>

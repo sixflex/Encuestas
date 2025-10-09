@@ -11,20 +11,16 @@ class RechazarIncidenciaForm(forms.Form):
     )
 
 class ReasignarIncidenciaForm(forms.ModelForm):
+    cuadrilla = forms.ModelChoiceField(
+        queryset=JefeCuadrilla.objects.all(),
+        required=True,
+        label="Cuadrilla",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = Incidencia
-        fields = ['departamento','cuadrilla']
+        fields = ['departamento', 'cuadrilla']
         widgets = {
             'departamento': forms.Select(attrs={'class': 'form-control'}),
-            'cuadrilla': forms.Select(attrs={'class': 'form-control'}),
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Mostrar solo perfiles cuyo usuario pertenece al grupo "jefe de Cuadrilla" y está activo
-        self.fields['cuadrilla'].queryset = Profile.objects.filter(
-            user__groups__name__iexact="Jefe de Cuadrilla",
-            user__is_active=True
-        )
-        

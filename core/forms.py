@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
+from registration.models import Profile
+from core.models import JefeCuadrilla, Departamento
 
 
 # Los nombres deben coincidir EXACTO con los Group.name creados en tu DB
@@ -109,14 +111,24 @@ class UsuarioCrearForm(forms.ModelForm):
             group, _ = Group.objects.get_or_create(name=self.cleaned_data["rol"])
             user.groups.add(group)
 
-
-            from registration.models import Profile  
             profile, _ = Profile.objects.get_or_create(user=user)
             profile.group = group
             profile.save()
 
-        return user
+        # 🔹 NUEVO: crear automáticamente JefeCuadrilla si el rol es "Jefe de Cuadrilla"
+            if group.name == "Jefe de Cuadrilla":
+            # Tomamos un departamento por defecto (puede ser el primero)
+                depto = Departamento.objects.first()
 
+                JefeCuadrilla.objects.get_or_create(
+                    usuario=profile,
+                    defaults={
+                        "nombre_cuadrilla": f"Cuadrilla de {user.username}",
+                        "encargado": profile,
+                        "departamento": depto,
+                    },
+                )
+        return user
 
 # ---------- Edición ----------
 
