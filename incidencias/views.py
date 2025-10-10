@@ -63,7 +63,10 @@ def incidencias_lista(request):
     }
     return render(request, "incidencias/incidencias_lista.html", ctx)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> giuliana
 @login_required
 def incidencia_detalle(request, pk):
     incidencia = get_object_or_404(Incidencia, pk=pk)

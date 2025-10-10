@@ -32,6 +32,7 @@ def dashboard_departamento(request):
 
 @login_required
 @solo_admin
+<<<<<<< HEAD
 def dashboard_incidencias(request):
     """Panel de incidencias con estadísticas rápidas"""
     total_incidencias = Incidencia.objects.count()
@@ -43,6 +44,19 @@ def dashboard_incidencias(request):
         "abiertas": abiertas,
         "cerradas": cerradas,
     })
+=======
+#def dashboard_incidencias(request):
+ #   """Panel de incidencias con estadísticas rápidas"""
+  #  total_incidencias = Incidencia.objects.count()
+   # abiertas = Incidencia.objects.filter(estado__iexact="Abierta").count()
+    #cerradas = Incidencia.objects.filter(estado__iexact="Cerrada").count()
+
+    #return render(request, "personas/dashboards/incidencias.html", {
+     #   "total_incidencias": total_incidencias,
+      #  "abiertas": abiertas,
+       # "cerradas": cerradas,
+    #})
+>>>>>>> giuliana
 
 
 @login_required

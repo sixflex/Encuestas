@@ -113,3 +113,20 @@ def departamento_eliminar(request, pk):
         messages.success(request, "Departamento eliminado correctamente.")
         return redirect("organizacion:departamentos_lista")
     return render(request, "organizacion/departamento_eliminar.html", {"obj": obj})
+<<<<<<< HEAD
+=======
+
+
+@login_required
+@solo_admin
+def departamento_toggle_estado(request, pk):
+    departamento = get_object_or_404(Departamento, pk=pk)
+    if request.method == "POST":
+        departamento.estado = not departamento.estado  # Cambia True <-> False
+        departamento.save()
+        if departamento.estado:
+            messages.success(request, f"Departamento '{departamento.nombre_departamento}' desbloqueado.")
+        else:
+            messages.success(request, f"Departamento '{departamento.nombre_departamento}' bloqueado.")
+    return redirect("organizacion:departamentos_lista")
+>>>>>>> giuliana
