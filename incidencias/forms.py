@@ -1,3 +1,4 @@
+#Incidencias/forms.py -> modificaciones cotta
 from django import forms
 from core.models import Incidencia, Departamento
 from django.core.exceptions import ValidationError
@@ -20,14 +21,14 @@ class IncidenciaForm(forms.ModelForm):
     estado = forms.ChoiceField(
         choices=ESTADO_CHOICES,
         widget=forms.RadioSelect(attrs={"class": "form-check-input"}),
-        required=False,  
+        required=True,
         label="Estado"
     )
 
     prioridad = forms.ChoiceField(
         choices=PRIORIDAD_CHOICES,
         widget=forms.RadioSelect(attrs={"class": "form-check-input"}),
-        required=False,
+        required=True,
         label="Prioridad"
     )
 
@@ -50,6 +51,16 @@ class IncidenciaForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Solo muestra departamentos activos
         self.fields['departamento'].queryset = Departamento.objects.filter(estado=True)
+        # Hacer obligatorios algunos campos en el form
+        self.fields['titulo'].required = True
+        self.fields['descripcion'].required = True
+        self.fields['departamento'].required = True
+
+        # Valores por defecto sólo al crear (instance sin pk)
+        if not self.instance or not getattr(self.instance, 'pk', None):
+            # establecer valores iniciales
+            self.fields['estado'].initial = 'pendiente'
+            self.fields['prioridad'].initial = 'media'
 
     def clean_titulo(self):
         titulo = self.cleaned_data.get("titulo", "").strip()
@@ -60,14 +71,16 @@ class IncidenciaForm(forms.ModelForm):
         return titulo
 
     def clean_estado(self):
-        """Si no se selecciona estado, asigna 'pendiente' por defecto."""
         estado = self.cleaned_data.get("estado")
-        return estado or "pendiente"
+        if not estado:
+            return "pendiente"
+        return estado
 
     def clean_prioridad(self):
-        """Si no se selecciona prioridad, asigna 'media' por defecto."""
         prioridad = self.cleaned_data.get("prioridad")
-        return prioridad or "media"
+        if not prioridad:
+            return "media"
+        return prioridad
 
     def save(self, commit=True):
         incidencia = super().save(commit=False)
@@ -75,3 +88,5 @@ class IncidenciaForm(forms.ModelForm):
         if commit:
             incidencia.save()
         return incidencia
+
+

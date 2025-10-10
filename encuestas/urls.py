@@ -34,10 +34,7 @@ urlpatterns = [
     path("personas/", include(("personas.urls", "personas"), namespace="personas")),
     path("organizacion/", include(("organizacion.urls", "organizacion"), namespace="organizacion")),
     path("incidencias/", include (("incidencias.urls", "incidencias"), namespace = "incidencias" )),
-<<<<<<< HEAD
-=======
     path("territorial/", include(("territorial_app.urls", "territorial_app"), namespace="territorial_app")),
->>>>>>> giuliana
 
     # Si tienes vistas extra en tu app registration (perfil, signup opcional, etc.)
     path("registration/", include(("registration.urls", "registration"), namespace="registration")),

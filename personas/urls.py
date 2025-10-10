@@ -10,11 +10,7 @@ urlpatterns = [
     path('dashboard/jefe/', views.dashboard_jefe, name='dashboard_jefeCuadrilla'),
     path('dashboard/direccion/', views.dashboard_direccion, name='dashboard_direccion'),
     path('dashboard/departamento/', views.dashboard_departamento, name='dashboard_departamento'),
-<<<<<<< HEAD
-    path('dashboard/incidencias/', views.dashboard_incidencias, name='dashboard_incidencias'),
-=======
     #path('dashboard/incidencias/', views.dashboard_incidencias, name='dashboard_incidencias'),
->>>>>>> giuliana
 
 
     path("usuarios/", views.usuarios_lista, name="usuarios_lista"),

@@ -118,10 +118,7 @@ class Incidencia(models.Model):
     nombre_vecino = models.CharField(max_length=100)
     correo_vecino = models.EmailField()
     telefono_vecino = models.CharField(max_length=20)
-<<<<<<< HEAD
-=======
     motivo_rechazo = models.TextField(null=True, blank=True)
->>>>>>> giuliana
 
     cuadrilla = models.ForeignKey(JefeCuadrilla, on_delete=models.SET_NULL, null=True)
     respuesta = models.ForeignKey(RespuestaEncuesta, on_delete=models.SET_NULL, null=True)

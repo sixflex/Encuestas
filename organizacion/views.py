@@ -113,8 +113,6 @@ def departamento_eliminar(request, pk):
         messages.success(request, "Departamento eliminado correctamente.")
         return redirect("organizacion:departamentos_lista")
     return render(request, "organizacion/departamento_eliminar.html", {"obj": obj})
-<<<<<<< HEAD
-=======
 
 
 @login_required
@@ -129,4 +127,3 @@ def departamento_toggle_estado(request, pk):
         else:
             messages.success(request, f"Departamento '{departamento.nombre_departamento}' bloqueado.")
     return redirect("organizacion:departamentos_lista")
->>>>>>> giuliana

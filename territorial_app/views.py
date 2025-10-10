@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-from django.shortcuts import render
-
-# Create your views here.
-=======
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 from django.contrib import messages
@@ -95,4 +90,3 @@ def reasignar_incidencia(request, pk):
         'territorial_app/reasignar_incidencia.html',
         {'form': form, 'incidencia': incidencia}
     )
->>>>>>> giuliana

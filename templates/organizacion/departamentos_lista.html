@@ -1,8 +1,4 @@
 {% extends "base.html" %}
-<<<<<<< HEAD
-=======
-
->>>>>>> giuliana
 {% block content %}
 <h2>Departamentos</h2>
 
@@ -20,10 +16,7 @@
       <th>Nombre</th>
       <th>Dirección</th>
       <th>Encargado</th>
-<<<<<<< HEAD
-=======
       <th>Estado</th>
->>>>>>> giuliana
       <th>Acciones</th>
     </tr>
   </thead>
@@ -47,8 +40,6 @@
         {% endif %}
       </td>
       <td>
-<<<<<<< HEAD
-=======
         {% if d.estado %}
           Activo
         {% else %}
@@ -56,7 +47,6 @@
         {% endif %}
       </td>
       <td>
->>>>>>> giuliana
         <a href="{% url 'organizacion:departamento_detalle' d.id %}">Ver</a>
         <a href="{% url 'organizacion:departamento_editar' d.id %}">Editar</a> |
         <a href="{% url 'organizacion:departamento_eliminar' d.id %}">Eliminar</a>
@@ -68,8 +58,4 @@
 {% else %}
 <p>No hay departamentos registrados.</p>
 {% endif %}
-<<<<<<< HEAD
 {% endblock %}
-=======
-{% endblock %}
->>>>>>> giuliana
