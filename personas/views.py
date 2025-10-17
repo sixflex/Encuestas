@@ -16,7 +16,11 @@ def dashboard_admin(request):
 
 @login_required
 def dashboard_territorial(request):
-    return render(request, "personas/dashboards/territorial.html")
+    # Obtener las últimas 10 incidencias para mostrar en el dashboard
+    incidencias = Incidencia.objects.all().order_by('-creadoEl')[:10]
+    return render(request, "personas/dashboards/territorial.html", {
+        'incidencias': incidencias
+    })
 
 @login_required
 def dashboard_jefe(request):
@@ -30,44 +34,52 @@ def dashboard_direccion(request):
 def dashboard_departamento(request):
     return render(request, "personas/dashboards/departamento.html")
 
-@login_required
-@solo_admin
-#def dashboard_incidencias(request):
- #   """Panel de incidencias con estadísticas rápidas"""
-  #  total_incidencias = Incidencia.objects.count()
-   # abiertas = Incidencia.objects.filter(estado__iexact="Abierta").count()
-    #cerradas = Incidencia.objects.filter(estado__iexact="Cerrada").count()
-
-    #return render(request, "personas/dashboards/incidencias.html", {
-     #   "total_incidencias": total_incidencias,
-      #  "abiertas": abiertas,
-       # "cerradas": cerradas,
-    #})
-
 
 @login_required
 def check_profile(request):
+    """
+    Redirige al usuario al dashboard correspondiente según su rol.
+    """
     user = request.user
+    
+    # Si es superusuario, va directo al admin
     if user.is_superuser:
         return redirect("personas:dashboard_admin")
+    
+    grupos = list(user.groups.values_list("name", flat=True))
 
     try:
-        profile = Profile.objects.get(user=request.user)
+        profile = Profile.objects.select_related('group').get(user=user)
     except Profile.DoesNotExist:
+        messages.error(request, "No se encontró un perfil asociado a este usuario.")
+        logout(request)
         return redirect("login")
 
+    # Obtener el nombre del grupo y limpiarlo
+    if not profile.group:
+        messages.error(request, "Tu usuario no tiene un grupo/rol asignado. Contacta al administrador.")
+        logout(request)
+        return redirect("login")
+    
     rol = profile.group.name.strip()
-    if rol == "Administrador":
+    
+    # Debug: puedes comentar esto después de probar
+    print(f"Usuario: {user.username}, Rol: '{rol}'")
+    
+    # Redirección según el rol
+    if "Administrador" in grupos:
         return redirect("personas:dashboard_admin")
-    elif rol == "Territorial":
+    elif "Territorial" in grupos:
         return redirect("personas:dashboard_territorial")
-    elif rol == "Jefe de Cuadrilla":
+    elif "Jefe de Cuadrilla" in grupos:
         return redirect("personas:dashboard_jefeCuadrilla")
-    elif rol == "Dirección":
+    elif "Dirección"in grupos:
         return redirect("personas:dashboard_direccion")
-    elif rol == "Departamento":
+    elif "Departamento"in grupos:
         return redirect("personas:dashboard_departamento")
     else:
+        messages.error(request, f"Rol '{rol}' no reconocido. Contacta al administrador.")
+        logout(request)
         return redirect("login")
     
 
@@ -93,7 +105,7 @@ def usuario_crear(request):
         if form.is_valid():
             user = form.save()
             messages.success(request, f"Usuario '{user.username}' creado.")
-            return redirect("usuarios_lista")
+            return redirect("personas:usuarios_lista")
     else:
         form = UsuarioCrearForm(initial={"is_active": True, "is_staff": False})
     return render(request, "personas/usuario_form.html", {"form": form, "modo": "crear"})
@@ -107,29 +119,27 @@ def usuario_editar(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, f"Usuario '{user.username}' actualizado.")
-            return redirect("usuarios_lista")
+            return redirect("personas:usuarios_lista")
     else:
         form = UsuarioEditarForm(instance=user)
     return render(request, "personas/usuario_form.html", {"form": form, "modo": "editar", "obj": user})
 
-# 🔁 NUEVO: activar/desactivar (sin eliminar)
 @login_required
 @solo_admin
 @require_POST
 def usuario_toggle_activo(request, pk):
     user = get_object_or_404(User, pk=pk)
 
-    # Evitar que un admin se auto-desactive (opcional pero recomendado)
     if user == request.user and user.is_active:
         messages.warning(request, "No puedes desactivar tu propio usuario mientras estás conectado.")
-        return redirect("usuarios_lista")
+        return redirect("personas:usuarios_lista")
 
     user.is_active = not user.is_active
     user.save(update_fields=["is_active"])
 
     estado = "activado" if user.is_active else "desactivado"
     messages.success(request, f"Usuario '{user.username}' {estado}.")
-    return redirect("usuarios_lista")
+    return redirect("personas:usuarios_lista")
 
 @login_required
 @solo_admin
@@ -142,4 +152,4 @@ def cerrar_sesion(request):
     logout(request)
     request.session.flush()
     messages.info(request, "Sesión cerrada correctamente.")
-    return redirect("/accounts/login")
+    return redirect("/accounts/login/")

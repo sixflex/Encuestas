@@ -21,11 +21,7 @@
     <th>Encargado</th>
     <td>
       {% if obj.encargado %}
-<<<<<<< HEAD
-        {{ obj.encargado.user.username }}
-=======
         {{ obj.encargado.user.get_full_name|default:obj.encargado.user.username }}
->>>>>>> giuliana
       {% else %}
         Sin encargado
       {% endif %}
@@ -33,9 +29,6 @@
   </tr>
   <tr>
     <th>Estado</th>
-<<<<<<< HEAD
-    <td>{{ obj.estado|yesno:"Activo,Inactivo" }}</td>
-=======
     <td>
       {% if obj.estado %}
         Activo
@@ -43,7 +36,6 @@
         Bloqueado
       {% endif %}
     </td>
->>>>>>> giuliana
   </tr>
   <tr>
     <th>Creado el</th>

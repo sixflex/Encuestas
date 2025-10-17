@@ -3,4 +3,14 @@
 {% block content %}
   <h1>Panel Jefe de Cuadrilla</h1>
   <p>Bienvenido. Aquí puedes organizar tus cuadrillas, registrar avances y reportar a la unidad territorial.</p>
+      <hr>
+    <h3>Gestión de Incidencias</h3>
+      <p>Accede a las incidencias verlas, asignarlas a una cuadrilla o rechazarlas</p>
+
+    <div class="acciones mb-3">
+       <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-primary">📋 Ver todas las Incidencias</a>
+    </div>
+
+    <br>
+  </div>
 {% endblock %}

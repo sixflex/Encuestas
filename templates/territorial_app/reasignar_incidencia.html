@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block title %}Reasignar Incidencia{% endblock %}
 
 {% block content %}
@@ -7,16 +6,23 @@
 
 <form method="post" style="max-width: 500px;">
     {% csrf_token %}
+
+    {% if is_admin or is_territorial %}
     <div>
         {{ form.departamento.label_tag }}<br>
         {{ form.departamento }}
         {{ form.departamento.errors }}
     </div>
+    {% endif %}
+
+    {% if is_admin or is_departamento %}
     <div>
         {{ form.cuadrilla.label_tag }}<br>
         {{ form.cuadrilla }}
         {{ form.cuadrilla.errors }}
     </div>
+    {% endif %}
+
     <br>
     <button type="submit" style="padding: 5px 10px;">Reasignar</button>
     <a href="{% url 'incidencias:incidencias_lista' %}" style="margin-left: 10px;">Cancelar</a>

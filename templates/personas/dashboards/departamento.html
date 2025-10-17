@@ -15,6 +15,14 @@
       <a href="{% url 'organizacion:departamento_crear' %}" class="btn btn-success">➕ Nuevo Departamento</a>
     </div>
 
+      <hr>
+    <h3>Gestión de Incidencias</h3>
+      <p>Accede a las incidencias verlas, asignarlas a una cuadrilla o rechazarlas</p>
+
+    <div class="acciones mb-3">
+       <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-primary">📋 Ver todas las Incidencias</a>
+    </div>
+
     <br>
   </div>
 {% endblock %}
