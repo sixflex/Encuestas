@@ -9,11 +9,21 @@ from .forms import DireccionForm, DepartamentoForm
 @login_required
 @solo_admin
 def direcciones_lista(request):
-    q = request.GET.get("q", "").strip()
+    q = (request.GET.get("q") or "").strip()
+    estado = (request.GET.get("estado") or "").strip() 
+
     qs = Direccion.objects.all().order_by("nombre_direccion")
+
     if q:
         qs = qs.filter(nombre_direccion__icontains=q)
-    return render(request, "organizacion/direcciones_lista.html", {"direcciones": qs, "q": q})
+
+    if estado == "activo":
+        qs = qs.filter(estado=True)
+    elif estado == "inactivo":
+        qs = qs.filter(estado=False)
+
+    ctx = {"direcciones": qs, "q": q, "estado": estado}
+    return render(request, "organizacion/direcciones_lista.html", ctx)
 
 @login_required
 @solo_admin
@@ -64,11 +74,23 @@ def direccion_eliminar(request, pk):
 @login_required
 @solo_admin
 def departamentos_lista(request):
-    q = request.GET.get("q", "").strip()
+    q = (request.GET.get("q") or "").strip()
+    estado = (request.GET.get("estado") or "").strip() 
+
     qs = Departamento.objects.all().order_by("nombre_departamento")
+
+ 
     if q:
         qs = qs.filter(nombre_departamento__icontains=q)
-    return render(request, "organizacion/departamentos_lista.html", {"departamentos": qs, "q": q})
+
+   
+    if estado == "activo":
+        qs = qs.filter(estado=True)
+    elif estado == "inactivo":
+        qs = qs.filter(estado=False)
+
+    ctx = {"departamentos": qs, "q": q, "estado": estado}
+    return render(request, "organizacion/departamentos_lista.html", ctx)
 
 @login_required
 @solo_admin

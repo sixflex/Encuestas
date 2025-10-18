@@ -15,4 +15,6 @@ urlpatterns = [
     path("departamento/<int:pk>/", views.departamento_editar, name="departamento_editar"),
     path("departamento/<int:pk>/detalle/", views.departamento_detalle, name="departamento_detalle"),
     path("departamento/<int:pk>/eliminar/", views.departamento_eliminar, name="departamento_eliminar"),
+    path("departamento/<int:pk>/toggle/", views.departamento_toggle_estado, name="departamento_toggle_estado"),
+
 ]
