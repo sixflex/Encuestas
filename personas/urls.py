@@ -18,5 +18,6 @@ urlpatterns = [
     path("usuarios/<int:pk>/", views.usuario_detalle, name="usuario_detalle"),
     path("usuarios/<int:pk>/editar/", views.usuario_editar, name="usuario_editar"),
     path("usuarios/<int:pk>/toggle-activo/", views.usuario_toggle_activo, name="usuario_toggle_activo"),
-    path("logout/", views.cerrar_sesion, name="logout"),
+    path("cerrar_sesion/", views.cerrar_sesion, name="cerrar_sesion"),
+    
 ]

@@ -60,6 +60,7 @@ def incidencias_lista(request):
     #filtro por departamento
     if departamento_id:
         qs = qs.filter(departamento_id =departamento_id)
+        
 
     #etiquetas de colores para cada estado
     ESTADOS_COLORES = {
@@ -69,14 +70,37 @@ def incidencias_lista(request):
     "validada": "info",
     "rechazada": "danger",
 }
+# ---Filtrar por rol del usuario ---
+    user = request.user
+    grupos = list(user.groups.values_list("name", flat=True))
+
+    is_territorial = "Territorial" in grupos
+    is_departamento = "Departamento" in grupos
+    is_jefe = "Jefe de Cuadrilla" in grupos
+    is_direccion = "Dirección" in grupos
+    is_admin = "Administrador" in grupos or user.is_superuser
+    departamento_nombre = ""
+    if departamento_id:
+        try:
+            departamento_nombre = Departamento.objects.get(id=departamento_id).nombre_departamento
+        except Departamento.DoesNotExist:
+            departamento_nombre = ""
 
     ctx = {
         "incidencias": qs,
         "q": q,
         "estado_seleccionado": estado,
         "departamentos": Departamento.objects.all(),
-        "estados_colores " : ESTADOS_COLORES,
+        "departamento_seleccionado": departamento_id,
+        "departamento_nombre": departamento_nombre,
+        "estados_colores" : ESTADOS_COLORES,
+        "is_territorial": is_territorial,
+        "is_departamento": is_departamento,
+        "is_jefe": is_jefe,
+        "is_direccion": is_direccion,
+        "is_admin": is_admin,
     }
+
     return render(request, "incidencias/incidencias_lista.html", ctx)
 
 @login_required
@@ -92,7 +116,6 @@ def incidencia_detalle(request, pk):
 
 # ----------------- CRUD (solo administrador) -----------------
 @login_required
-@solo_admin
 def incidencia_crear(request):
     if request.method == "POST":
         form = IncidenciaForm(request.POST)
@@ -106,7 +129,6 @@ def incidencia_crear(request):
 
 
 @login_required
-@solo_admin
 def incidencia_editar(request, pk):
     incidencia = get_object_or_404(Incidencia, pk=pk)
     if request.method == "POST":

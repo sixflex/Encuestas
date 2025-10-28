@@ -24,3 +24,16 @@ class ReasignarIncidenciaForm(forms.ModelForm):
         widgets = {
             'departamento': forms.Select(attrs={'class': 'form-control'}),
         }
+
+#Solo temporal, hasta definir flujo de modulo de encuestas
+class FinalizarIncidenciaForm(forms.ModelForm):
+    observaciones = forms.CharField(
+        label="Observaciones",
+        widget=forms.Textarea(attrs={"rows": 3, "cols": 40}),
+        max_length=500,
+        required=False,
+    )
+
+    class Meta:
+        model = Incidencia
+        fields = ['observaciones']

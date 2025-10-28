@@ -61,7 +61,7 @@ WSGI_APPLICATION = "encuestas.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": ("muni"),
+        "NAME": ("muni3"),
         "USER": ("postgres"),
         "PASSWORD": ("3581321"),
         "HOST": ("localhost"),
