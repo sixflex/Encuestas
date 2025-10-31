@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿{% extends "base.html" %}
 {% block content %}
 <h2>Dashboard{% if departamento %}: {{ departamento.nombre_departamento }}{% endif %}</h2>
@@ -53,4 +54,33 @@
 {% endif %}
 
 <p><a href="{% url 'incidencias:incidencias_lista' %}">Volver</a></p>
+=======
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container">
+    <h1>Panel de Departamento</h1>
+    <p>Bienvenido. Aquí puedes revisar reportes generales, supervisar departamentos y coordinar estrategias.</p>
+
+    <hr>
+
+    <h3>Gestión de Departamentos</h3>
+    <p>Desde aquí puedes administrar los departamentos registrados en el sistema.</p>
+
+    <div class="acciones">
+      <a href="{% url 'organizacion:departamentos_lista' %}" class="btn btn-primary">📋 Ver todos los Departamentos</a>
+      <a href="{% url 'organizacion:departamento_crear' %}" class="btn btn-success">➕ Nuevo Departamento</a>
+    </div>
+
+      <hr>
+    <h3>Gestión de Incidencias</h3>
+      <p>Accede a las incidencias verlas, asignarlas a una cuadrilla o rechazarlas</p>
+
+    <div class="acciones mb-3">
+       <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-primary">📋 Ver todas las Incidencias</a>
+    </div>
+
+    <br>
+  </div>
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 {% endblock %}

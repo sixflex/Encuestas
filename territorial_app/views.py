@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+<<<<<<< HEAD
 from django.db.models import Q
 from core.models import Incidencia, JefeCuadrilla, Departamento, Encuesta
 from .forms import RechazarIncidenciaForm, ReasignarIncidenciaForm, EncuestaForm
@@ -13,6 +14,15 @@ from core.utils import solo_admin, admin_o_territorial
 
 @login_required
 @solo_admin
+=======
+from core.models import Incidencia, JefeCuadrilla, Departamento
+from .forms import *
+
+# ---------------------------------
+# Lista de incidencias
+# ---------------------------------
+@login_required
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 def lista_incidencias(request):
     user = request.user
     if user.groups.filter(name='Administrador').exists():
@@ -25,8 +35,15 @@ def lista_incidencias(request):
         {'incidencias': incidencias}
     )
 
+<<<<<<< HEAD
 @login_required
 @solo_admin
+=======
+# ---------------------------------
+# Validar incidencia
+# ---------------------------------
+@login_required
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 def validar_incidencia(request, pk):
     incidencia = get_object_or_404(Incidencia, pk=pk)
     incidencia.estado = 'Validada'
@@ -35,8 +52,15 @@ def validar_incidencia(request, pk):
     messages.success(request, f"Incidencia '{incidencia.titulo}' validada.")
     return redirect('territorial_app:incidencias_lista')
 
+<<<<<<< HEAD
 @login_required
 @solo_admin
+=======
+# ---------------------------------
+# Rechazar incidencia
+# ---------------------------------
+@login_required
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 def rechazar_incidencia(request, pk):
     incidencia = get_object_or_404(Incidencia, pk=pk)
     if request.method == 'POST':
@@ -57,15 +81,33 @@ def rechazar_incidencia(request, pk):
         {'form': form, 'incidencia': incidencia}
     )
 
+<<<<<<< HEAD
 @login_required
 @solo_admin
 def reasignar_incidencia(request, pk):
     incidencia = get_object_or_404(Incidencia, pk=pk)
+=======
+# ---------------------------------
+# Reasignar incidencia
+# ---------------------------------
+@login_required
+def reasignar_incidencia(request, pk):
+    incidencia = get_object_or_404(Incidencia, pk=pk)
+    user = request.user
+    grupos = list(user.groups.values_list("name", flat=True))
+    is_admin = "Administrador" in grupos or user.is_superuser
+    is_territorial = "Territorial" in grupos
+    is_departamento = "Departamento" in grupos
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
     if request.method == 'POST':
         form = ReasignarIncidenciaForm(request.POST, instance=incidencia)
         if form.is_valid():
             incidencia_obj = form.save(commit=False)
+<<<<<<< HEAD
+=======
+            # directamente asignar la cuadrilla seleccionada
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
             incidencia_obj.cuadrilla = form.cleaned_data['cuadrilla']
             incidencia_obj.save()
 
@@ -76,6 +118,7 @@ def reasignar_incidencia(request, pk):
             return redirect('territorial_app:incidencias_lista')
     else:
         form = ReasignarIncidenciaForm(instance=incidencia)
+<<<<<<< HEAD
 
     return render(
         request,
@@ -226,3 +269,49 @@ def encuesta_eliminar(request, pk):
         return redirect("territorial_app:encuestas_lista")
     
     return render(request, "territorial_app/encuesta_eliminar.html", {"encuesta": encuesta})
+=======
+    ctx = {
+        'form': form,
+        'incidencia': incidencia,
+        'is_admin': is_admin,
+        'is_territorial': is_territorial,
+        'is_departamento': is_departamento,
+    }
+
+    return render(request,'territorial_app/reasignar_incidencia.html', ctx)
+
+#-----------------------------------------------
+# Finalizar incidencia
+#---------------------------------------------------
+@login_required
+def finalizar_incidencia(request, pk):
+    incidencia = get_object_or_404(Incidencia, pk=pk)
+
+    try:
+        jefe_cuadrilla = JefeCuadrilla.objects.get(usuario__user=request.user)
+    except JefeCuadrilla.DoesNotExist:
+        messages.error(request, "No tienes permisos para finalizar incidencias.")
+        return redirect('territorial_app:incidencias_lista')
+
+    if incidencia.cuadrilla != jefe_cuadrilla:
+        messages.error(request, "No puedes finalizar una incidencia que no pertenece a tu cuadrilla.")
+        return redirect('territorial_app:incidencias_lista')
+
+    if request.method == 'POST':
+        form = FinalizarIncidenciaForm(request.POST, request.FILES, instance=incidencia)
+        if form.is_valid():
+            incidencia = form.save(commit=False)
+            incidencia.estado = 'Finalizada'
+            incidencia.fecha_finalizacion = timezone.now()
+            incidencia.save()
+            messages.success(request, f"La incidencia '{incidencia.titulo}' ha sido finalizada.")
+            return redirect('territorial_app:incidencias_lista')
+    else:
+        form = FinalizarIncidenciaForm(instance=incidencia)
+
+    return render(
+        request,
+        'territorial_app/finalizar_incidencia.html',
+        {'form': form, 'incidencia': incidencia}
+    )
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87

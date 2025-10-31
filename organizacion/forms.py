@@ -1,6 +1,10 @@
 from django import forms
 from django.core.exceptions import ValidationError
+<<<<<<< HEAD
 from core.models import Direccion, Departamento, JefeCuadrilla
+=======
+from core.models import Direccion, Departamento
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 from registration.models import Profile
 from django.contrib.auth.models import Group
 
@@ -66,6 +70,7 @@ class DepartamentoForm(forms.ModelForm):
         if Departamento.objects.filter(nombre_departamento__iexact=nombre).exclude(pk=self.instance.pk).exists():
             raise ValidationError("Ya existe un departamento con ese nombre.")
         return nombre
+<<<<<<< HEAD
 
 # ==========================
 # ====== CUADRILLA =========
@@ -112,3 +117,5 @@ class JefeCuadrillaForm(forms.ModelForm):
             raise ValidationError("Ya existe una cuadrilla con ese nombre.")
         return nombre
 
+=======
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87

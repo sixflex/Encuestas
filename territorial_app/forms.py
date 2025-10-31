@@ -1,5 +1,9 @@
 from django import forms
+<<<<<<< HEAD
 from core.models import Incidencia, JefeCuadrilla, Encuesta, Departamento
+=======
+from core.models import Incidencia, JefeCuadrilla
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 from registration.models import Profile
 
 class RechazarIncidenciaForm(forms.Form):
@@ -25,6 +29,7 @@ class ReasignarIncidenciaForm(forms.ModelForm):
             'departamento': forms.Select(attrs={'class': 'form-control'}),
         }
 
+<<<<<<< HEAD
 
 class EncuestaForm(forms.ModelForm):
     """
@@ -78,3 +83,17 @@ class EncuestaForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Solo departamentos activos
         self.fields['departamento'].queryset = Departamento.objects.filter(estado=True)
+=======
+#Solo temporal, hasta definir flujo de modulo de encuestas
+class FinalizarIncidenciaForm(forms.ModelForm):
+    observaciones = forms.CharField(
+        label="Observaciones",
+        widget=forms.Textarea(attrs={"rows": 3, "cols": 40}),
+        max_length=500,
+        required=False,
+    )
+
+    class Meta:
+        model = Incidencia
+        fields = ['observaciones']
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87

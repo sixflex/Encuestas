@@ -1,10 +1,17 @@
 from django import forms
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
+<<<<<<< HEAD
 from registration.models import Profile
 from core.models import JefeCuadrilla, Departamento
 
 
+=======
+
+from registration.models import Profile
+from core.models import JefeCuadrilla, Departamento
+
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 # Los nombres deben coincidir EXACTO con los Group.name creados en tu DB
 ROL_CHOICES = [
     ("Administrador", "Administrador"),
@@ -14,7 +21,10 @@ ROL_CHOICES = [
     ("Territorial", "Territorial"),
 ]
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 # ---------- Validadores utilitarios ----------
 
 def validar_email_unico_ci(value: str, exclude_pk: int | None = None):
@@ -26,7 +36,10 @@ def validar_email_unico_ci(value: str, exclude_pk: int | None = None):
             "Ya existe un usuario con este correo (no distingue mayúsculas/minúsculas)."
         )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 def validar_username_unico_ci(value: str, exclude_pk: int | None = None):
     qs = User.objects.filter(username__iexact=value)
     if exclude_pk is not None:
@@ -36,7 +49,10 @@ def validar_username_unico_ci(value: str, exclude_pk: int | None = None):
             "Ya existe un usuario con este nombre de usuario (no distingue mayúsculas/minúsculas)."
         )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 # ---------- Creación ----------
 
 class UsuarioCrearForm(forms.ModelForm):
@@ -107,19 +123,34 @@ class UsuarioCrearForm(forms.ModelForm):
 
         if commit:
             user.save()
+<<<<<<< HEAD
+=======
+
+            # Asignar grupo al usuario
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
             user.groups.clear()
             group, _ = Group.objects.get_or_create(name=self.cleaned_data["rol"])
             user.groups.add(group)
 
+<<<<<<< HEAD
+=======
+            # Mantener sincronizado el perfil
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
             profile, _ = Profile.objects.get_or_create(user=user)
             profile.group = group
             profile.save()
 
+<<<<<<< HEAD
         # 🔹 NUEVO: crear automáticamente JefeCuadrilla si el rol es "Jefe de Cuadrilla"
             if group.name == "Jefe de Cuadrilla":
             # Tomamos un departamento por defecto (puede ser el primero)
                 depto = Departamento.objects.first()
 
+=======
+            # Si el rol es "Jefe de Cuadrilla", asegurar el registro asociado
+            if group.name == "Jefe de Cuadrilla":
+                depto = Departamento.objects.first()
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
                 JefeCuadrilla.objects.get_or_create(
                     usuario=profile,
                     defaults={
@@ -209,12 +240,42 @@ class UsuarioEditarForm(forms.ModelForm):
 
         if commit:
             user.save()
+<<<<<<< HEAD
             # rol
             user.groups.clear()
             group, _ = Group.objects.get_or_create(name=self.cleaned_data["rol"])
             user.groups.add(group)
         return user
 
+=======
+
+            # Reasignar grupo al usuario
+            user.groups.clear()
+            group, _ = Group.objects.get_or_create(name=self.cleaned_data["rol"])
+            user.groups.add(group)
+
+            # Mantener sincronizado el perfil
+            profile, _ = Profile.objects.get_or_create(user=user)
+            profile.group = group
+            profile.save()
+
+            # (Opcional) coherencia con Jefe de Cuadrilla
+            if group.name == "Jefe de Cuadrilla":
+                depto = Departamento.objects.first()
+                JefeCuadrilla.objects.get_or_create(
+                    usuario=profile,
+                    defaults={
+                        "nombre_cuadrilla": f"Cuadrilla de {user.username}",
+                        "encargado": profile,
+                        "departamento": depto,
+                    },
+                )
+            else:
+               
+                pass
+
+        return user
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
 # ---------- Confirmación Activar/Desactivar ----------
 
@@ -234,4 +295,8 @@ class UsuarioToggleActivoForm(forms.Form):
         Devuelve el texto que corresponde a la acción que se va a realizar,
         útil para el template (activar o desactivar).
         """
+<<<<<<< HEAD
         return "Desactivar" if user.is_active else "Activar"
+=======
+        return "Desactivar" if user.is_active else "Activar"
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87

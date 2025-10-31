@@ -1,4 +1,5 @@
 from django.contrib import admin
+<<<<<<< HEAD
 from .models import Departamento, JefeCuadrilla, Incidencia, Direccion, Multimedia
 
 # Register your models here.
@@ -68,3 +69,7 @@ class MultimediaAdmin(admin.ModelAdmin):
     search_fields = ['nombre']
     raw_id_fields = ['incidencia']
 
+=======
+
+# Register your models here.
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87

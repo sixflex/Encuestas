@@ -1,8 +1,13 @@
+<<<<<<< HEAD
 from django.urls import path
+=======
+from django.urls import path, include
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 from . import views
 from incidencias import views as incidencias_views
 
 app_name = "territorial_app"
+<<<<<<< HEAD
 
 urlpatterns = [
     # ============================================
@@ -35,3 +40,17 @@ urlpatterns = [
     # Eliminar encuesta
     path("encuestas/<int:pk>/eliminar/", views.encuesta_eliminar, name="encuesta_eliminar"),
 ]
+=======
+urlpatterns = [
+    #path("territorial/incidencias/", views.lista_incidencias, name="incidencias_lista"),
+    path("territorial/<int:pk>/validar_incidencia/", views.validar_incidencia, name="validar_incidencia"),
+    path("territorial/<int:pk>/rechazar_incidencia/", views.rechazar_incidencia, name="rechazar_incidencia"),
+    path("territorial/<int:pk>/reasignar_incidencia/", views.reasignar_incidencia, name="reasignar_incidencia"),
+    path("territorial/<int:pk>/finalizar_incidencia/", views.finalizar_incidencia, name="finalizar_incidencia"),
+
+    path("incidencias/", incidencias_views.incidencias_lista, name="incidencias_lista"),
+    path("incidencias/editar", incidencias_views.incidencia_editar, name="incidencia_editar"),
+    
+
+]
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87

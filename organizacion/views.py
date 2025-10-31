@@ -2,19 +2,42 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from core.utils import solo_admin
+<<<<<<< HEAD
 from core.models import Direccion, Departamento, Incidencia, JefeCuadrilla
 from .forms import DireccionForm, DepartamentoForm
 from django.db.models import Q, Count
+=======
+from core.models import Direccion, Departamento
+from .forms import DireccionForm, DepartamentoForm
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
 # ------------------- CRUD DIRECCIONES -------------------
 @login_required
 @solo_admin
 def direcciones_lista(request):
+<<<<<<< HEAD
     q = request.GET.get("q", "").strip()
     qs = Direccion.objects.all().order_by("nombre_direccion")
     if q:
         qs = qs.filter(nombre_direccion__icontains=q)
     return render(request, "organizacion/direcciones_lista.html", {"direcciones": qs, "q": q})
+=======
+    q = (request.GET.get("q") or "").strip()
+    estado = (request.GET.get("estado") or "").strip() 
+
+    qs = Direccion.objects.all().order_by("nombre_direccion")
+
+    if q:
+        qs = qs.filter(nombre_direccion__icontains=q)
+
+    if estado == "activo":
+        qs = qs.filter(estado=True)
+    elif estado == "inactivo":
+        qs = qs.filter(estado=False)
+
+    ctx = {"direcciones": qs, "q": q, "estado": estado}
+    return render(request, "organizacion/direcciones_lista.html", ctx)
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
 @login_required
 @solo_admin
@@ -65,11 +88,31 @@ def direccion_eliminar(request, pk):
 @login_required
 @solo_admin
 def departamentos_lista(request):
+<<<<<<< HEAD
     q = request.GET.get("q", "").strip()
     qs = Departamento.objects.all().order_by("nombre_departamento")
     if q:
         qs = qs.filter(nombre_departamento__icontains=q)
     return render(request, "organizacion/departamentos_lista.html", {"departamentos": qs, "q": q})
+=======
+    q = (request.GET.get("q") or "").strip()
+    estado = (request.GET.get("estado") or "").strip() 
+
+    qs = Departamento.objects.all().order_by("nombre_departamento")
+
+ 
+    if q:
+        qs = qs.filter(nombre_departamento__icontains=q)
+
+   
+    if estado == "activo":
+        qs = qs.filter(estado=True)
+    elif estado == "inactivo":
+        qs = qs.filter(estado=False)
+
+    ctx = {"departamentos": qs, "q": q, "estado": estado}
+    return render(request, "organizacion/departamentos_lista.html", ctx)
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
 @login_required
 @solo_admin
@@ -128,6 +171,7 @@ def departamento_toggle_estado(request, pk):
         else:
             messages.success(request, f"Departamento '{departamento.nombre_departamento}' bloqueado.")
     return redirect("organizacion:departamentos_lista")
+<<<<<<< HEAD
 
 
 # ------------------- ASIGNACIÓN DE CUADRILLAS -------------------
@@ -188,3 +232,5 @@ def asignar_cuadrilla_view(request, pk):
     }
     
     return render(request, 'organizacion/asignar_cuadrilla.html', ctx)
+=======
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87

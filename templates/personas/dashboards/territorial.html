@@ -3,6 +3,7 @@
 {% block content %}
 <div class="container">
   <h1>Panel Territorial</h1>
+<<<<<<< HEAD
   <p>Bienvenido, {{ user.first_name }} {{ user.last_name }}. Aquí puedes gestionar encuestas e incidencias.</p>
 
   {% if messages %}
@@ -29,12 +30,20 @@
   <!-- SECCIÓN DE INCIDENCIAS -->
   <h3>Gestión de Incidencias</h3>
   <p>Accede a las incidencias para crearlas, editarlas, validarlas, rechazarlas o reasignarlas:</p>
+=======
+  <p>Bienvenido. Aquí puedes monitorear el trabajo en terreno y coordinar con jefes de cuadrilla.</p>
+
+  <hr>
+  <h3>Gestión de Incidencias</h3>
+  <p>Accede a las incidencias para crear, editarlas, validarlas, rechazarlas o reasignarlas:</p>
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
   <div class="acciones mb-3">
     <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-primary">📋 Ver todas las Incidencias</a>
     <a href="{% url 'incidencias:incidencia_crear' %}" class="btn btn-success ms-2">➕ Crear Incidencia</a>
   </div>
 
+<<<<<<< HEAD
   <!-- Resumen de Incidencias -->
   {% if incidencias %}
   <h4>Últimas Incidencias</h4>
@@ -47,20 +56,39 @@
         <th>Acciones</th>
       </tr>
     </thead>
+=======
+  <!-- Tabla de incidencias -->
+  <table class="table mt-3">
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
     <tbody>
       {% for incidencia in incidencias %}
       <tr>
         <td>{{ incidencia.id }}</td>
         <td>{{ incidencia.titulo }}</td>
         <td>{{ incidencia.estado }}</td>
+<<<<<<< HEAD
         <td>
           <a href="{% url 'incidencias:incidencia_detalle' incidencia.id %}" class="btn btn-sm btn-info">👁️ Ver</a>
           <a href="{% url 'incidencias:incidencia_editar' incidencia.id %}" class="btn btn-sm btn-warning">✏️ Editar</a>
         </td>
+=======
+        <td><!---
+            <a href="{% url 'incidencias:incidencia_editar' incidencia.id %}" class="btn btn-sm btn-info">✏️ Editar</a>
+            <a href="{% url 'territorial_app:validar_incidencia' incidencia.id %}" class="btn btn-sm btn-success">✅ Validar</a>
+            <a href="{% url 'territorial_app:rechazar_incidencia' incidencia.id %}" class="btn btn-sm btn-danger">❌ Rechazar</a>
+            <a href="{% url 'territorial_app:reasignar_incidencia' incidencia.id %}" class="btn btn-sm btn-warning">🔄 Reasignar</a>
+        -->
+          </td> 
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5">No hay incidencias asignadas.</td>
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
       </tr>
       {% endfor %}
     </tbody>
   </table>
+<<<<<<< HEAD
   {% else %}
   <p>No hay incidencias recientes.</p>
   {% endif %}
@@ -72,3 +100,7 @@
   </div>
 </div>
 {% endblock %}
+=======
+</div>
+{% endblock %}
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87

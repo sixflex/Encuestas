@@ -15,7 +15,12 @@ urlpatterns = [
     path("departamento/<int:pk>/", views.departamento_editar, name="departamento_editar"),
     path("departamento/<int:pk>/detalle/", views.departamento_detalle, name="departamento_detalle"),
     path("departamento/<int:pk>/eliminar/", views.departamento_eliminar, name="departamento_eliminar"),
+<<<<<<< HEAD
     
     # Asignación de cuadrillas
     path("asignar-cuadrilla/<int:pk>/", views.asignar_cuadrilla_view, name="asignar_cuadrilla"),
+=======
+    path("departamento/<int:pk>/toggle/", views.departamento_toggle_estado, name="departamento_toggle_estado"),
+
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 ]

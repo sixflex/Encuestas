@@ -1,5 +1,8 @@
 {% extends "base.html" %}
+<<<<<<< HEAD
 
+=======
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 {% block title %}Reasignar Incidencia{% endblock %}
 
 {% block content %}
@@ -7,16 +10,32 @@
 
 <form method="post" style="max-width: 500px;">
     {% csrf_token %}
+<<<<<<< HEAD
+=======
+
+    {% if is_admin or is_territorial %}
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
     <div>
         {{ form.departamento.label_tag }}<br>
         {{ form.departamento }}
         {{ form.departamento.errors }}
     </div>
+<<<<<<< HEAD
+=======
+    {% endif %}
+
+    {% if is_admin or is_departamento %}
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
     <div>
         {{ form.cuadrilla.label_tag }}<br>
         {{ form.cuadrilla }}
         {{ form.cuadrilla.errors }}
     </div>
+<<<<<<< HEAD
+=======
+    {% endif %}
+
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
     <br>
     <button type="submit" style="padding: 5px 10px;">Reasignar</button>
     <a href="{% url 'incidencias:incidencias_lista' %}" style="margin-left: 10px;">Cancelar</a>

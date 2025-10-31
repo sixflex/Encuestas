@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from core.models import Incidencia, Departamento, JefeCuadrilla, Multimedia
@@ -34,6 +35,14 @@ def cargar_tipos(request):
     ).values('id', 'nombre', 'prioridad_predeterminada')
     
     return JsonResponse({'tipos': list(tipos)})
+=======
+from core.models import Incidencia, Departamento
+from django.shortcuts import render, redirect, get_object_or_404
+from .forms import IncidenciaForm
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from core.utils import solo_admin
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
 # ----------------- Ayudantes de filtrado por rol -----------------
 def _roles_usuario(user):
@@ -45,7 +54,11 @@ def _filtrar_por_rol(qs, user):
     Reglas:
       - Admin (is_superuser) o grupo 'Administrador' y 'Dirección' ven todo.
       - 'Departamento' ve todo.
+<<<<<<< HEAD
       - 'Jefe de Cuadrilla' -> solo incidencias de sus cuadrillas (pendiente y en_proceso).
+=======
+      - 'Jefe de Cuadrilla' -> solo pendiente y en_proceso.
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
       - 'Territorial' -> solo pendiente.
       - Sin grupo -> solo incidencias asociadas a su email.
     """
@@ -58,6 +71,7 @@ def _filtrar_por_rol(qs, user):
         return qs
 
     if "Jefe de Cuadrilla" in roles:
+<<<<<<< HEAD
         # Filtrar todas las incidencias de las cuadrillas donde el usuario es usuario o encargado
         from core.models import JefeCuadrilla
         from django.db.models import Q
@@ -87,27 +101,48 @@ def _filtrar_por_rol(qs, user):
                 )
             except:
                 return qs.none()
+=======
+        return qs.filter(estado__in=["pendiente", "en_proceso"])
+
+    if "Territorial" in roles:
+        return qs.filter(estado="pendiente")
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
     # Sin rol: solo ve las suyas (por email)
     return qs.filter(email_usuario=user.email)
 
 
+<<<<<<< HEAD
 # ----------------- LISTA / DETALLE (abiertao a usuarios logueadoops) -----------------
+=======
+# ----------------- LISTA / DETALLE (abierto a usuarios logueados) -----------------
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 @login_required
 def incidencias_lista(request):
     q = (request.GET.get("q") or "").strip()
     estado = request.GET.get("estado")  # 'pendiente' | 'en_proceso' | 'resuelto' | None
+<<<<<<< HEAD
     departamento_id = request.GET.get("departamento") #novo filtrasaon
     qs = Incidencia.objects.all().order_by("-creadoEl")
 
     # Filtro por string yiaa
+=======
+    departamento_id = request.GET.get("departamento") #nuevo filtro
+    qs = Incidencia.objects.all().order_by("-creadoEl")
+
+    # Filtro por texto
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
     if q:
         qs = qs.filter(titulo__icontains=q)
 
     # Filtro por rol
     qs = _filtrar_por_rol(qs, request.user)
 
+<<<<<<< HEAD
     # Filtro por status
+=======
+    # Filtro por estado
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
     estados_validos = [e[0] for e in IncidenciaForm.ESTADO_CHOICES]
     if estado in estados_validos:
         qs = qs.filter(estado=estado)
@@ -115,8 +150,14 @@ def incidencias_lista(request):
     #filtro por departamento
     if departamento_id:
         qs = qs.filter(departamento_id =departamento_id)
+<<<<<<< HEAD
 
     #etiquetas de colores para cada estadoa
+=======
+        
+
+    #etiquetas de colores para cada estado
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
     ESTADOS_COLORES = {
     "pendiente": "secondary",
     "en proceso": "warning",
@@ -124,20 +165,55 @@ def incidencias_lista(request):
     "validada": "info",
     "rechazada": "danger",
 }
+<<<<<<< HEAD
+=======
+# ---Filtrar por rol del usuario ---
+    user = request.user
+    grupos = list(user.groups.values_list("name", flat=True))
+
+    is_territorial = "Territorial" in grupos
+    is_departamento = "Departamento" in grupos
+    is_jefe = "Jefe de Cuadrilla" in grupos
+    is_direccion = "Dirección" in grupos
+    is_admin = "Administrador" in grupos or user.is_superuser
+    departamento_nombre = ""
+    if departamento_id:
+        try:
+            departamento_nombre = Departamento.objects.get(id=departamento_id).nombre_departamento
+        except Departamento.DoesNotExist:
+            departamento_nombre = ""
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
     ctx = {
         "incidencias": qs,
         "q": q,
         "estado_seleccionado": estado,
         "departamentos": Departamento.objects.all(),
+<<<<<<< HEAD
         "estados_colores " : ESTADOS_COLORES,
     }
+=======
+        "departamento_seleccionado": departamento_id,
+        "departamento_nombre": departamento_nombre,
+        "estados_colores" : ESTADOS_COLORES,
+        "is_territorial": is_territorial,
+        "is_departamento": is_departamento,
+        "is_jefe": is_jefe,
+        "is_direccion": is_direccion,
+        "is_admin": is_admin,
+    }
+
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
     return render(request, "incidencias/incidencias_lista.html", ctx)
 
 @login_required
 def incidencia_detalle(request, pk):
     incidencia = get_object_or_404(Incidencia, pk=pk)
+<<<<<<< HEAD
     # proteccion de acceso al detalle según rol
+=======
+    # protección de acceso al detalle según rol
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
     visible = _filtrar_por_rol(Incidencia.objects.filter(pk=pk), request.user).exists()
     if not visible:
         messages.error(request, "No tienes permisos para ver esta incidencia.")
@@ -147,7 +223,10 @@ def incidencia_detalle(request, pk):
 
 # ----------------- CRUD (solo administrador) -----------------
 @login_required
+<<<<<<< HEAD
 @solo_admin
+=======
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 def incidencia_crear(request):
     if request.method == "POST":
         form = IncidenciaForm(request.POST)
@@ -163,6 +242,7 @@ def incidencia_crear(request):
 @login_required
 def incidencia_editar(request, pk):
     incidencia = get_object_or_404(Incidencia, pk=pk)
+<<<<<<< HEAD
     estado_anterior = incidencia.estado
     motivo_rechazo = request.POST.get('motivo_rechazo')
     roles = set(request.user.groups.values_list("name", flat=True))
@@ -250,6 +330,19 @@ def incidencia_editar(request, pk):
 
     return render(request, "incidencias/incidencia_form.html", {"form": form})
 
+=======
+    if request.method == "POST":
+        form = IncidenciaForm(request.POST, instance=incidencia)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Incidencia actualizada correctamente.")
+            return redirect("incidencias:incidencias_lista")
+    else:
+        form = IncidenciaForm(instance=incidencia)
+    return render(request, "incidencias/incidencia_form.html", {"form": form})
+
+
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 @login_required
 @solo_admin
 def incidencia_eliminar(request, pk):
@@ -259,6 +352,7 @@ def incidencia_eliminar(request, pk):
         messages.success(request, "Incidencia eliminada correctamente.")
         return redirect("incidencias:incidencias_lista")
     return render(request, "incidencias/incidencia_eliminar.html", {"obj": obj})
+<<<<<<< HEAD
 
 
 # ----------------- SUBIR EVIDENCIAAA -----------------
@@ -422,3 +516,5 @@ def finalizar_incidencia(request, pk):
         f"¡Incidencia finalizada correctamente! El territorial ahora puede validar o rechazar el trabajo realizado."
     )
     return redirect("incidencias:incidencia_detalle", pk=pk)
+=======
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87

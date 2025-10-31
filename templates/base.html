@@ -10,6 +10,7 @@
 <body>
   <nav>
     {% if user.is_authenticated %}
+<<<<<<< HEAD
       <button onclick="history.back()">← Volver</button>
       <a href="/">🏠 Inicio</a> |
       Hola, {{ user.username }} |
@@ -24,6 +25,12 @@
       {% endif %}
       {% if user|has_group:"Departamento" %}
         | <a href="{% url 'personas:dashboard_departamento' %}">Dashboard Departamento</a>
+=======
+      Hola, {{ user.username }} |
+      <a href="{% url 'personas:cerrar_sesion' %}">Salir</a>
+      {% if user.is_superuser or user|has_group:"Administrador" %}
+        | <a href="{% url 'core:usuarios_lista' %}">Usuarios</a>
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
       {% endif %}
     {% else %}
       <a href="{% url 'login' %}">Entrar</a>
@@ -42,4 +49,10 @@
   {% block content %}
   {% endblock %}
 </body>
+<<<<<<< HEAD
 </html>
+=======
+</html>
+
+
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87

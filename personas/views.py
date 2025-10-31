@@ -24,6 +24,7 @@ def dashboard_territorial(request):
 
 @login_required
 def dashboard_jefe(request):
+<<<<<<< HEAD
     """
     Dashboard para Jefe de Cuadrilla.
     Muestra las incidencias asignadas a su cuadrilla.
@@ -72,12 +73,16 @@ def dashboard_jefe(request):
         'incidencias_en_proceso': incidencias_en_proceso,
         'incidencias_finalizadas': incidencias_finalizadas,
     })
+=======
+    return render(request, "personas/dashboards/jefeCuadrilla.html")
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
 @login_required
 def dashboard_direccion(request):
     return render(request, "personas/dashboards/direccion.html")
 
 @login_required
+<<<<<<< HEAD
 @login_required
 def dashboard_departamento(request):
     """
@@ -137,6 +142,10 @@ def dashboard_departamento(request):
     }
     
     return render(request, 'personas/dashboards/departamento.html', ctx)
+=======
+def dashboard_departamento(request):
+    return render(request, "personas/dashboards/departamento.html")
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
 
 @login_required
@@ -149,6 +158,11 @@ def check_profile(request):
     # Si es superusuario, va directo al admin
     if user.is_superuser:
         return redirect("personas:dashboard_admin")
+<<<<<<< HEAD
+=======
+    
+    grupos = list(user.groups.values_list("name", flat=True))
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
     try:
         profile = Profile.objects.select_related('group').get(user=user)
@@ -169,6 +183,7 @@ def check_profile(request):
     print(f"Usuario: {user.username}, Rol: '{rol}'")
     
     # Redirección según el rol
+<<<<<<< HEAD
     if rol == "Administrador":
         return redirect("personas:dashboard_admin")
     elif rol == "Territorial":
@@ -178,6 +193,17 @@ def check_profile(request):
     elif rol == "Dirección":
         return redirect("personas:dashboard_direccion")
     elif rol == "Departamento":
+=======
+    if "Administrador" in grupos:
+        return redirect("personas:dashboard_admin")
+    elif "Territorial" in grupos:
+        return redirect("personas:dashboard_territorial")
+    elif "Jefe de Cuadrilla" in grupos:
+        return redirect("personas:dashboard_jefeCuadrilla")
+    elif "Dirección"in grupos:
+        return redirect("personas:dashboard_direccion")
+    elif "Departamento"in grupos:
+>>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
         return redirect("personas:dashboard_departamento")
     else:
         messages.error(request, f"Rol '{rol}' no reconocido. Contacta al administrador.")
