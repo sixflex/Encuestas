@@ -94,6 +94,8 @@ LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+DEFAULT_FROM_EMAIL = "Sistema Municipal <no-reply@municipalidad.local>"#cambio barbara
+
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587

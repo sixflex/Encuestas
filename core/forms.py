@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator#cotta
 
 from registration.models import Profile
 from core.models import JefeCuadrilla, Departamento
@@ -33,12 +34,28 @@ def validar_username_unico_ci(value: str, exclude_pk: int | None = None):
         raise ValidationError(
             "Ya existe un usuario con este nombre de usuario (no distingue mayúsculas/minúsculas)."
         )
+#cambios cotta
+# ---------- VALIDACIONES GLOBALES (Reutilizables) ----------
 
+def validar_email_unico_ci(value: str, exclude_pk: int | None = None):
+    # ... código actual para validar unicidad de email)
+    pass # Asumir que esta función está definida fuera de la clase
+
+def validar_username_unico_ci(value: str, exclude_pk: int | None = None):
+    # ... (Tu código actual para validar unicidad de username)
+    pass 
+
+# NUEVA VALIDACIÓN: Permite letras, acentos, Ñ/ñ y espacios.
+validar_solo_letras = RegexValidator(
+    r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$', 
+    'Este campo solo puede contener letras y espacios.'
+)
+#---------------------------------------------------------------------
 # ---------- Creación ----------
 
 class UsuarioCrearForm(forms.ModelForm):
     """
-    Formulario de creación de usuario con password y asignación de rol (grupo).
+    Formulario de creación de usuario con validaciones mejoradas
     """
     password1 = forms.CharField(
         label="Contraseña",
@@ -53,6 +70,20 @@ class UsuarioCrearForm(forms.ModelForm):
         required=True,
     )
     rol = forms.ChoiceField(choices=ROL_CHOICES, required=True, label="Rol (grupo)")
+#cambios cotta
+    first_name = forms.CharField(
+        label="Nombre",
+        max_length=150,
+        required=True, # Aseguramos que sea obligatorio
+        validators=[validar_solo_letras], # Aplica Regex
+    )
+    last_name = forms.CharField(
+        label="Apellido",
+        max_length=150,
+        required=True, # Aseguramos que sea obligatorio
+        validators=[validar_solo_letras], # Aplica Regex
+    )
+    #--------------------------------------------------------
 
     class Meta:
         model = User
@@ -104,13 +135,9 @@ class UsuarioCrearForm(forms.ModelForm):
 
         if commit:
             user.save()
-
-            # Asignar grupo al usuario
             user.groups.clear()
             group, _ = Group.objects.get_or_create(name=self.cleaned_data["rol"])
             user.groups.add(group)
-
-            # Mantener sincronizado el perfil
             profile, _ = Profile.objects.get_or_create(user=user)
             profile.group = group
             profile.save()
@@ -204,15 +231,15 @@ class UsuarioEditarForm(forms.ModelForm):
         p1 = self.cleaned_data.get("password1")
         if p1:
             user.set_password(p1)
-
+#Cambios barbara 
         if commit:
             user.save()
-
-            # Reasignar grupo al usuario
             user.groups.clear()
             group, _ = Group.objects.get_or_create(name=self.cleaned_data["rol"])
             user.groups.add(group)
-
+            return user #cambio barbara
+        
+'''
             # Mantener sincronizado el perfil
             profile, _ = Profile.objects.get_or_create(user=user)
             profile.group = group
@@ -234,7 +261,8 @@ class UsuarioEditarForm(forms.ModelForm):
                 pass
 
         return user
-
+'''
+#------------------------------------------------------
 # ---------- Confirmación Activar/Desactivar ----------
 
 class UsuarioToggleActivoForm(forms.Form):

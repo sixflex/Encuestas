@@ -13,8 +13,8 @@
       Hola, {{ user.username }} |
       <a href="{% url 'personas:cerrar_sesion' %}">Salir</a>
       {% if user.is_superuser or user|has_group:"Administrador" %}
-        | <a href="{% url 'core:usuarios_lista' %}">Usuarios</a>
-      {% endif %}
+        <a href="{% url 'core:usuarios_lista' %}">Filtro</a> <!--Cambio cotta-->
+        {% endif %}
     {% else %}
       <a href="{% url 'login' %}">Entrar</a>
     {% endif %}

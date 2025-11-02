@@ -17,6 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
+from django.conf import settings #cambio barbara
+from django.conf.urls.static import static #cambio barbara
 
 urlpatterns = [
     # Raíz: redirige al resolvedor de perfiles (decide dashboard por rol)
@@ -42,3 +44,8 @@ urlpatterns = [
     # Admin de Django
     path("admin/", admin.site.urls),
 ]
+#cambios barbara
+# Servir archivos media en desarrollo
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+#-------------------------------------------------------

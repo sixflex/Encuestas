@@ -1,41 +1,41 @@
+<!--Template cambiado por el de barbara-->
 {% extends "base.html" %}
-
 {% block content %}
 <div class="container">
   <h1>Panel Territorial</h1>
-  <p>Bienvenido. Aquí puedes monitorear el trabajo en terreno y coordinar con jefes de cuadrilla.</p>
+  <p>Bienvenido, {{ user.first_name }} {{ user.last_name }}. Aquí puedes gestionar encuestas e incidencias.</p>
+
+  {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
 
   <hr>
-  <h3>Gestión de Incidencias</h3>
-  <p>Accede a las incidencias para crear, editarlas, validarlas, rechazarlas o reasignarlas:</p>
+
+  <!-- SECCIÓN DE ENCUESTAS -->
+  <h3>Gestión de Encuestas</h3>
+  <p>Accede al CRUD completo de encuestas:</p>
 
   <div class="acciones mb-3">
-    <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-primary">📋 Ver todas las Incidencias</a>
-    <a href="{% url 'incidencias:incidencia_crear' %}" class="btn btn-success ms-2">➕ Crear Incidencia</a>
+    <a href="{% url 'territorial_app:encuestas_lista' %}" class="btn btn-primary"> Ver todas las Encuestas</a>
+    <a href="{% url 'territorial_app:encuesta_crear' %}" class="btn btn-success ms-2">Crear Encuesta</a>
   </div>
 
-  <!-- Tabla de incidencias -->
-  <table class="table mt-3">
-    <tbody>
-      {% for incidencia in incidencias %}
-      <tr>
-        <td>{{ incidencia.id }}</td>
-        <td>{{ incidencia.titulo }}</td>
-        <td>{{ incidencia.estado }}</td>
-        <td><!---
-            <a href="{% url 'incidencias:incidencia_editar' incidencia.id %}" class="btn btn-sm btn-info">✏️ Editar</a>
-            <a href="{% url 'territorial_app:validar_incidencia' incidencia.id %}" class="btn btn-sm btn-success">✅ Validar</a>
-            <a href="{% url 'territorial_app:rechazar_incidencia' incidencia.id %}" class="btn btn-sm btn-danger">❌ Rechazar</a>
-            <a href="{% url 'territorial_app:reasignar_incidencia' incidencia.id %}" class="btn btn-sm btn-warning">🔄 Reasignar</a>
-        -->
-          </td> 
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="5">No hay incidencias asignadas.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+  <hr>
+
+  <!-- SECCIÓN DE INCIDENCIAS -->
+  <h3>Gestión de Incidencias</h3>
+  <p>Accede a las incidencias para crearlas, editarlas, validarlas, rechazarlas o reasignarlas:</p>
+
+  <div class="acciones mb-3">
+    <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-primary"> Ver todas las Incidencias</a>
+    <a href="{% url 'incidencias:incidencia_crear' %}" class="btn btn-success ms-2"> Crear Incidencia</a>
+  </div>
+
+  <hr>
+
 {% endblock %}
+
