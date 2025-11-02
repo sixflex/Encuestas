@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-<<<<<<< HEAD
 {% load auth_extras %}
-
 {% block content %}
 <h2>Detalle de Incidencia #{{ obj.id }}</h2>
+
 <table border="1" cellpadding="8" cellspacing="0" width="100%">
   <tr>
+    <!-- Información principal de la incidencia -->
     <td valign="top" width="50%">
       <table border="0" cellpadding="6" cellspacing="0" width="100%">
         <tr><td><b>Título:</b></td><td>{{ obj.titulo }}</td></tr>
@@ -21,13 +21,13 @@
         {% endif %}
       </table>
     </td>
+
+    <!-- Multimedia asociada -->
     <td valign="top" width="50%">
       {% if obj.multimedias.exists %}
         {% for multimedia in obj.multimedias.all %}
-          <table border="1" cellpadding="6" cellspacing="0" width="100%">
-            <tr>
-              <th colspan="2">{{ multimedia.nombre }}</th>
-            </tr>
+          <table border="1" cellpadding="6" cellspacing="0" width="100%" style="margin-bottom:10px;">
+            <tr><th colspan="2">{{ multimedia.nombre }}</th></tr>
             <tr>
               <td valign="top" width="220">
                 <b>Tipo:</b> {{ multimedia.tipo|upper }}<br>
@@ -52,90 +52,34 @@
               </td>
             </tr>
           </table>
-          <hr>
         {% endfor %}
       {% endif %}
     </td>
   </tr>
 </table>
-<hr>
-  <!-- Evidencias multimedia -->
-  <!-- {% if obj.multimedias.exists %}
-    <h3>Evidencias</h3>
-    {% for multimedia in obj.multimedias.all %}
-      <table border="1" cellpadding="6" cellspacing="0" style="margin-bottom:10px;">
-        <tr>
-          <th colspan="2">{{ multimedia.nombre }}</th>
-        </tr>
-        <tr>
-          <td valign="top" width="220">
-            <b>Tipo:</b> {{ multimedia.tipo|upper }}<br>
-            <b>Formato:</b> {{ multimedia.formato|upper }}<br>
-            <b>Subido:</b> {{ multimedia.creadoEl|date:"d/m/Y H:i" }}<br>
-          </td>
-          <td align="center">
-            {% if multimedia.tipo == 'image' %}
-              <img src="{{ multimedia.url }}" alt="{{ multimedia.nombre }}" width="300">
-            {% elif multimedia.tipo == 'video' %}
-              <video width="300" controls>
-                <source src="{{ multimedia.url }}" type="video/{{ multimedia.formato }}">
-                Tu navegador no soporta el video.
-              </video>
-            {% elif multimedia.tipo == 'application' and multimedia.formato|lower == 'pdf' %}
-              <a href="{{ multimedia.url }}" target="_blank">Ver PDF</a>
-            {% else %}
-              <a href="{{ multimedia.url }}" target="_blank">Descargar archivo</a>
-            {% endif %}
-          </td>
-        </tr>
-      </table>
-      <hr>
-    {% endfor %}
-  {% endif %} -->
 
-  <!-- Botones de acción -->
-  <div class="mt-3 d-flex gap-2">
-    {% if user.is_superuser or user|has_group:"Administrador" %}
-      <a href="{% url 'incidencias:incidencia_editar' obj.pk %}" class="btn btn-warning">✏️ Editar</a>
-      <a href="{% url 'incidencias:incidencia_eliminar' obj.pk %}" class="btn btn-danger">🗑️ Eliminar</a>
-    {% endif %}
-    
-    <!-- Botón para subir evidencia (solo para cuadrillas en estado "en_proceso") -->
-    {% if obj.estado == 'en_proceso' and obj.cuadrilla %}
-      {% if user.is_superuser or user|has_group:"Administrador" or user|has_group:"Jefe de Cuadrilla" or user|has_group:"Cuadrilla" %}
-        <a href="{% url 'incidencias:subir_evidencia' obj.pk %}" class="btn btn-success">
-          📤 Subir evidencia
+<hr>
+
+<!-- Botones de acción -->
+<div class="mt-3 d-flex gap-2">
+  {% if user.is_superuser or user|has_group:"Administrador" %}
+    <a href="{% url 'incidencias:incidencia_editar' obj.pk %}" class="btn btn-warning"> Editar</a>
+    <a href="{% url 'incidencias:incidencia_eliminar' obj.pk %}" class="btn btn-danger"> Eliminar</a>
+  {% endif %}
+
+  {% if obj.estado == 'en_proceso' and obj.cuadrilla %}
+    {% if user.is_superuser or user|has_group:"Administrador" or user|has_group:"Jefe de Cuadrilla" or user|has_group:"Cuadrilla" %}
+      <a href="{% url 'incidencias:subir_evidencia' obj.pk %}" class="btn btn-success">Subir evidencia</a>
+      
+      {% if obj.multimedias.exists %}
+        <a href="{% url 'incidencias:finalizar_incidencia' obj.pk %}" class="btn btn-primary"
+           onclick="return confirm('¿Estás seguro de finalizar esta incidencia? El territorial podrá validar o rechazar tu trabajo.')">
+          Finalizar incidencia
         </a>
-        
-        <!-- Botón para finalizar incidencia (solo si ya tiene evidencias) -->
-        {% if obj.multimedias.exists %}
-          <a href="{% url 'incidencias:finalizar_incidencia' obj.pk %}" class="btn btn-primary" onclick="return confirm('¿Estás seguro de finalizar esta incidencia? El territorial podrá validar o rechazar tu trabajo.')">
-            ✅ Finalizar incidencia
-          </a>
-        {% endif %}
       {% endif %}
     {% endif %}
-    
-    <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-secondary">⬅️ Volver a la lista</a>
-  </div>
+  {% endif %}
+  
+  <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-secondary"> Volver a la lista</a>
 </div>
-=======
-{% block content %}
-<h2>Detalle de Incidencia</h2>
-
-<ul>
-    <li><strong>Título:</strong> {{ obj.titulo }}</li>
-    <li><strong>Descripción:</strong> {{ obj.descripcion }}</li>
-    <li><strong>Estado:</strong> {{ obj.estado }}</li>
-    <li><strong>Prioridad:</strong> {{ obj.prioridad }}</li>
-    <li><strong>Departamento:</strong> {{ obj.departamento }}</li>
-    <li><strong>Cuadrilla:</strong> {{ obj.cuadrilla }}</li>
-    <li><strong>Fecha de cierre:</strong> {{ obj.fecha_cierre }}</li>
-    <li><strong>Vecino:</strong> {{ obj.nombre_vecino }} ({{ obj.correo_vecino }}, {{ obj.telefono_vecino }})</li>
-</ul>
-
-<a href="{% url 'incidencias:incidencia_editar' obj.pk %}" class="btn btn-warning">Editar</a>
-<a href="{% url 'incidencias:incidencia_eliminar' obj.pk %}" class="btn btn-danger">Eliminar</a>
-<a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-secondary">Volver a la lista</a>
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 {% endblock %}

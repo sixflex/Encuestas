@@ -4,12 +4,12 @@
 
 {% block content %}
 <div class="container">
-  <h1>🗑️ Eliminar Encuesta</h1>
+  <h1>Eliminar Encuesta</h1>
 
   <hr>
 
   <div style="background-color: #f8d7da; padding: 20px; border: 2px solid #f5c6cb; margin-bottom: 20px;">
-    <h2 style="margin-top: 0; color: #721c24;">⚠️ Confirmación de Eliminación</h2>
+    <h2 style="margin-top: 0; color: #721c24;"> Confirmación de Eliminación</h2>
     <p><strong>¿Estás seguro de que deseas eliminar esta encuesta?</strong></p>
     <p>Esta acción no se puede deshacer.</p>
   </div>
@@ -41,9 +41,9 @@
       <th style="text-align: left;">Estado</th>
       <td>
         {% if encuesta.estado %}
-          <span style="color: green;">✅ Activa</span>
+          <span style="color: green;">Activa</span>
         {% else %}
-          <span style="color: orange;">🔒 Bloqueada</span>
+          <span style="color: orange;"> Bloqueada</span>
         {% endif %}
       </td>
     </tr>
@@ -61,12 +61,12 @@
     
     <div style="margin: 20px 0;">
       <button type="submit" style="background: #dc3545; color: white; padding: 12px 25px; border: none; cursor: pointer; font-size: 16px; font-weight: bold;">
-        ✅ Sí, eliminar encuesta
+        Sí, eliminar encuesta
       </button>
       
       <a href="{% url 'territorial_app:encuesta_detalle' encuesta.id %}" style="margin-left: 15px; text-decoration: none;">
         <button type="button" style="background: #6c757d; color: white; padding: 12px 25px; border: none; cursor: pointer; font-size: 16px;">
-          ❌ No, cancelar
+           No, cancelar
         </button>
       </a>
     </div>
@@ -76,9 +76,9 @@
 
   <!-- Enlaces de navegación -->
   <div>
-    <a href="{% url 'territorial_app:encuesta_detalle' encuesta.id %}">⬅️ Volver al detalle</a> |
-    <a href="{% url 'territorial_app:encuestas_lista' %}">📋 Ir al listado</a> |
-    <a href="{% url 'personas:dashboard_territorial' %}">🏠 Ir al Dashboard</a>
+    <a href="{% url 'territorial_app:encuesta_detalle' encuesta.id %}"> Volver al detalle</a> |
+    <a href="{% url 'territorial_app:encuestas_lista' %}">Ir al listado</a> |
+    <a href="{% url 'personas:dashboard_territorial' %}">Ir al Dashboard</a>
   </div>
 </div>
 {% endblock %}

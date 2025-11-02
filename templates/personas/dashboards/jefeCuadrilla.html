@@ -1,7 +1,21 @@
 {% extends "base.html" %}
 
+{# 
+CAMBIOS BARBARA, USAMOS TEMPLATE NUEVO, ORIGINAL EN COMENTARIO
+
+<h1>Panel Jefe de Cuadrilla</h1>
+<p>Bienvenido. Aquí puedes organizar tus cuadrillas, registrar avances y reportar a la unidad territorial.</p>
+<hr>
+<h3>Gestión de Incidencias</h3>
+<p>Accede a las incidencias verlas, asignarlas a una cuadrilla o rechazarlas</p>
+
+<div class="acciones mb-3">
+   <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-primary">📋 Ver todas las Incidencias</a>
+</div>
+<br>
+#}
+
 {% block content %}
-<<<<<<< HEAD
 <div class="container mt-4">
   <h1>Panel Jefe de Cuadrilla</h1>
   <p>Bienvenido, <strong>{{ user.first_name }} {{ user.last_name }}</strong>. Aquí puedes organizar tus cuadrillas y gestionar incidencias.</p>
@@ -17,7 +31,7 @@
   <hr>
 
   {% if cuadrillas %}
-  <h3>👷 Mis Cuadrillas ({{ cuadrillas.count }})</h3>
+  <h3> Mis Cuadrillas ({{ cuadrillas.count }})</h3>
   <div class="row mb-4">
     {% for cuadrilla in cuadrillas %}
       <div class="col-md-6 mb-3">
@@ -34,7 +48,7 @@
 
   <hr>
 
-  <h3>📋 Incidencias Pendientes ({{ incidencias_pendientes.count }})</h3>
+  <h3>Incidencias Pendientes ({{ incidencias_pendientes.count }})</h3>
   {% if incidencias_pendientes %}
   <table class="table table-striped mt-3">
     <thead>
@@ -64,8 +78,8 @@
 
   <hr>
 
-  <h3>🔧 Incidencias En Proceso ({{ incidencias_en_proceso.count }})</h3>
-  {% if incidencias_en_proceso %}
+  <h3>Incidencias En Progreso ({{ incidencias_en_progreso.count }})</h3>
+  {% if incidencias_en_progreso %}
   <table class="table table-striped mt-3">
     <thead>
       <tr>
@@ -76,42 +90,29 @@
       </tr>
     </thead>
     <tbody>
-      {% for incidencia in incidencias_en_proceso %}
+      {% for incidencia in incidencias_en_progreso %}
       <tr>
         <td>{{ incidencia.id }}</td>
         <td>{{ incidencia.titulo }}</td>
         <td>{{ incidencia.prioridad }}</td>
         <td>
           <a href="{% url 'incidencias:incidencia_detalle' incidencia.id %}" class="btn btn-sm btn-primary">Ver</a>
-          <a href="{% url 'incidencias:subir_evidencia' incidencia.id %}" class="btn btn-sm btn-success">📤 Subir evidencia</a>
+          <a href="{% url 'incidencias:subir_evidencia' incidencia.id %}" class="btn btn-sm btn-success">Subir evidencia</a>
         </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
   {% else %}
-  <p>No hay incidencias en proceso.</p>
+  <p>No hay incidencias en progreso.</p>
   {% endif %}
 
   <hr>
 
   <div class="mt-4">
-    <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-primary">📋 Ver todas las Incidencias</a>
-    <a href="{% url 'personas:cerrar_sesion' %}" class="btn btn-secondary">🚪 Cerrar Sesión</a>
+    <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-primary"> Ver todas las Incidencias</a>
+    <a href="{% url 'personas:cerrar_sesion' %}" class="btn btn-secondary"> Cerrar Sesión</a>
   </div>
 </div>
-=======
-  <h1>Panel Jefe de Cuadrilla</h1>
-  <p>Bienvenido. Aquí puedes organizar tus cuadrillas, registrar avances y reportar a la unidad territorial.</p>
-      <hr>
-    <h3>Gestión de Incidencias</h3>
-      <p>Accede a las incidencias verlas, asignarlas a una cuadrilla o rechazarlas</p>
-
-    <div class="acciones mb-3">
-       <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-primary">📋 Ver todas las Incidencias</a>
-    </div>
-
-    <br>
-  </div>
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 {% endblock %}
+

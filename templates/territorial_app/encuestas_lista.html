@@ -1,3 +1,4 @@
+<!--TEMPLATE NUEVO BARBARA-->
 {% extends "base.html" %}
 
 {% block title %}Lista de Encuestas{% endblock %}
@@ -11,8 +12,8 @@
 
   <!-- Acciones principales -->
   <div class="acciones">
-    <a href="{% url 'territorial_app:encuesta_crear' %}">➕ Crear Nueva Encuesta</a>
-    <a href="{% url 'personas:dashboard_territorial' %}">⬅️ Volver al Dashboard</a>
+    <a href="{% url 'territorial_app:encuesta_crear' %}"> Crear Nueva Encuesta</a>
+    <a href="{% url 'personas:dashboard_territorial' %}"> Volver al Dashboard</a>
   </div>
 
   <hr>
@@ -33,7 +34,7 @@
       </select>
       
       <button type="submit">🔍 Buscar</button>
-      <a href="{% url 'territorial_app:encuestas_lista' %}">🔄 Limpiar filtros</a>
+      <a href="{% url 'territorial_app:encuestas_lista' %}"> Limpiar filtros</a>
     </fieldset>
   </form>
 
@@ -66,23 +67,23 @@
         <td>{{ encuesta.prioridad }}</td>
         <td>
           {% if encuesta.estado %}
-            ✅ Activa
+             Activa
           {% else %}
-            🔒 Bloqueada
+             Bloqueada
           {% endif %}
         </td>
         <td>{{ encuesta.creadoEl|date:"d/m/Y H:i" }}</td>
         <td>
-          <a href="{% url 'territorial_app:encuesta_detalle' encuesta.id %}">👁️ Ver</a> |
-          <a href="{% url 'territorial_app:encuesta_editar' encuesta.id %}">✏️ Editar</a> |
+          <a href="{% url 'territorial_app:encuesta_detalle' encuesta.id %}"> Ver</a> |
+          <a href="{% url 'territorial_app:encuesta_editar' encuesta.id %}"> Editar</a> |
           
           <form method="post" action="{% url 'territorial_app:encuesta_toggle_estado' encuesta.id %}" style="display:inline;">
             {% csrf_token %}
             <button type="submit" style="border:none; background:none; color:blue; text-decoration:underline; cursor:pointer;">
               {% if encuesta.estado %}
-                🔒 Bloquear
+                Bloquear
               {% else %}
-                ✅ Activar
+                Activar
               {% endif %}
             </button>
           </form> |
@@ -98,6 +99,6 @@
   {% endif %}
 
   <hr>
-  <p><a href="{% url 'personas:dashboard_territorial' %}">⬅️ Volver al Dashboard</a></p>
+  <p><a href="{% url 'personas:dashboard_territorial' %}">Volver al Dashboard</a></p>
 </div>
 {% endblock %}

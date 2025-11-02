@@ -1,57 +1,87 @@
 {% extends "base.html" %}
-{% load auth_extras %} {# si usas el filtro has_group #}
+{% load auth_extras %}
 {% block content %}
 <h2>Usuarios</h2>
 
-<form method="get" style="margin-bottom:10px">
-  <input type="text" name="q" value="{{ q }}" placeholder="Buscar usuario, nombre o correo">
-  <button type="submit">Buscar</button>
-  <a href="{% url 'core:usuario_crear' %}">+ Nuevo</a>
+<form method="get" action="{% url 'core:usuarios_lista' %}" style="margin-bottom:10px">
+    <div style="display: flex; gap: 10px; align-items: center;">
+        
+        <input type="text" name="q" value="{{ q }}" placeholder="Buscar usuario, nombre o correo">
+        
+        <label for="id_rol" style="font-weight: bold;">Filtrar por Rol:</label>
+        <select name="rol" id="id_rol" class="form-select" onchange="this.form.submit()">
+            <option value="">Todos los Roles</option>
+            {% for rol in roles %}
+                <option value="{{ rol}}" 
+                    {% if rol == rol_seleccionado %}selected{% endif %}>
+                    {{ rol }}
+                </option>
+            {% endfor %}
+        </select>
+        
+        <label for="id_activo" style="font-weight: bold;">Filtrar por Estado:</label>
+        <select name="activo" id="id_activo" class="form-select" onchange="this.form.submit()">
+            <option value="" {% if activo_seleccionado == '' %}selected{% endif %}>Todos los Estados</option>
+            <option value="1" {% if activo_seleccionado == '1' %}selected{% endif %}>Activo</option>
+            <option value="0" {% if activo_seleccionado == '0' %}selected{% endif %}>Inactivo</option>
+        </select>
+        
+        <button type="submit">Buscar / Aplicar Filtros</button>
+        
+        <a href="{% url 'core:usuario_crear' %}" style="margin-left: 20px;">+ Nuevo</a>
+    </div>
 </form>
 
 <table border="1" cellpadding="6" cellspacing="0">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Usuario</th>
-      <th>Nombre</th>
-      <th>Apellido</th>
-      <th>Email</th>
-      <th>Activo</th>
-      <th>Acciones</th>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Usuario</th>
+      <th>Nombre</th>
+      <th>Apellido</th>
+      <th>Email</th>
+      <th>Activo</th>
+      <th>Rol</th>       <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for u in usuarios %}
+      <tr>
+        <td>{{ u.id }}</td>
 
-    </tr>
-  </thead>
-  <tbody>
-    {% for u in usuarios %}
-      <tr>
-        <td>{{ u.id }}</td>
-        <td>{{ u.username }}</td>
-        <td>{{ u.first_name }}</td>
-        <td>{{ u.last_name }}</td>
-        <td>{{ u.email }}</td>
-        <td>{{ u.is_active|yesno:"Sí,No" }}</td>
+        {# 1) El nombre de usuario también lleva a "Ver" #}
+        <td><a href="{% url 'core:usuario_detalle' u.id %}">{{ u.username }}</a></td>
+
+        <td>{{ u.first_name }}</td>
+        <td>{{ u.last_name }}</td>
+        <td>{{ u.email }}</td>
+        <td>{{ u.is_active|yesno:"Sí,No" }}</td>
+        
         <td>
-          <a href="{% url 'core:usuario_detalle' u.id %}">Ver</a>
-          {% if request.user.is_superuser or request.user|has_group:"Administrador" %}
-            | <a href="{% url 'core:usuario_editar' u.id %}">Editar</a>
-            | {% if u.is_active %}
-                <form action="{% url 'core:usuario_toggle_activo' u.id %}" method="post" style="display:inline;">
-                  {% csrf_token %}
-                  <button type="submit">Desactivar</button>
-                </form>
-              {% else %}
-                <form action="{% url 'core:usuario_toggle_activo' u.id %}" method="post" style="display:inline;">
-                  {% csrf_token %}
-                  <button type="submit">Activar</button>
-                </form>
-              {% endif %}
-          {% endif %}
+            {% for group in u.groups.all %}
+                {{ group.name }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+                Sin Rol
+            {% endfor %}
         </td>
-      </tr>
-    {% empty %}
-      <tr><td colspan="7">Sin usuarios.</td></tr>
-    {% endfor %}
-  </tbody>
+
+        <td>
+        
+          <a href="{% url 'core:usuario_detalle' u.id %}">Ver</a>
+
+         
+          {% if request.user.is_superuser or request.user|has_group:"Administrador" %}
+            | <a href="{% url 'core:usuario_editar' u.id %}">Editar</a>
+            | <form action="{% url 'core:usuario_toggle_activo' u.id %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit">{% if u.is_active %}Desactivar{% else %}Activar{% endif %}</button>
+              </form>
+          {% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="8">Sin usuarios.</td></tr>
+    {% endfor %}
+  </tbody>
 </table>
 {% endblock %}

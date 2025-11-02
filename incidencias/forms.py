@@ -1,49 +1,30 @@
 #Incidencias/forms.py -> modificaciones cotta
 from django import forms
-<<<<<<< HEAD
 from core.models import Incidencia, Departamento, JefeCuadrilla
-=======
-from core.models import Incidencia, Departamento
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 from django.core.exceptions import ValidationError
 
 class IncidenciaForm(forms.ModelForm):
-    ESTADO_CHOICES = [
-        ('pendiente', 'Pendiente'),
-<<<<<<< HEAD
-        ('en_proceso', 'En proceso'),
-=======
-        ('proceso', 'En proceso'),
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
-        ('finalizada', 'Finalizada'),
-        ('validada', 'Validada'),
-        ('rechazada', 'Rechazada'),
-    ]
-
     PRIORIDAD_CHOICES = [
         ('alta', 'Alta'),
         ('media', 'Media'),
         ('baja', 'Baja'),
     ]
-    
-<<<<<<< HEAD
+    #cambios barbara
     TRANSICIONES_PERMITIDAS = {
-        'pendiente': ['en_proceso'],
-        'en_proceso': ['finalizada'],
-        'finalizada': ['validada', 'rechazada'],
-        'validada': [],
-        'rechazada': ['en_proceso']
+        'Pendiente': ['En Progreso'],
+        'En Progreso': ['Completada'],
+        'Completada': ['Validada', 'Rechazada'],
+        'Validada': ['Pendiente'],
+        'Rechazada': ['En Progreso'],
     }
-    
-=======
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
+    #----------------------------------------------
+
     estado = forms.ChoiceField(
-        choices=ESTADO_CHOICES,
+        choices=Incidencia.ESTADO_CHOICES,
         widget=forms.RadioSelect(attrs={"class": "form-check-input"}),
         required=True,
         label="Estado"
     )
-
     prioridad = forms.ChoiceField(
         choices=PRIORIDAD_CHOICES,
         widget=forms.RadioSelect(attrs={"class": "form-check-input"}),
@@ -55,12 +36,8 @@ class IncidenciaForm(forms.ModelForm):
         model = Incidencia
         fields = [
             "titulo", "descripcion", "estado", "prioridad", "fecha_cierre",
-<<<<<<< HEAD
-            "latitud", "longitud", "departamento","nombre_vecino","correo_vecino","telefono_vecino",
+            "latitud", "longitud", "departamento","nombre_vecino","correo_vecino","telefono_vecino", #cambios barbara 
             "cuadrilla",
-=======
-            "latitud", "longitud", "departamento"
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
         ]
         widgets = {
             "titulo": forms.TextInput(attrs={"class": "form-control", "placeholder": "Título"}),
@@ -69,27 +46,21 @@ class IncidenciaForm(forms.ModelForm):
             "latitud": forms.NumberInput(attrs={"class": "form-control"}),
             "longitud": forms.NumberInput(attrs={"class": "form-control"}),
             "departamento": forms.Select(attrs={"class": "form-select"}),
-<<<<<<< HEAD
             "nombre_vecino": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nombre del vecino"}),
             "correo_vecino": forms.EmailInput(attrs={"class": "form-control", "placeholder": "Correo del vecino"}),
             "telefono_vecino": forms.TextInput(attrs={"class": "form-control", "placeholder": "Teléfono del vecino"}),
             "cuadrilla": forms.Select(attrs={"class": "form-select"}),
-=======
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-<<<<<<< HEAD
         self.fields['departamento'].queryset = Departamento.objects.filter(estado=True)
         self.fields['titulo'].required = True
         self.fields['descripcion'].required = True
         self.fields['departamento'].required = True
         self.fields['correo_vecino'].required = True
-        
-        # La cuadrilla no es obligatoria inicialmente
         self.fields['cuadrilla'].required = False
-        
+        #cambios barbara
         # Filtrar cuadrillas según el departamento
         if self.instance and self.instance.pk and self.instance.departamento:
             # Si la instancia ya existe y tiene departamento, filtrar por ese departamento
@@ -105,24 +76,14 @@ class IncidenciaForm(forms.ModelForm):
         else:
             # Para nuevas incidencias, mostrar todas las cuadrillas
             self.fields['cuadrilla'].queryset = JefeCuadrilla.objects.all()
-
-        if not self.instance or not getattr(self.instance, 'pk', None):
-
-=======
-        # Solo muestra departamentos activos
-        self.fields['departamento'].queryset = Departamento.objects.filter(estado=True)
-        # Hacer obligatorios algunos campos en el form
-        self.fields['titulo'].required = True
-        self.fields['descripcion'].required = True
-        self.fields['departamento'].required = True
-
+        #-----------------------------------------------------------------------------
         # Valores por defecto sólo al crear (instance sin pk)
         if not self.instance or not getattr(self.instance, 'pk', None):
             # establecer valores iniciales
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
-            self.fields['estado'].initial = 'pendiente'
+            self.fields['estado'].initial = 'Pendiente'
             self.fields['prioridad'].initial = 'media'
 
+    
     def clean_titulo(self):
         titulo = self.cleaned_data.get("titulo", "").strip()
         if not titulo:
@@ -131,6 +92,8 @@ class IncidenciaForm(forms.ModelForm):
             raise ValidationError("Ya existe una incidencia con este título.")
         return titulo
 
+# cambios cotta
+    '''
     def clean_estado(self):
 <<<<<<< HEAD
         nuevo_estado = self.cleaned_data.get("estado")
@@ -155,33 +118,56 @@ class IncidenciaForm(forms.ModelForm):
         if not estado:
             return "pendiente"
         return estado
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
-
+'''
+    #cambios barbara
+    def clean_estado(self):
+        nuevo_estado = self.cleaned_data.get("estado")
+        if not nuevo_estado:
+            return "Pendiente"
+            
+        if not self.instance.pk:
+            if nuevo_estado != 'Pendiente':
+                raise ValidationError("Una nueva incidencia debe estar en estado pendiente")
+            return nuevo_estado
+            
+        estado_actual = self.instance.estado
+        if nuevo_estado not in self.TRANSICIONES_PERMITIDAS.get(estado_actual, []):
+            raise ValidationError(
+                f"No se puede cambiar el estado de '{estado_actual}' a '{nuevo_estado}'. "
+                f"Las transiciones permitidas son: {', '.join(self.TRANSICIONES_PERMITIDAS.get(estado_actual, []))}"
+            )
+        
+        return nuevo_estado
+    #---------------------------------------------
+    
+    #cambios cotta
+    '''
     def clean_prioridad(self):
         prioridad = self.cleaned_data.get("prioridad")
         if not prioridad:
             return "media"
         return prioridad
-
+'''
     def save(self, commit=True):
         incidencia = super().save(commit=False)
         incidencia.titulo = incidencia.titulo.strip()
-<<<<<<< HEAD
-        
-        # Preservar la cuadrilla si no se cambió en el formulario
+     #cambios barbara
+     #Preservar la cuadrilla si no se cambió en el formulario
         if self.instance.pk and 'cuadrilla' not in self.changed_data:
             # Si la cuadrilla no cambió, mantener la original
             if self.instance.cuadrilla:
                 incidencia.cuadrilla = self.instance.cuadrilla
-        
-=======
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
+    #-----------------------------------------------------------------------
+    #cambios cotta
+     # Opcional: Agregar doble seguridad al estado antes de guardar
+        if not incidencia.estado:
+             incidencia.estado = 'pendiente' # Asegurar que el estado sea 'pendiente' si el modelo no lo hace.
+    #------------------------------------------------------------------------------------------    
         if commit:
             incidencia.save()
         return incidencia
-
-
-<<<<<<< HEAD
+    
+#cambios barbara
 class SubirEvidenciaForm(forms.Form):
     """
     Formulario para subir evidencia multimedia de una incidencia.
@@ -224,5 +210,49 @@ class SubirEvidenciaForm(forms.Form):
                 raise ValidationError("Tipo de archivo no permitido")
         
         return archivo
-=======
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
+
+
+#-----------------------------------------------
+
+class SubirEvidenciaForm(forms.Form):
+    """
+    Formulario para subir evidencia multimedia de una incidencia.
+    La evidencia se asociará al modelo Multimedia relacionado con la incidencia.
+    """
+    archivo = forms.FileField(
+        label="Archivo de evidencia",
+        required=True,
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': 'image/*,video/*,application/pdf'
+        }),
+        help_text="Formatos permitidos: imágenes, videos, PDF. Tamaño máximo: 10MB"
+    )
+    
+    nombre = forms.CharField(
+        max_length=100,
+        label="Nombre de la evidencia",
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ej: Foto del problema resuelto'
+        })
+    )
+    
+    def clean_archivo(self):
+        archivo = self.cleaned_data.get('archivo')
+        if archivo:
+            # Validar tamaño del archivo (10MB máximo)
+            if archivo.size > 10 * 1024 * 1024:
+                raise ValidationError("El archivo no puede superar los 10MB")
+            
+            # Validar tipo de archivo
+            tipo_permitido = [
+                'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+                'video/mp4', 'video/mpeg', 'video/quicktime',
+                'application/pdf'
+            ]
+            if archivo.content_type not in tipo_permitido:
+                raise ValidationError("Tipo de archivo no permitido")
+        
+        return archivo

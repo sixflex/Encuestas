@@ -12,19 +12,19 @@
 <div class="container">
   <h1>
     {% if modo == 'crear' %}
-      ➕ Crear Nueva Encuesta
+       Crear Nueva Encuesta
     {% else %}
-      ✏️ Editar Encuesta
+       Editar Encuesta
     {% endif %}
   </h1>
 
   {% if modo == 'editar' and encuesta.estado %}
     <div style="background-color: #fff3cd; padding: 10px; border: 1px solid #ffc107; margin-bottom: 15px;">
-      ⚠️ <strong>Advertencia:</strong> No se puede editar una encuesta activa. Debes bloquearla primero.
+      <strong>Advertencia:</strong> No se puede editar una encuesta activa. Debes bloquearla primero.
       <form method="post" action="{% url 'territorial_app:encuesta_toggle_estado' encuesta.id %}" style="display:inline;">
         {% csrf_token %}
         <button type="submit" style="background: #ffc107; border: none; padding: 5px 10px; cursor: pointer;">
-          🔒 Bloquear Encuesta
+           Bloquear Encuesta
         </button>
       </form>
     </div>
@@ -124,16 +124,16 @@
     <div>
       <button type="submit" style="background: #28a745; color: white; padding: 10px 20px; border: none; cursor: pointer;">
         {% if modo == 'crear' %}
-          ✅ Crear Encuesta
+          Crear Encuesta
         {% else %}
-          💾 Guardar Cambios
+         Guardar Cambios
         {% endif %}
       </button>
-      <a href="{% url 'territorial_app:encuestas_lista' %}" style="margin-left: 10px;">❌ Cancelar</a>
+      <a href="{% url 'territorial_app:encuestas_lista' %}" style="margin-left: 10px;">Cancelar</a>
     </div>
   </form>
 
   <hr>
-  <p><a href="{% url 'territorial_app:encuestas_lista' %}">⬅️ Volver al listado</a></p>
+  <p><a href="{% url 'territorial_app:encuestas_lista' %}">Volver al listado</a></p>
 </div>
 {% endblock %}

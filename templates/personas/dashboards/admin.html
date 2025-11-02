@@ -37,4 +37,15 @@
   <h2>Acciones rápidas</h2>
   <p>Puedes usar este panel para navegar a las secciones.</p>
 </div>
+
+{% comment %} Solo mostrar tipos de incidencia si el usuario es admin {% endcomment %}
+{% if request.user.is_superuser or is_admin %}
+<div style="margin-top:20px;">
+  <h2>Tipos de Incidencia</h2>
+  <ul>
+    <li><a href="{% url 'incidencias:tipo_lista' %}">Lista de Tipos de Incidencia</a></li>
+  </ul>
+</div>
+{% endif %}
+
 {% endblock %}

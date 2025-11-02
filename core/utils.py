@@ -4,7 +4,7 @@ def es_admin(u):
     # Admin por grupo o superusuario Django
     return u.is_authenticated and (u.is_superuser or u.groups.filter(name="Administrador").exists())
 
-<<<<<<< HEAD
+#cambios barbara
 def es_territorial(u):
     # Verifica si el usuario es Territorial
     return u.is_authenticated and u.groups.filter(name="Territorial").exists()
@@ -19,6 +19,4 @@ def es_admin_o_territorial(u):
 solo_admin = user_passes_test(es_admin, login_url="/accounts/login/", redirect_field_name=None)
 solo_territorial = user_passes_test(es_territorial, login_url="/accounts/login/", redirect_field_name=None)
 admin_o_territorial = user_passes_test(es_admin_o_territorial, login_url="/accounts/login/", redirect_field_name=None)
-=======
-solo_admin = user_passes_test(es_admin, login_url="/accounts/login/", redirect_field_name=None)
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
+#----------------------------------

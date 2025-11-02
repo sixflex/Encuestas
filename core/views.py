@@ -1,10 +1,9 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
-
 from .forms import UsuarioCrearForm, UsuarioEditarForm
 from .utils import solo_admin
 <<<<<<< HEAD
@@ -19,25 +18,66 @@ def dashboard_admin(request):
 >>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
 
+
 @login_required
 @solo_admin
+#cambios barbara
+def dashboard_admin(request):
+    """Vista del panel de administración principal."""
+    return render(request, "personas/dashboards/admin.html")
+#------------------------------------------------------
+@login_required
+@solo_admin
+#cambios en la funcion usuarios_lista cotta
 def usuarios_lista(request):
+    # 1. Obtener y limpiar los parámetros de filtro
     q = request.GET.get("q", "").strip()
+    rol_seleccionado = request.GET.get('rol') 
+    #  NUEVO: Capturar el estado de actividad. Por defecto, es cadena vacía.
+    activo_seleccionado = request.GET.get('activo', '') 
+    
+    # 2. Inicializar el queryset base
     qs = (
         User.objects
         .all()
         .order_by("id")
-        .prefetch_related("groups")  # para mostrar rápido los grupos si los usas
+        .prefetch_related("groups") 
     )
+
+    # 3. Aplicar filtro por texto (q)
     if q:
         qs = qs.filter(
             Q(username__icontains=q)
             | Q(first_name__icontains=q)
             | Q(last_name__icontains=q)
             | Q(email__icontains=q)
-        )
-    return render(request, "core/usuarios_lista.html", {"usuarios": qs, "q": q})
+        ).distinct()
+        
+    # 4. Aplicar filtro por rol
+    if rol_seleccionado:
+        qs = qs.filter(groups__name=rol_seleccionado).distinct()
 
+    # 5.  APLICAR FILTRO POR ESTADO DE ACTIVIDAD 
+    if activo_seleccionado == '1':
+        # Filtra solo si el valor enviado es '1' (Activo)
+        qs = qs.filter(is_active=True)
+    elif activo_seleccionado == '0':
+        # Filtra solo si el valor enviado es '0' (Inactivo)
+        qs = qs.filter(is_active=False)
+        # Si es '' (vacío) no se aplica filtro y se muestran todos.
+        
+    # 6. Obtener todos los roles para el menú desplegable
+    roles = Group.objects.all().order_by('name')
+
+    context = {
+        'usuarios': qs,              
+        'q': q,                      
+        'roles': roles,              
+        'rol_seleccionado': rol_seleccionado,
+        'activo_seleccionado': activo_seleccionado, # ⬅ NUEVO: Para mantener la selección del filtro
+    }
+    
+    return render(request, "core/usuarios_lista.html", context)
 
 @login_required
 @solo_admin

@@ -43,7 +43,7 @@
                         <strong>ℹ️ Nota:</strong> Al asignar una cuadrilla, la incidencia pasará automáticamente al estado "En proceso".
                     </div>
                     
-                    <button type="submit" class="btn btn-success">✅ Asignar y poner en proceso</button>
+                    <button type="submit" class="btn btn-success">Asignar y poner en proceso</button>
                     <a href="{% url 'personas:dashboard_departamento' %}" class="btn btn-secondary">Cancelar</a>
                 </form>
             {% else %}
@@ -51,7 +51,7 @@
                     <strong>⚠️ No hay cuadrillas disponibles</strong>
                     <p>No hay cuadrillas asignadas a este departamento. Por favor, crea cuadrillas primero.</p>
                 </div>
-                <a href="{% url 'personas:dashboard_departamento' %}" class="btn btn-secondary">⬅️ Volver</a>
+                <a href="{% url 'personas:dashboard_departamento' %}" class="btn btn-secondary">Volver</a>
             {% endif %}
         </div>
     </div>

@@ -2,12 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from core.utils import solo_admin
-<<<<<<< HEAD
-from core.models import Direccion, Departamento, Incidencia, JefeCuadrilla
-from .forms import DireccionForm, DepartamentoForm
-from django.db.models import Q, Count
-=======
-from core.models import Direccion, Departamento
+from core.models import Direccion, Departamento, JefeCuadrilla, Incidencia
 from .forms import DireccionForm, DepartamentoForm
 >>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
@@ -15,8 +10,8 @@ from .forms import DireccionForm, DepartamentoForm
 @login_required
 @solo_admin
 def direcciones_lista(request):
-<<<<<<< HEAD
-    q = request.GET.get("q", "").strip()
+    q = (request.GET.get("q") or "").strip()
+    estado = (request.GET.get("estado") or "").strip() 
     qs = Direccion.objects.all().order_by("nombre_direccion")
     if q:
         qs = qs.filter(nombre_direccion__icontains=q)
@@ -88,13 +83,12 @@ def direccion_eliminar(request, pk):
 @login_required
 @solo_admin
 def departamentos_lista(request):
-<<<<<<< HEAD
     q = request.GET.get("q", "").strip()
     qs = Departamento.objects.all().order_by("nombre_departamento")
     if q:
         qs = qs.filter(nombre_departamento__icontains=q)
     return render(request, "organizacion/departamentos_lista.html", {"departamentos": qs, "q": q})
-=======
+
     q = (request.GET.get("q") or "").strip()
     estado = (request.GET.get("estado") or "").strip() 
 
@@ -112,7 +106,6 @@ def departamentos_lista(request):
 
     ctx = {"departamentos": qs, "q": q, "estado": estado}
     return render(request, "organizacion/departamentos_lista.html", ctx)
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
 @login_required
 @solo_admin
@@ -171,9 +164,8 @@ def departamento_toggle_estado(request, pk):
         else:
             messages.success(request, f"Departamento '{departamento.nombre_departamento}' bloqueado.")
     return redirect("organizacion:departamentos_lista")
-<<<<<<< HEAD
 
-
+#-----Camnbios barbara
 # ------------------- ASIGNACIÓN DE CUADRILLAS -------------------
 
 @login_required
@@ -232,5 +224,4 @@ def asignar_cuadrilla_view(request, pk):
     }
     
     return render(request, 'organizacion/asignar_cuadrilla.html', ctx)
-=======
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
+#-----------------------------------------------------------------

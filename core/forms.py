@@ -57,7 +57,7 @@ def validar_username_unico_ci(value: str, exclude_pk: int | None = None):
 
 class UsuarioCrearForm(forms.ModelForm):
     """
-    Formulario de creación de usuario con password y asignación de rol (grupo).
+    Formulario de creación de usuario con validaciones mejoradas
     """
     password1 = forms.CharField(
         label="Contraseña",
@@ -72,6 +72,20 @@ class UsuarioCrearForm(forms.ModelForm):
         required=True,
     )
     rol = forms.ChoiceField(choices=ROL_CHOICES, required=True, label="Rol (grupo)")
+#cambios cotta
+    first_name = forms.CharField(
+        label="Nombre",
+        max_length=150,
+        required=True, # Aseguramos que sea obligatorio
+        validators=[validar_solo_letras], # Aplica Regex
+    )
+    last_name = forms.CharField(
+        label="Apellido",
+        max_length=150,
+        required=True, # Aseguramos que sea obligatorio
+        validators=[validar_solo_letras], # Aplica Regex
+    )
+    #--------------------------------------------------------
 
     class Meta:
         model = User
@@ -237,7 +251,7 @@ class UsuarioEditarForm(forms.ModelForm):
         p1 = self.cleaned_data.get("password1")
         if p1:
             user.set_password(p1)
-
+#Cambios barbara 
         if commit:
             user.save()
 <<<<<<< HEAD
@@ -253,7 +267,9 @@ class UsuarioEditarForm(forms.ModelForm):
             user.groups.clear()
             group, _ = Group.objects.get_or_create(name=self.cleaned_data["rol"])
             user.groups.add(group)
-
+            return user #cambio barbara
+        
+'''
             # Mantener sincronizado el perfil
             profile, _ = Profile.objects.get_or_create(user=user)
             profile.group = group

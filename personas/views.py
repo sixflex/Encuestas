@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.auth import logout
 from registration.models import Profile
 from django.contrib import messages
@@ -9,6 +9,7 @@ from django.views.decorators.http import require_POST
 from .forms import UsuarioCrearForm, UsuarioEditarForm
 from .utils import solo_admin
 from core.models import Incidencia
+from registration.models import Profile
 
 @login_required
 def dashboard_admin(request):
@@ -22,9 +23,12 @@ def dashboard_territorial(request):
         'incidencias': incidencias
     })
 
+#----CAMBISO BARBARA
+#@login_required
+#def dashboard_jefe(request):
+ #   return render(request, "personas/dashboards/jefeCuadrilla.html")
 @login_required
 def dashboard_jefe(request):
-<<<<<<< HEAD
     """
     Dashboard para Jefe de Cuadrilla.
     Muestra las incidencias asignadas a su cuadrilla.
@@ -47,42 +51,40 @@ def dashboard_jefe(request):
     
     # Obtener las incidencias asignadas a las cuadrillas del usuario
     incidencias_pendientes = []
-    incidencias_en_proceso = []
+    incidencias_en_progreso = []
     incidencias_finalizadas = []
     
     if cuadrillas.exists():
         # Filtrar incidencias por las cuadrillas del usuario
         incidencias_pendientes = Incidencia.objects.filter(
             cuadrilla__in=cuadrillas,
-            estado='pendiente'
+            estado='Pendiente'
         ).order_by('-creadoEl')
         
-        incidencias_en_proceso = Incidencia.objects.filter(
+        incidencias_en_progreso = Incidencia.objects.filter(
             cuadrilla__in=cuadrillas,
-            estado='en_proceso'
+            estado='En progreso'
         ).order_by('-creadoEl')
         
         incidencias_finalizadas = Incidencia.objects.filter(
             cuadrilla__in=cuadrillas,
-            estado__in=['finalizada', 'validada', 'rechazada']
+            estado__in=['Finalizada', 'Validada', 'Rechazada']
         ).order_by('-actualizadoEl')[:10]  # Últimas 10 finalizadas
     
     return render(request, "personas/dashboards/jefeCuadrilla.html", {
         'cuadrillas': cuadrillas,
         'incidencias_pendientes': incidencias_pendientes,
-        'incidencias_en_proceso': incidencias_en_proceso,
+        'incidencias_en_progreso': incidencias_en_progreso,
         'incidencias_finalizadas': incidencias_finalizadas,
     })
-=======
-    return render(request, "personas/dashboards/jefeCuadrilla.html")
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
-
+#----------------------------------------------------------------------
 @login_required
 def dashboard_direccion(request):
     return render(request, "personas/dashboards/direccion.html")
-
-@login_required
-<<<<<<< HEAD
+#-----------CAMBIOS 
+#@login_required
+#def dashboard_departamento(request):
+ #   return render(request, "personas/dashboards/departamento.html")
 @login_required
 def dashboard_departamento(request):
     """
@@ -142,11 +144,65 @@ def dashboard_departamento(request):
     }
     
     return render(request, 'personas/dashboards/departamento.html', ctx)
-=======
 def dashboard_departamento(request):
-    return render(request, "personas/dashboards/departamento.html")
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
-
+    """
+    Dashboard para usuarios del grupo Departamento.
+    Muestra incidencias pendientes para asignar a cuadrillas.
+    """
+    from core.models import Incidencia, JefeCuadrilla, Departamento
+    from django.db.models import Q, Count
+    
+    roles = set(request.user.groups.values_list("name", flat=True))
+    
+    if not ("Departamento" in roles or request.user.is_superuser or "Administrador" in roles):
+        messages.error(request, "No tienes acceso a este dashboard")
+        return redirect("incidencias:incidencias_lista")
+    
+    # Obtener departamento del usuario
+    try:
+        departamento = Departamento.objects.get(encargado=request.user.profile)
+    except:
+        departamento = None
+    
+    # Incidencias del departamento
+    if departamento:
+        incidencias_pendientes = Incidencia.objects.filter(
+            departamento=departamento,
+            estado='Pendiente'
+        ).order_by('-creadoEl')
+        
+        incidencias_en_progreso = Incidencia.objects.filter(
+            departamento=departamento,
+            estado='En progreso'
+        ).order_by('-creadoEl')
+        
+        incidencias_finalizadas = Incidencia.objects.filter(
+            departamento=departamento,
+            estado='Finalizada'
+        ).order_by('-creadoEl')
+        
+        # Cuadrillas del departamento
+        cuadrillas = JefeCuadrilla.objects.filter(departamento=departamento)
+    else:
+        # Si es admin, ver todas
+        incidencias_pendientes = Incidencia.objects.filter(estado='Pendiente').order_by('-creadoEl')
+        incidencias_en_progreso = Incidencia.objects.filter(estado='En Progreso').order_by('-creadoEl')
+        incidencias_finalizadas = Incidencia.objects.filter(estado='Finalizada').order_by('-creadoEl')
+        cuadrillas = JefeCuadrilla.objects.all()
+    
+    ctx = {
+        'departamento': departamento,
+        'incidencias_pendientes': incidencias_pendientes,
+        'incidencias_en_progreso': incidencias_en_progreso,
+        'incidencias_finalizadas': incidencias_finalizadas,
+        'cuadrillas': cuadrillas,
+        'total_pendientes': incidencias_pendientes.count(),
+        'total_en_progreso': incidencias_en_progreso.count(),
+        'total_finalizadas': incidencias_finalizadas.count(),
+    }
+    
+    return render(request, 'personas/dashboards/departamento.html', ctx)
+#--------------------------------------------------------------------
 
 @login_required
 def check_profile(request):
@@ -158,11 +214,9 @@ def check_profile(request):
     # Si es superusuario, va directo al admin
     if user.is_superuser:
         return redirect("personas:dashboard_admin")
-<<<<<<< HEAD
-=======
+
     
     grupos = list(user.groups.values_list("name", flat=True))
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
     try:
         profile = Profile.objects.select_related('group').get(user=user)
@@ -183,7 +237,6 @@ def check_profile(request):
     print(f"Usuario: {user.username}, Rol: '{rol}'")
     
     # Redirección según el rol
-<<<<<<< HEAD
     if rol == "Administrador":
         return redirect("personas:dashboard_admin")
     elif rol == "Territorial":
@@ -193,7 +246,7 @@ def check_profile(request):
     elif rol == "Dirección":
         return redirect("personas:dashboard_direccion")
     elif rol == "Departamento":
-=======
+
     if "Administrador" in grupos:
         return redirect("personas:dashboard_admin")
     elif "Territorial" in grupos:
@@ -203,7 +256,6 @@ def check_profile(request):
     elif "Dirección"in grupos:
         return redirect("personas:dashboard_direccion")
     elif "Departamento"in grupos:
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
         return redirect("personas:dashboard_departamento")
     else:
         messages.error(request, f"Rol '{rol}' no reconocido. Contacta al administrador.")
@@ -215,7 +267,10 @@ def check_profile(request):
 @solo_admin
 def usuarios_lista(request):
     q = request.GET.get("q", "").strip()
+    rol_seleccionado = request.GET.get("rol", "").strip()
     qs = User.objects.all().order_by("id")
+    
+    #filtro por texto
     if q:
         qs = qs.filter(
             Q(username__icontains=q) |
@@ -223,7 +278,20 @@ def usuarios_lista(request):
             Q(last_name__icontains=q) |
             Q(email__icontains=q)
         )
-    return render(request, "personas/usuarios_lista.html", {"usuarios": qs, "q": q})
+    #filtro por rol
+    if rol_seleccionado:
+        qs = qs.filter(profile_group__name=rol_seleccionado)
+    
+    roles = Profile.objects.values_list('group__name', flat=True).distinct()
+
+    ctx = {
+        "usuarios": qs,
+        "q": q,
+        "roles": roles,
+        "rol_seleccionado": rol_seleccionado,
+    }
+
+    return render(request, "personas/usuarios_lista.html", ctx)
 
 @login_required
 @solo_admin
