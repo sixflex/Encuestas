@@ -1,9 +1,8 @@
 from django.contrib import admin
-<<<<<<< HEAD
 from .models import Departamento, JefeCuadrilla, Incidencia, Direccion, Multimedia
 
 # Register your models here.
-
+#Cambios de barbara
 @admin.register(Direccion)
 class DireccionAdmin(admin.ModelAdmin):
     list_display = ['id', 'nombre_direccion', 'estado', 'creadoEl']
@@ -68,8 +67,6 @@ class MultimediaAdmin(admin.ModelAdmin):
     list_filter = ['tipo', 'creadoEl']
     search_fields = ['nombre']
     raw_id_fields = ['incidencia']
-
-=======
+#------------------------------------------
 
 # Register your models here.
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87

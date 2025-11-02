@@ -10,24 +10,14 @@ urlpatterns = [
     path('dashboard/jefe/', views.dashboard_jefe, name='dashboard_jefeCuadrilla'),
     path('dashboard/direccion/', views.dashboard_direccion, name='dashboard_direccion'),
     path('dashboard/departamento/', views.dashboard_departamento, name='dashboard_departamento'),
-<<<<<<< HEAD
-=======
     #path('dashboard/incidencias/', views.dashboard_incidencias, name='dashboard_incidencias'),
 
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
     path("usuarios/", views.usuarios_lista, name="usuarios_lista"),
     path("usuarios/nuevo/", views.usuario_crear, name="usuario_crear"),
     path("usuarios/<int:pk>/", views.usuario_detalle, name="usuario_detalle"),
     path("usuarios/<int:pk>/editar/", views.usuario_editar, name="usuario_editar"),
     path("usuarios/<int:pk>/toggle-activo/", views.usuario_toggle_activo, name="usuario_toggle_activo"),
-<<<<<<< HEAD
-    
-    # Cerrar sesión
-    path("cerrar_sesion/", views.cerrar_sesion, name="cerrar_sesion"),
-]
-=======
     path("cerrar_sesion/", views.cerrar_sesion, name="cerrar_sesion"),
     
 ]
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87

@@ -13,7 +13,6 @@ from core.utils import solo_admin, admin_o_territorial
 
 
 @login_required
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 def lista_incidencias(request):
     user = request.user
     if user.groups.filter(name='Administrador').exists():
@@ -26,15 +25,10 @@ def lista_incidencias(request):
         {'incidencias': incidencias}
     )
 
-<<<<<<< HEAD
-@login_required
-@solo_admin
-=======
 # ---------------------------------
 # Validar incidencia
 # ---------------------------------
 @login_required
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 def validar_incidencia(request, pk):
     incidencia = get_object_or_404(Incidencia, pk=pk)
     incidencia.estado = 'Validada'
@@ -43,15 +37,10 @@ def validar_incidencia(request, pk):
     messages.success(request, f"Incidencia '{incidencia.titulo}' validada.")
     return redirect('territorial_app:incidencias_lista')
 
-<<<<<<< HEAD
-@login_required
-@solo_admin
-=======
 # ---------------------------------
 # Rechazar incidencia
 # ---------------------------------
 @login_required
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 def rechazar_incidencia(request, pk):
     incidencia = get_object_or_404(Incidencia, pk=pk)
     if request.method == 'POST':
@@ -82,16 +71,12 @@ def reasignar_incidencia(request, pk):
     is_admin = "Administrador" in grupos or user.is_superuser
     is_territorial = "Territorial" in grupos
     is_departamento = "Departamento" in grupos
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
     if request.method == 'POST':
         form = ReasignarIncidenciaForm(request.POST, instance=incidencia)
         if form.is_valid():
             incidencia_obj = form.save(commit=False)
-<<<<<<< HEAD
-=======
             # directamente asignar la cuadrilla seleccionada
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
             incidencia_obj.cuadrilla = form.cleaned_data['cuadrilla']
             incidencia_obj.save()
 
@@ -102,158 +87,6 @@ def reasignar_incidencia(request, pk):
             return redirect('territorial_app:incidencias_lista')
     else:
         form = ReasignarIncidenciaForm(instance=incidencia)
-<<<<<<< HEAD
-
-    return render(
-        request,
-        'territorial_app/reasignar_incidencia.html',
-        {'form': form, 'incidencia': incidencia}
-    )
-
-
-# ============================================
-# VISTAS DE ENCUESTAS (CRUD para Territorial)
-# ============================================
-
-@login_required
-@admin_o_territorial
-def encuestas_lista(request):
-    """
-    Lista todas las encuestas.
-    Territorial y Admin pueden verlas todas.
-    """
-    q = request.GET.get("q", "").strip()
-    estado = request.GET.get("estado")  # 'activo' | 'inactivo' | None
-    
-    qs = Encuesta.objects.all().select_related('departamento').order_by('-creadoEl')
-    
-    # Filtro por búsqueda de texto
-    if q:
-        qs = qs.filter(
-            Q(titulo__icontains=q) | 
-            Q(descripcion__icontains=q) |
-            Q(departamento__nombre_departamento__icontains=q)
-        )
-    
-    # Filtro por estado
-    if estado == 'activo':
-        qs = qs.filter(estado=True)
-    elif estado == 'inactivo':
-        qs = qs.filter(estado=False)
-    
-    ctx = {
-        "encuestas": qs,
-        "q": q,
-        "estado_seleccionado": estado,
-    }
-    return render(request, "territorial_app/encuestas_lista.html", ctx)
-
-
-@login_required
-@admin_o_territorial
-def encuesta_detalle(request, pk):
-    """
-    Muestra el detalle de una encuesta.
-    """
-    encuesta = get_object_or_404(Encuesta, pk=pk)
-    return render(request, "territorial_app/encuesta_detalle.html", {"encuesta": encuesta})
-
-
-@login_required
-@admin_o_territorial
-def encuesta_crear(request):
-    """
-    Crea una nueva encuesta.
-    Solo Territorial y Admin pueden crear.
-    """
-    if request.method == "POST":
-        form = EncuestaForm(request.POST)
-        if form.is_valid():
-            encuesta = form.save()
-            messages.success(request, f"Encuesta '{encuesta.titulo}' creada correctamente.")
-            return redirect("territorial_app:encuestas_lista")
-    else:
-        form = EncuestaForm(initial={'estado': True, 'prioridad': 'Normal'})
-    
-    return render(request, "territorial_app/encuesta_form.html", {
-        "form": form,
-        "modo": "crear"
-    })
-
-
-@login_required
-@admin_o_territorial
-def encuesta_editar(request, pk):
-    """
-    Edita una encuesta existente.
-    Según requerimientos: solo se puede editar si está bloqueada (inactiva).
-    """
-    encuesta = get_object_or_404(Encuesta, pk=pk)
-    
-    # Validación: no se puede editar una encuesta activa
-    if encuesta.estado and request.method == "POST":
-        messages.error(request, "No se puede editar una encuesta activa. Debes desactivarla primero.")
-        return redirect("territorial_app:encuesta_detalle", pk=pk)
-    
-    if request.method == "POST":
-        form = EncuestaForm(request.POST, instance=encuesta)
-        if form.is_valid():
-            encuesta = form.save()
-            messages.success(request, f"Encuesta '{encuesta.titulo}' actualizada correctamente.")
-            return redirect("territorial_app:encuestas_lista")
-    else:
-        form = EncuestaForm(instance=encuesta)
-    
-    return render(request, "territorial_app/encuesta_form.html", {
-        "form": form,
-        "modo": "editar",
-        "encuesta": encuesta
-    })
-
-
-@login_required
-@admin_o_territorial
-def encuesta_toggle_estado(request, pk):
-    """
-    Activa o desactiva (bloquea) una encuesta.
-    Según requerimientos: cambiar entre activa/bloqueada.
-    """
-    if request.method != "POST":
-        messages.error(request, "Método no permitido.")
-        return redirect("territorial_app:encuestas_lista")
-    
-    encuesta = get_object_or_404(Encuesta, pk=pk)
-    encuesta.estado = not encuesta.estado
-    encuesta.save(update_fields=['estado', 'actualizadoEl'])
-    
-    estado_texto = "activada" if encuesta.estado else "bloqueada"
-    messages.success(request, f"Encuesta '{encuesta.titulo}' {estado_texto} correctamente.")
-    
-    return redirect("territorial_app:encuestas_lista")
-
-
-@login_required
-@admin_o_territorial
-def encuesta_eliminar(request, pk):
-    """
-    Elimina una encuesta.
-    Opcional: podrías requerir que esté bloqueada para eliminarla.
-    """
-    encuesta = get_object_or_404(Encuesta, pk=pk)
-    
-    # Opcional: solo permitir eliminar si está bloqueada
-    if encuesta.estado:
-        messages.error(request, "No se puede eliminar una encuesta activa. Debes desactivarla primero.")
-        return redirect("territorial_app:encuesta_detalle", pk=pk)
-    
-    if request.method == "POST":
-        titulo = encuesta.titulo
-        encuesta.delete()
-        messages.success(request, f"Encuesta '{titulo}' eliminada correctamente.")
-        return redirect("territorial_app:encuestas_lista")
-    
-    return render(request, "territorial_app/encuesta_eliminar.html", {"encuesta": encuesta})
-=======
     ctx = {
         'form': form,
         'incidencia': incidencia,

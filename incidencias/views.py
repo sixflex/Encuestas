@@ -46,7 +46,6 @@ def _filtrar_por_rol(qs, user):
     Reglas:
       - Admin (is_superuser) o grupo 'Administrador' y 'Dirección' ven todo.
       - 'Departamento' ve todo.
-      - 'Jefe de Cuadrilla' -> solo incidencias de sus cuadrillas (pendiente y en_proceso).
       - 'Jefe de Cuadrilla' -> solo pendiente y en_proceso.
       - 'Territorial' -> solo pendiente.
       - Sin grupo -> solo incidencias asociadas a su email.
@@ -101,10 +100,6 @@ def _filtrar_por_rol(qs, user):
 def incidencias_lista(request):
     q = (request.GET.get("q") or "").strip()
     estado = request.GET.get("estado")  # 'pendiente' | 'en_proceso' | 'resuelto' | None
-    departamento_id = request.GET.get("departamento") #novo filtrasaon
-    qs = Incidencia.objects.all().order_by("-creadoEl")
-
-    # Filtro por string yiaa
     departamento_id = request.GET.get("departamento") #nuevo filtro
     tipo_id = request.GET.get("tipo")#nuevo
     tipos = TipoIncidencia.objects.all()#nuevo
@@ -139,7 +134,6 @@ def incidencias_lista(request):
     "validada": "info",
     "rechazada": "danger",
 }
-
 # ---Filtrar por rol del usuario ---
     user = request.user
     grupos = list(user.groups.values_list("name", flat=True))
@@ -162,7 +156,6 @@ def incidencias_lista(request):
         "q": q,
         "estado_seleccionado": estado,
         "departamentos": Departamento.objects.all(),
-        "estados_colores " : ESTADOS_COLORES,
         "departamento_seleccionado": departamento_id,
         "departamento_nombre": departamento_nombre,
         "estados_colores" : ESTADOS_COLORES,
@@ -174,6 +167,7 @@ def incidencias_lista(request):
         "tipos": tipos,
         "tipo_seleccionado": tipo_id, 
     }
+
     return render(request, "incidencias/incidencias_lista.html", ctx)
 
 @login_required
@@ -189,7 +183,6 @@ def incidencia_detalle(request, pk):
 
 # ----------------- CRUD (solo administrador) -----------------
 @login_required
-@solo_admin
 def incidencia_crear(request):
     if request.method == "POST":
         form = IncidenciaForm(request.POST)
@@ -205,93 +198,6 @@ def incidencia_crear(request):
 @login_required
 def incidencia_editar(request, pk):
     incidencia = get_object_or_404(Incidencia, pk=pk)
-    estado_anterior = incidencia.estado
-    motivo_rechazo = request.POST.get('motivo_rechazo')
-    roles = set(request.user.groups.values_list("name", flat=True))
-
-    if request.method == "POST":
-        form = IncidenciaForm(request.POST, instance=incidencia)
-        if form.is_valid():
-            nuevo_estado = form.cleaned_data['estado']
-            
-            # Validar permisos según el rol y el cambio de estado
-            puede_cambiar = False
-            
-            if request.user.is_superuser or 'Administrador' in roles:
-                puede_cambiar = True
-            elif 'Territorial' in roles:
-                # Territorial solo puede crear (pendiente) y validar/rechazar finalizadas
-                if estado_anterior == 'finalizada' and nuevo_estado in ['validada', 'rechazada']:
-                    puede_cambiar = True
-            elif 'Departamento' in roles:
-                # Departamento solo puede poner en proceso las pendientes
-                if estado_anterior == 'pendiente' and nuevo_estado == 'en_proceso':
-                    puede_cambiar = True
-            elif 'Jefe de Cuadrilla' in roles:
-                # Cuadrilla solo puede finalizar las que están en proceso
-                if estado_anterior == 'en_proceso' and nuevo_estado == 'finalizada':
-                    puede_cambiar = True
-                    
-            if not puede_cambiar:
-                messages.error(request, "No tienes permisos para realizar este cambio de estado.")
-                return redirect("incidencias:incidencias_lista")
-            
-            incidencia = form.save(commit=False)
-            
-            # Si se está rechazando la incidencia, guardar el motivo
-            if incidencia.estado == 'rechazada' and motivo_rechazo:
-                incidencia.motivo_rechazo = motivo_rechazo
-            
-            incidencia.save()
-
-            if incidencia.estado != estado_anterior:
-                departamento = incidencia.departamento
-                if departamento and departamento.encargado and departamento.encargado.user.email:
-                    destinatario = departamento.encargado.user.email
-                else:
-                    destinatario = "soporte@municipalidad.local"
-
-                remitente = (
-                    request.user.email
-                    if request.user.email
-                    else "no-reply@municipalidad.local"
-                )
-
-                asunto = f"[Notificación] Estado actualizado de incidencia: {incidencia.titulo}"
-                cuerpo = (
-                    f"Estimado/a {departamento.encargado},\n\n"
-                    f"El usuario {request.user.get_full_name() or request.user.username} "
-                    f"ha cambiado el estado de la incidencia '{incidencia.titulo}'.\n\n"
-                    f"Estado anterior: {estado_anterior}\n"
-                    f"Nuevo estado: {incidencia.estado}\n\n"
-                    f"Departamento: {departamento.nombre_departamento if departamento else 'No asignado'}\n"
-                    f"Descripción: {incidencia.descripcion}\n"
-                    f"Fecha del cambio: {incidencia.actualizadoEl.strftime('%d-%m-%Y %H:%M')}\n\n"
-                    "Saludos cordiales,\n"
-                    "Sistema Municipal de Incidencias"
-                )
-
-                send_mail(
-                    asunto,
-                    cuerpo,
-                    remitente,
-                    [destinatario],
-                    fail_silently=False,
-                )
-
-                messages.success(
-                    request,
-                    f"Incidencia actualizada. Se notificó a {departamento.encargado} ({destinatario})."
-                )
-            else:
-                messages.success(request, "Incidencia actualizada correctamente.")
-
-            return redirect("incidencias:incidencias_lista")
-    else:
-        form = IncidenciaForm(instance=incidencia)
-
-    return render(request, "incidencias/incidencia_form.html", {"form": form})
-
     if request.method == "POST":
         form = IncidenciaForm(request.POST, instance=incidencia)
         if form.is_valid():

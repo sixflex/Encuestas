@@ -2,12 +2,11 @@ from django import forms
 from django.core.exceptions import ValidationError
 from core.models import Direccion, Departamento, JefeCuadrilla
 from registration.models import Profile
-from django.contrib.auth.models import Group
+
 
 # ==========================
 # ======== DIRECCIÓN =======
 # ==========================
-
 class DireccionForm(forms.ModelForm):
     class Meta:
         model = Direccion
@@ -20,10 +19,10 @@ class DireccionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Mostrar solo perfiles cuyo usuario pertenece al grupo "Dirección" y está activo
-        self.fields['encargado'].queryset = Profile.objects.filter(
-            user__groups__name__iexact="Dirección",
-            user__is_active=True
+        # Mostrar solo perfiles activos del grupo "Dirección"
+        self.fields["encargado"].queryset = Profile.objects.filter(
+            user__is_active=True,
+            user__groups__name__in=["Dirección", "Administrador"]
         )
 
     def clean_nombre_direccion(self):
@@ -34,10 +33,10 @@ class DireccionForm(forms.ModelForm):
             raise ValidationError("Ya existe una dirección con ese nombre.")
         return nombre
 
+
 # ==========================
 # ======= DEPARTAMENTO =====
 # ==========================
-
 class DepartamentoForm(forms.ModelForm):
     class Meta:
         model = Departamento
@@ -51,13 +50,15 @@ class DepartamentoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Mostrar solo perfiles cuyo usuario pertenece al grupo "Departamento" y está activo
-        self.fields['encargado'].queryset = Profile.objects.filter(
-            user__groups__name__iexact="Departamento",
-            user__is_active=True
-        )
-        # Mostrar solo direcciones activas
-        self.fields['direccion'].queryset = Direccion.objects.filter(estado=True)
+
+        # 🔹 Mostrar perfiles de usuarios activos que pertenezcan a los grupos permitidos
+        self.fields["encargado"].queryset = Profile.objects.filter(
+            user__is_active=True,
+            user__groups__name__in=["Departamento", "Dirección", "Administrador"]
+        ).distinct()
+
+        # 🔹 Mostrar solo direcciones activas
+        self.fields["direccion"].queryset = Direccion.objects.filter(estado=True)
 
     def clean_nombre_departamento(self):
         nombre = self.cleaned_data.get("nombre_departamento", "").strip()
@@ -66,11 +67,11 @@ class DepartamentoForm(forms.ModelForm):
         if Departamento.objects.filter(nombre_departamento__iexact=nombre).exclude(pk=self.instance.pk).exists():
             raise ValidationError("Ya existe un departamento con ese nombre.")
         return nombre
-#-----------cambios barbara
+
+
 # ==========================
 # ====== CUADRILLA =========
 # ==========================
-
 class JefeCuadrillaForm(forms.ModelForm):
     class Meta:
         model = JefeCuadrilla
@@ -90,19 +91,18 @@ class JefeCuadrillaForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Mostrar solo perfiles de usuarios del grupo "Jefe de Cuadrilla" o "Cuadrilla"
+        # 🔹 Mostrar solo perfiles activos con grupo "Jefe de Cuadrilla" o "Cuadrilla"
         cuadrilla_profiles = Profile.objects.filter(
-            user__groups__name__in=["Jefe de Cuadrilla", "Cuadrilla"],
-            user__is_active=True
-        )
-        self.fields['usuario'].queryset = cuadrilla_profiles
-        self.fields['encargado'].queryset = cuadrilla_profiles
-        
-        # Mostrar solo departamentos activos
-        self.fields['departamento'].queryset = Departamento.objects.filter(estado=True)
-        
-        # Hacer departamento requerido
-        self.fields['departamento'].required = True
+            user__is_active=True,
+            user__groups__name__in=["Jefe de Cuadrilla", "Cuadrilla"]
+        ).distinct()
+
+        self.fields["usuario"].queryset = cuadrilla_profiles
+        self.fields["encargado"].queryset = cuadrilla_profiles
+
+        # 🔹 Mostrar solo departamentos activos
+        self.fields["departamento"].queryset = Departamento.objects.filter(estado=True)
+        self.fields["departamento"].required = True
 
     def clean_nombre_cuadrilla(self):
         nombre = self.cleaned_data.get("nombre_cuadrilla", "").strip()
@@ -111,4 +111,3 @@ class JefeCuadrillaForm(forms.ModelForm):
         if JefeCuadrilla.objects.filter(nombre_cuadrilla__iexact=nombre).exclude(pk=self.instance.pk).exists():
             raise ValidationError("Ya existe una cuadrilla con ese nombre.")
         return nombre
-#-----------------------------------------------------------------------------------------------

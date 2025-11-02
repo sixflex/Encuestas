@@ -10,20 +10,6 @@
 <body>
   <nav>
     {% if user.is_authenticated %}
-      <button onclick="history.back()">← Volver</button>
-      <a href="/">🏠 Inicio</a> |
-      Hola, {{ user.username }} |
-      <form action="{% url 'logout' %}" method="post" style="display:inline;">
-        {% csrf_token %}
-        <button type="submit">Salir</button>
-      </form>
-      {% if user.is_superuser or user|has_group:"Administrador" %}
-        | <a href="{% url 'personas:usuarios_lista' %}">Usuarios</a>
-        | <a href="{% url 'organizacion:departamentos_lista' %}">Departamentos</a>
-        | <a href="{% url 'organizacion:direcciones_lista' %}">Direcciones</a>
-      {% endif %}
-      {% if user|has_group:"Departamento" %}
-        | <a href="{% url 'personas:dashboard_departamento' %}">Dashboard Departamento</a>
       Hola, {{ user.username }} |
       <a href="{% url 'personas:cerrar_sesion' %}">Salir</a>
       {% if user.is_superuser or user|has_group:"Administrador" %}
@@ -45,6 +31,7 @@
 
   {% block content %}
   {% endblock %}
-
+</body>
+</html>
 
 

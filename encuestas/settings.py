@@ -61,21 +61,16 @@ WSGI_APPLICATION = "encuestas.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-<<<<<<< HEAD
-        "NAME": ("muni"),
-        "USER": ("postgres"),
-        "PASSWORD": ("root"),
-=======
-        "NAME": ("muni3"),
-        "USER": ("postgres"),
-        "PASSWORD": ("3581321"),
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
+        "NAME": ("Encuestas"),
+        "USER": ("administrador"),
+        "PASSWORD": ("hoseok15"),
         "HOST": ("localhost"),
         "PORT": ("5432"),
         "CONN_MAX_AGE": 60,
         "CONN_HEALTH_CHECKS": True,
     }
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -99,26 +94,6 @@ LOGIN_REDIRECT_URL = "/personas/check_profile/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 
-<<<<<<< HEAD
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_HOST = "smtp.gmail.com"
-# EMAIL_USE_TLS = True
-# EMAIL_PORT = 587
-# EMAIL_HOST_USER = ("EMAIL_HOST_USER", "tu-correo@gmail.com")
-# EMAIL_HOST_PASSWORD = ("EMAIL_HOST_PASSWORD", "tu-password")
-# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "Sistema Municipal <no-reply@municipalidad.local>"
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_HOST = "smtp.gmail.com"
-# EMAIL_USE_TLS = True
-# EMAIL_PORT = 587
-# EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-# EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-=======
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 DEFAULT_FROM_EMAIL = "Sistema Municipal <no-reply@municipalidad.local>"#cambio barbara
 
@@ -128,4 +103,3 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = ("EMAIL_HOST_USER", "tu-correo@gmail.com")
 EMAIL_HOST_PASSWORD = ("EMAIL_HOST_PASSWORD", "tu-password")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87

@@ -1,9 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-<<<<<<< HEAD
-{% load static %}
-=======
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 <div class="container mt-4">
   <h2>{% if form.instance.pk %}Editar{% else %}Crear{% endif %} Incidencia</h2>
 
@@ -28,47 +24,6 @@
               {% endif %}
           </div>
 
-<<<<<<< HEAD
-          <!-- Cuadrilla -->
-          <div class="col-md-6">
-              <label for="{{ form.cuadrilla.id_for_label }}" class="form-label">{{ form.cuadrilla.label }}</label>
-              {{ form.cuadrilla }}
-              {% if form.cuadrilla.errors %}<div class="text-danger">{{ form.cuadrilla.errors }}</div>{% endif %}
-          </div>
-
-          <!-- Descripción -->
-        <div class="col-12">
-            <label for="{{ form.descripcion.id_for_label }}" class="form-label">{{ form.descripcion.label }}</label>
-            {{ form.descripcion }}
-            {% if form.descripcion.errors %}<div class="text-danger">{{ form.descripcion.errors }}</div>{% endif %}
-        </div>
-
-        <!-- Datos del vecino -->
-        <div class="col-md-4">
-            <label for="{{ form.nombre_vecino.id_for_label }}" class="form-label">{{ form.nombre_vecino.label }}</label>
-            {{ form.nombre_vecino }}
-            {% if form.nombre_vecino.errors %}
-                <div class="text-danger">{{ form.nombre_vecino.errors }}</div>
-            {% endif %}
-        </div>
-
-        <div class="col-md-4">
-            <label for="{{ form.correo_vecino.id_for_label }}" class="form-label">{{ form.correo_vecino.label }}</label>
-            {{ form.correo_vecino }}
-            {% if form.correo_vecino.errors %}
-                <div class="text-danger">{{ form.correo_vecino.errors }}</div>
-            {% endif %}
-        </div>
-
-        <div class="col-md-4">
-            <label for="{{ form.telefono_vecino.id_for_label }}" class="form-label">{{ form.telefono_vecino.label }}</label>
-            {{ form.telefono_vecino }}
-            {% if form.telefono_vecino.errors %}
-                <div class="text-danger">{{ form.telefono_vecino.errors }}</div>
-            {% endif %}
-        </div>
-
-=======
           <!-- Descripción -->
           <div class="col-12">
               <label for="{{ form.descripcion.id_for_label }}" class="form-label">{{ form.descripcion.label }}</label>
@@ -77,7 +32,6 @@
               <div class="text-danger">{{ form.descripcion.errors }}</div>
               {% endif %}
           </div>
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 
           <!-- CAMBIOS BARBARA-->
           <!-- Cuadrilla -->
@@ -173,41 +127,6 @@
       </div>
   </form>
 </div>
-<<<<<<< HEAD
-
-{% endblock %}
-
-{% block extrajs %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const departamentoSelect = document.getElementById('{{ form.departamento.id_for_label }}');
-    const cuadrillaSelect = document.getElementById('{{ form.cuadrilla.id_for_label }}');
-
-    departamentoSelect.addEventListener('change', function() {
-        const departamentoId = this.value;
-        
-        // Limpiar el select de cuadrillas
-        cuadrillaSelect.innerHTML = '<option value="">---------</option>';
-        
-        if (departamentoId) {
-            // Hacer la petición AJAX para obtener las cuadrillas
-            fetch(`/incidencias/api/cuadrillas-por-departamento/${departamentoId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    data.forEach(cuadrilla => {
-                        const option = document.createElement('option');
-                        option.value = cuadrilla.id;
-                        option.textContent = cuadrilla.nombre_cuadrilla;
-                        cuadrillaSelect.appendChild(option);
-                    });
-                })
-                .catch(error => console.error('Error:', error));
-        }
-    });
-});
-</script>
-=======
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
 {% endblock %}
 <!--cambios barbara-->
 {% block extrajs %}

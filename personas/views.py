@@ -110,64 +110,6 @@ def dashboard_departamento(request):
     if departamento:
         incidencias_pendientes = Incidencia.objects.filter(
             departamento=departamento,
-            estado='pendiente'
-        ).order_by('-creadoEl')
-        
-        incidencias_en_proceso = Incidencia.objects.filter(
-            departamento=departamento,
-            estado='en_proceso'
-        ).order_by('-creadoEl')
-        
-        incidencias_finalizadas = Incidencia.objects.filter(
-            departamento=departamento,
-            estado='finalizada'
-        ).order_by('-creadoEl')
-        
-        # Cuadrillas del departamento
-        cuadrillas = JefeCuadrilla.objects.filter(departamento=departamento)
-    else:
-        # Si es admin, ver todas
-        incidencias_pendientes = Incidencia.objects.filter(estado='pendiente').order_by('-creadoEl')
-        incidencias_en_proceso = Incidencia.objects.filter(estado='en_proceso').order_by('-creadoEl')
-        incidencias_finalizadas = Incidencia.objects.filter(estado='finalizada').order_by('-creadoEl')
-        cuadrillas = JefeCuadrilla.objects.all()
-    
-    ctx = {
-        'departamento': departamento,
-        'incidencias_pendientes': incidencias_pendientes,
-        'incidencias_en_proceso': incidencias_en_proceso,
-        'incidencias_finalizadas': incidencias_finalizadas,
-        'cuadrillas': cuadrillas,
-        'total_pendientes': incidencias_pendientes.count(),
-        'total_en_proceso': incidencias_en_proceso.count(),
-        'total_finalizadas': incidencias_finalizadas.count(),
-    }
-    
-    return render(request, 'personas/dashboards/departamento.html', ctx)
-def dashboard_departamento(request):
-    """
-    Dashboard para usuarios del grupo Departamento.
-    Muestra incidencias pendientes para asignar a cuadrillas.
-    """
-    from core.models import Incidencia, JefeCuadrilla, Departamento
-    from django.db.models import Q, Count
-    
-    roles = set(request.user.groups.values_list("name", flat=True))
-    
-    if not ("Departamento" in roles or request.user.is_superuser or "Administrador" in roles):
-        messages.error(request, "No tienes acceso a este dashboard")
-        return redirect("incidencias:incidencias_lista")
-    
-    # Obtener departamento del usuario
-    try:
-        departamento = Departamento.objects.get(encargado=request.user.profile)
-    except:
-        departamento = None
-    
-    # Incidencias del departamento
-    if departamento:
-        incidencias_pendientes = Incidencia.objects.filter(
-            departamento=departamento,
             estado='Pendiente'
         ).order_by('-creadoEl')
         
@@ -214,7 +156,6 @@ def check_profile(request):
     # Si es superusuario, va directo al admin
     if user.is_superuser:
         return redirect("personas:dashboard_admin")
-
     
     grupos = list(user.groups.values_list("name", flat=True))
 
@@ -237,16 +178,6 @@ def check_profile(request):
     print(f"Usuario: {user.username}, Rol: '{rol}'")
     
     # Redirección según el rol
-    if rol == "Administrador":
-        return redirect("personas:dashboard_admin")
-    elif rol == "Territorial":
-        return redirect("personas:dashboard_territorial")
-    elif rol == "Jefe de Cuadrilla":
-        return redirect("personas:dashboard_jefeCuadrilla")
-    elif rol == "Dirección":
-        return redirect("personas:dashboard_direccion")
-    elif rol == "Departamento":
-
     if "Administrador" in grupos:
         return redirect("personas:dashboard_admin")
     elif "Territorial" in grupos:

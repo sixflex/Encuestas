@@ -95,25 +95,6 @@ class IncidenciaForm(forms.ModelForm):
 # cambios cotta
     '''
     def clean_estado(self):
-<<<<<<< HEAD
-        nuevo_estado = self.cleaned_data.get("estado")
-        if not nuevo_estado:
-            return "pendiente"
-            
-        if not self.instance.pk:
-            if nuevo_estado != 'pendiente':
-                raise ValidationError("Una nueva incidencia debe estar en estado pendiente")
-            return nuevo_estado
-            
-        estado_actual = self.instance.estado
-        if nuevo_estado not in self.TRANSICIONES_PERMITIDAS.get(estado_actual, []):
-            raise ValidationError(
-                f"No se puede cambiar el estado de '{estado_actual}' a '{nuevo_estado}'. "
-                f"Las transiciones permitidas son: {', '.join(self.TRANSICIONES_PERMITIDAS.get(estado_actual, []))}"
-            )
-        
-        return nuevo_estado
-=======
         estado = self.cleaned_data.get("estado")
         if not estado:
             return "pendiente"
@@ -214,45 +195,3 @@ class SubirEvidenciaForm(forms.Form):
 
 #-----------------------------------------------
 
-class SubirEvidenciaForm(forms.Form):
-    """
-    Formulario para subir evidencia multimedia de una incidencia.
-    La evidencia se asociará al modelo Multimedia relacionado con la incidencia.
-    """
-    archivo = forms.FileField(
-        label="Archivo de evidencia",
-        required=True,
-        widget=forms.FileInput(attrs={
-            'class': 'form-control',
-            'accept': 'image/*,video/*,application/pdf'
-        }),
-        help_text="Formatos permitidos: imágenes, videos, PDF. Tamaño máximo: 10MB"
-    )
-    
-    nombre = forms.CharField(
-        max_length=100,
-        label="Nombre de la evidencia",
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Ej: Foto del problema resuelto'
-        })
-    )
-    
-    def clean_archivo(self):
-        archivo = self.cleaned_data.get('archivo')
-        if archivo:
-            # Validar tamaño del archivo (10MB máximo)
-            if archivo.size > 10 * 1024 * 1024:
-                raise ValidationError("El archivo no puede superar los 10MB")
-            
-            # Validar tipo de archivo
-            tipo_permitido = [
-                'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-                'video/mp4', 'video/mpeg', 'video/quicktime',
-                'application/pdf'
-            ]
-            if archivo.content_type not in tipo_permitido:
-                raise ValidationError("Tipo de archivo no permitido")
-        
-        return archivo

@@ -17,11 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
-<<<<<<< HEAD
-from django.conf import settings
-from django.conf.urls.static import static
-=======
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
+from django.conf import settings #cambio barbara
+from django.conf.urls.static import static #cambio barbara
 
 urlpatterns = [
     # Raíz: redirige al resolvedor de perfiles (decide dashboard por rol)
@@ -38,11 +35,7 @@ urlpatterns = [
     path("core/", include(("core.urls", "core"), namespace="core")),
     path("personas/", include(("personas.urls", "personas"), namespace="personas")),
     path("organizacion/", include(("organizacion.urls", "organizacion"), namespace="organizacion")),
-<<<<<<< HEAD
-    path("incidencias/", include(("incidencias.urls", "incidencias"), namespace="incidencias")),
-=======
     path("incidencias/", include (("incidencias.urls", "incidencias"), namespace = "incidencias" )),
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
     path("territorial/", include(("territorial_app.urls", "territorial_app"), namespace="territorial_app")),
 
     # Si tienes vistas extra en tu app registration (perfil, signup opcional, etc.)
@@ -50,12 +43,9 @@ urlpatterns = [
 
     # Admin de Django
     path("admin/", admin.site.urls),
-<<<<<<< HEAD
 ]
-
+#cambios barbara
 # Servir archivos media en desarrollo
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-=======
-]
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
+#-------------------------------------------------------

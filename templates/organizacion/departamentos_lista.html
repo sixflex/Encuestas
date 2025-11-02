@@ -4,18 +4,7 @@
 
 <form method="get" style="margin-bottom: 10px;">
   <input type="text" name="q" value="{{ q }}" placeholder="Buscar departamento">
-<<<<<<< HEAD
   <button type="submit">Buscar</button>
-=======
-
-  <select name="estado">
-    <option value="">-- Todos --</option>
-    <option value="activo"   {% if estado == "activo" %}selected{% endif %}>Activos</option>
-    <option value="inactivo" {% if estado == "inactivo" %}selected{% endif %}>Inactivos</option>
-  </select>
-
-  <button type="submit">Filtrar</button>
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
   <a href="{% url 'organizacion:departamento_crear' %}">+ Nuevo</a>
 </form>
 
@@ -36,7 +25,6 @@
     <tr>
       <td>{{ d.id }}</td>
       <td>{{ d.nombre_departamento }}</td>
-<<<<<<< HEAD
       <td>
         {% if d.direccion %}
           {{ d.direccion.nombre_direccion }}
@@ -60,13 +48,6 @@
       </td>
       <td>
         <a href="{% url 'organizacion:departamento_detalle' d.id %}">Ver</a>
-=======
-      <td>{% if d.direccion %}{{ d.direccion.nombre_direccion }}{% else %}-{% endif %}</td>
-      <td>{% if d.encargado %}{{ d.encargado.user.get_full_name|default:d.encargado.user.username }}{% else %}-{% endif %}</td>
-      <td>{% if d.estado %}Activo{% else %}Bloqueado{% endif %}</td>
-      <td>
-        <a href="{% url 'organizacion:departamento_detalle' d.id %}">Ver</a> |
->>>>>>> 57b9c8f85e4d82613d934e94c986dca7655e2f87
         <a href="{% url 'organizacion:departamento_editar' d.id %}">Editar</a> |
         <a href="{% url 'organizacion:departamento_eliminar' d.id %}">Eliminar</a>
       </td>
