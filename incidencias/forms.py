@@ -1,6 +1,6 @@
 #Incidencias/forms.py -> modificaciones cotta
 from django import forms
-from core.models import Incidencia, Departamento, JefeCuadrilla
+from core.models import Incidencia, Departamento, JefeCuadrilla, Encuesta
 from django.core.exceptions import ValidationError
 
 class IncidenciaForm(forms.ModelForm):
@@ -31,18 +31,25 @@ class IncidenciaForm(forms.ModelForm):
         required=True,
         label="Prioridad"
     )
+    encuesta = forms.ModelChoiceField(
+        queryset=Encuesta.objects.filter(estado=True),
+        required=False,  # si quieres que no sea obligatorio
+        label="Encuesta asociada",
+        widget=forms.Select(attrs={"class": "form-select"})
+    )
 
     class Meta:
         model = Incidencia
         fields = [
             "titulo", "descripcion", "estado", "prioridad", "fecha_cierre",
             "latitud", "longitud", "departamento","nombre_vecino","correo_vecino","telefono_vecino", #cambios barbara 
-            "cuadrilla",
+            "cuadrilla", "encuesta",
         ]
         widgets = {
             "titulo": forms.TextInput(attrs={"class": "form-control", "placeholder": "Título"}),
             "descripcion": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
             "fecha_cierre": forms.DateTimeInput(attrs={"type": "datetime-local", "class": "form-control"}),
+            "fecha_cierre": forms.DateTimeInput(format="%Y-%m-%dT%H:%M", attrs={"type": "datetime-local", "class": "form-control"}), #cambio bernardo
             "latitud": forms.NumberInput(attrs={"class": "form-control"}),
             "longitud": forms.NumberInput(attrs={"class": "form-control"}),
             "departamento": forms.Select(attrs={"class": "form-select"}),
@@ -50,6 +57,7 @@ class IncidenciaForm(forms.ModelForm):
             "correo_vecino": forms.EmailInput(attrs={"class": "form-control", "placeholder": "Correo del vecino"}),
             "telefono_vecino": forms.TextInput(attrs={"class": "form-control", "placeholder": "Teléfono del vecino"}),
             "cuadrilla": forms.Select(attrs={"class": "form-select"}),
+            "encuesta": forms.Select(attrs={"class": "form-select"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -60,6 +68,7 @@ class IncidenciaForm(forms.ModelForm):
         self.fields['departamento'].required = True
         self.fields['correo_vecino'].required = True
         self.fields['cuadrilla'].required = False
+        self.fields['encuesta'].queryset = Encuesta.objects.filter(estado=True)
         #cambios barbara
         # Filtrar cuadrillas según el departamento
         if self.instance and self.instance.pk and self.instance.departamento:
@@ -82,6 +91,7 @@ class IncidenciaForm(forms.ModelForm):
             # establecer valores iniciales
             self.fields['estado'].initial = 'Pendiente'
             self.fields['prioridad'].initial = 'media'
+            self.fields.pop('estado', None)  #cambio bernardo
 
     
     def clean_titulo(self):

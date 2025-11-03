@@ -68,6 +68,7 @@
       <tr>
         <th>ID</th>
         <th>Título</th>
+        <th>Encuesta</th>
         <th>Estado</th>
         <th>Prioridad</th>
         <th>Departamento</th>
@@ -81,6 +82,13 @@
         <tr>
           <td>{{ incidencia.id }}</td>
           <td>{{ incidencia.titulo }}</td>
+          <td>
+          {% if incidencia.encuesta %}
+            {{ incidencia.encuesta.titulo }}
+          {% else %}
+            Sin encuesta
+          {% endif %}
+        </td>
           <td>
             {% if incidencia.estado == 'pendiente' %}
               <span class="badge bg-secondary">Pendiente</span>

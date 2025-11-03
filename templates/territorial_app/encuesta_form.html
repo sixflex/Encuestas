@@ -98,6 +98,18 @@
         {% endif %}
       </div>
 
+      <!-- Tipo de Incidencia -->
+      <div style="margin-bottom: 15px;">
+        <label for="{{ form.tipo_incidencia.id_for_label }}">{{ form.tipo_incidencia.label }}:</label>
+        {{ form.tipo_incidencia }}
+        {% if form.tipo_incidencia.errors %}
+          <div style="color: red;">{{ form.tipo_incidencia.errors }}</div>
+        {% endif %}
+        {% if form.tipo_incidencia.help_text %}
+          <small>{{ form.tipo_incidencia.help_text }}</small>
+        {% endif %}
+      </div>
+
       <!-- Estado (Activa) -->
       <div style="margin-bottom: 15px;">
         {{ form.estado }}

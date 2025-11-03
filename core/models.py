@@ -43,6 +43,7 @@ class Encuesta(models.Model):
     actualizadoEl = models.DateTimeField(auto_now=True)
     prioridad = models.CharField(max_length=50)
     departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE)
+    tipo_incidencia = models.ForeignKey('TipoIncidencia', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.titulo
@@ -53,7 +54,6 @@ class PreguntaEncuesta(models.Model):
     descripcion = models.TextField()
     tipo = models.CharField(max_length=50)
     encuesta = models.ForeignKey(Encuesta, on_delete=models.CASCADE)
-
     def __str__(self):
         return self.texto_pregunta
 

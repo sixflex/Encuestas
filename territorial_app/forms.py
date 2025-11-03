@@ -1,5 +1,5 @@
 from django import forms
-from core.models import Incidencia, JefeCuadrilla, Departamento, Encuesta
+from core.models import Incidencia, JefeCuadrilla, Departamento, Encuesta, TipoIncidencia
 from registration.models import Profile
 
 class RechazarIncidenciaForm(forms.Form):
@@ -56,10 +56,17 @@ class EncuestaForm(forms.ModelForm):
         label="Prioridad",
         widget=forms.Select()
     )
+    #cambios bernardo
+    tipo_incidencia = forms.ModelChoiceField(
+        queryset=TipoIncidencia.objects.all(),
+        required=True,
+        label="Tipo de incidencia",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
 
     class Meta:
         model = Encuesta
-        fields = ['titulo', 'descripcion', 'ubicacion', 'prioridad', 'departamento', 'estado']
+        fields = ['titulo', 'descripcion', 'ubicacion', 'prioridad', 'departamento','tipo_incidencia', 'estado']
         widgets = {
             'titulo': forms.TextInput(attrs={
                 'placeholder': 'Título de la encuesta',
