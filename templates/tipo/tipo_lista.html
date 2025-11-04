@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Tipos de Incidencia{% endblock %}
+
+{% block content %}
+<h1>Tipos de Incidencia</h1>
+
+<div class="mb-3"><a href="{% url 'incidencias:tipo_crear' %}" class="btn btn-success">➕ Nuevo Tipo</a>
+  
+</div>
+
+<p style="margin:10px 0; color:#555;">
+  Tip: Para <strong>crear o editar las Preguntas default</strong> de un tipo, usa el botón
+  <em>“Gestionar preguntas default”</em> en la fila correspondiente (te llevará al formulario con el formset).
+</p>
+
+<table class="table table-striped" style="width:100%;">
+  <thead>
+    <tr>
+      <th style="width:60px;">ID</th>
+      <th>Nombre Problema</th>
+      <th>Descripción</th>
+      <th style="width:120px;">Gravedad</th>
+      <th style="width:160px;">Preguntas default</th>
+      <th style="width:340px;">Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for tipo in tipos %}
+    <tr>
+      <td>{{ tipo.id }}</td>
+      <td>{{ tipo.nombre_problema }}</td>
+      <td>{{ tipo.descripcion }}</td>
+      <td>{{ tipo.get_tipo_gravedad_display }}</td>
+
+      {# Cuenta de preguntas default usando el related_name='preguntas_default' #}
+      <td>
+        {% with cant=tipo.preguntas_default.count %}
+          {% if cant > 0 %}
+            <span class="badge bg-success" style="padding:4px 8px;">{{ cant }} definidas</span>
+          {% else %}
+            <span class="badge bg-warning" style="padding:4px 8px;">0 definidas</span>
+          {% endif %}
+        {% endwith %}
+      </td>
+
+      <td style="display:flex; gap:8px; flex-wrap:wrap;">
+        <a href="{% url 'incidencias:tipo_editar' tipo.id %}" class="btn btn-sm btn-secondary">
+          ✏️ Editar tipo
+        </a>
+        
+        </a>
+        <a href="{% url 'incidencias:tipo_eliminar' tipo.id %}" class="btn btn-sm btn-danger">
+          🗑️ Eliminar
+        </a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="6">No hay tipos de incidencia.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

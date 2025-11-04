@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}{{ form.instance.pk|yesno:'Editar,Nueva' }} Tipo de Incidencia{% endblock %}
+
+{% block content %}
+<h2>{{ form.instance.pk|yesno:'Editar,Nueva' }} Tipo de Incidencia</h2>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  {{ form.as_p }}
+
+  <hr>
+  <h3>Preguntas default (mínimo 2)</h3>
+
+  {{ formset.management_form }}
+  <table border="1" cellpadding="6" cellspacing="0" style="width:100%;max-width:900px">
+    <thead>
+      <tr>
+        <th>Pregunta</th>
+        <th>Tipo</th>
+        <th>Descripción</th>
+        <th>Orden</th>
+        <th>Eliminar</th>
+      </tr>
+    </thead>
+    <tbody id="pregs-questions">
+      {% for f in formset %}
+      <tr class="form-row">
+        <td>{{ f.texto_pregunta }}</td>
+        <td>{{ f.tipo }}</td>
+        <td>{{ f.descripcion }}</td>
+        <td>{{ f.orden }}</td>
+        <td>
+          <input type="checkbox" name="{{ f.prefix }}-DELETE">
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <button id="add-pregunta" type="button">+ Agregar pregunta</button>
+
+  <p style="margin-top:10px">
+    <a href="{% url 'incidencias:tipo_lista' %}">Volver</a>
+    <button type="submit">Guardar</button>
+  </p>
+</form>
+
+<template id="empty-pregunta">
+  <tr class="form-row">
+    <td><input type="text" name="__NAME__-texto_pregunta" maxlength="200" required></td>
+    <td>
+      <select name="__NAME__-tipo">
+        <option value="texto">Texto</option>
+        <option value="numero">Número</option>
+        <option value="opcion">Opción</option>
+        <option value="fecha">Fecha</option>
+      </select>
+    </td>
+    <td><textarea name="__NAME__-descripcion" rows="2"></textarea></td>
+    <td><input type="number" name="__NAME__-orden" value="1" min="1"></td>
+    <td><input type="checkbox" name="__NAME__-DELETE"></td>
+  </tr>
+</template>
+
+{% block extrajs %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Botón, tabla y plantilla
+  const addBtn = document.getElementById('add-pregunta');
+  const tbody  = document.getElementById('pregs-questions');
+  const tmplEl = document.getElementById('empty-pregunta');
+
+  if (!addBtn || !tbody || !tmplEl) {
+    console.warn('[tipo_form] Faltan nodos (addBtn/tbody/tmplEl).', { addBtn, tbody, tmplEl });
+    return;
+  }
+
+  // 1) Intenta con el prefix real del formset (lo que venga del server)
+  const prefix = '{{ formset.prefix|default:"pregs" }}';
+
+  // 2) Busca TOTAL_FORMS de forma robusta
+  let total = document.querySelector(`input[name="${prefix}-TOTAL_FORMS"]`);
+  if (!total) total = document.querySelector('input[name$="-TOTAL_FORMS"]');
+
+  if (!total) {
+    console.error('[tipo_form] No se encontró TOTAL_FORMS. ¿Está renderizado {{ formset.management_form }}?');
+    return;
+  }
+
+  addBtn.addEventListener('click', function(){
+    const idx = parseInt(total.value || '0', 10);
+
+    // Usamos exactamente la misma lógica que en encuestas
+    const tmpl = tmplEl.innerHTML.trim();
+
+    // El name base del formset según el TOTAL_FORMS encontrado
+    const nameBasePrefix = (total.name || '').replace('TOTAL_FORMS', '');
+    const nameBase = nameBasePrefix + idx;
+
+    // Reemplaza __NAME__ por el índice real
+    const html = tmpl.replaceAll('__NAME__', nameBase);
+
+    tbody.insertAdjacentHTML('beforeend', html);
+    total.value = idx + 1;
+  });
+});
+</script>
+{% endblock %}
+
+{% endblock %}

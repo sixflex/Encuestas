@@ -6,14 +6,16 @@
   <meta charset="utf-8">
   <title>{% block title %}Encuestas{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  {# (opcional) por si algún template quiere inyectar CSS o meta extra #}
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
   <nav>
     {% if user.is_authenticated %}
       Hola, {{ user.username }} |
-      <a href="{% url 'personas:logout' %}">Salir</a>
+      <a href="{% url 'personas:cerrar_sesion' %}">Salir</a>
       {% if user.is_superuser or user|has_group:"Administrador" %}
-        | <a href="{% url 'core:usuarios_lista' %}">Usuarios</a>
+        <a href="{% url 'core:usuarios_lista' %}">Filtro</a>
       {% endif %}
     {% else %}
       <a href="{% url 'login' %}">Entrar</a>
@@ -29,9 +31,8 @@
     </ul>
   {% endif %}
 
-  {% block content %}
-  {% endblock %}
+  {% block content %}{% endblock %}
+
+  {% block extrajs %}{% endblock %}
 </body>
 </html>
-
-
