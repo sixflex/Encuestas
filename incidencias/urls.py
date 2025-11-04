@@ -22,5 +22,9 @@ urlpatterns = [
     path("incidencias/<int:pk>/eliminar/", views.incidencia_eliminar, name = "incidencia_eliminar"), 
     path("incidencias/<int:pk>/subir-evidencia/", views.subir_evidencia, name = "subir_evidencia"),#cambio barbara
     path("incidencias/<int:pk>/finalizar/", views.finalizar_incidencia, name = "finalizar_incidencia"),#cambio barbara
+    path("tipos/", views.tipo_lista, name="tipo_lista"),
+    path("tipos/nuevo/", views.tipo_crear, name="tipo_crear"),
+    path("tipos/<int:pk>/editar/", views.tipo_editar, name="tipo_editar"),
+    path("tipos/<int:pk>/eliminar/", views.tipo_eliminar, name="tipo_eliminar"),
 
 ]

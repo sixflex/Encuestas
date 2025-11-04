@@ -7,6 +7,15 @@ from core.models import Incidencia, JefeCuadrilla, Departamento, Encuesta
 from .forms import RechazarIncidenciaForm, ReasignarIncidenciaForm, EncuestaForm, FinalizarIncidenciaForm #cambio barbara
 from core.utils import solo_admin, admin_o_territorial
 
+from django.db import transaction
+from django.forms import formset_factory
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
+
+from core.models import Encuesta, PreguntaEncuesta, TipoIncidencia, PreguntaDefaultTipo
+from .forms import EncuestaConTipoForm, PreguntaFormSet, PreguntaSimpleForm
+from core.utils import admin_o_territorial
 # ---------------------------------
 # Lista de incidencias
 # ---------------------------------
@@ -213,6 +222,23 @@ def encuesta_crear(request):
         form = EncuestaForm(request.POST)
         if form.is_valid():
             encuesta = form.save()
+
+            tipo = encuesta.tipo_incidencia
+            if tipo:
+                defaults = PreguntaDefaultTipo.objects.filter(tipo_incidencia=tipo)
+                for p in defaults:
+                    PreguntaEncuesta.objects.create(
+                        texto_pregunta=p.texto_pregunta,
+                        descripcion=p.descripcion,
+                        tipo=p.tipo,
+                        encuesta=encuesta
+                    )
+
+            messages.success(request, f"Encuesta '{encuesta.titulo}' creada con preguntas por defecto.")
+            return redirect("territorial_app:encuestas_lista")
+    else:
+        form = EncuestaForm(initial={'estado': True, 'prioridad': 'Normal'})
+
             messages.success(request, f"Encuesta '{encuesta.titulo}' creada correctamente.")
             return redirect("territorial_app:encuestas_lista")
     else:
@@ -222,6 +248,7 @@ def encuesta_crear(request):
         "form": form,
         "modo": "crear"
     })
+
 
 
 @login_required
@@ -296,3 +323,52 @@ def encuesta_eliminar(request, pk):
         return redirect("territorial_app:encuestas_lista")
     
     return render(request, "territorial_app/encuesta_eliminar.html", {"encuesta": encuesta})
+
+
+@login_required
+@admin_o_territorial
+@transaction.atomic
+def encuesta_crear(request):
+    # Construimos el formset vacío; lo rellenamos con initial en GET si viene ?tipo=
+    if request.method == "POST":
+        form = EncuestaConTipoForm(request.POST)
+        formset = PreguntaFormSet(request.POST, prefix="p")
+        if form.is_valid() and formset.is_valid():
+            encuesta = form.save(commit=False)
+            encuesta.tipo_incidencia = form.cleaned_data['tipo_incidencia']
+            encuesta.save()
+
+            # Crear preguntas
+            for f in formset:
+                if f.cleaned_data and not f.cleaned_data.get('DELETE', False):
+                    PreguntaEncuesta.objects.create(
+                        encuesta=encuesta,
+                        texto_pregunta=f.cleaned_data['texto_pregunta'],
+                        descripcion=f.cleaned_data.get('descripcion', ''),
+                        tipo=f.cleaned_data['tipo'],
+                    )
+            messages.success(request, f"Encuesta '{encuesta.titulo}' creada con preguntas.")
+            return redirect("territorial_app:encuestas_lista")
+    else:
+        initial = []
+        tipo_id = request.GET.get('tipo')
+        if tipo_id:
+            try:
+                t = TipoIncidencia.objects.get(pk=tipo_id)
+                for pd in t.preguntas_default.all():
+                    initial.append({
+                        'texto_pregunta': pd.texto_pregunta,
+                        'descripcion': pd.descripcion,
+                        'tipo': pd.tipo,
+                    })
+            except TipoIncidencia.DoesNotExist:
+                pass
+
+        form = EncuestaConTipoForm(initial={'estado': True, 'prioridad': 'Normal'})
+        formset = PreguntaFormSet(initial=initial, prefix="p")
+
+    return render(request, "territorial_app/encuesta_form.html", {
+        "form": form,
+        "modo": "crear",
+        "formset": formset
+    })

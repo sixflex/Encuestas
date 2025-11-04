@@ -1,6 +1,113 @@
 {% extends "base.html" %}
 
 {% block title %}
+  {% if modo == 'crear' %}Crear Encuesta{% else %}Editar Encuesta{% endif %}
+{% endblock %}
+
+{% block content %}
+<h1>{% if modo == 'crear' %}Crear Nueva Encuesta{% else %}Editar Encuesta{% endif %}</h1>
+
+<form method="post">
+  {% csrf_token %}
+
+  <fieldset>
+    <legend>Información de la Encuesta</legend>
+    {{ form.as_p }}
+    {# form incluye tipo_incidencia, titulo, descripcion, ubicacion, prioridad, departamento, estado #}
+  </fieldset>
+
+  <hr>
+
+  <fieldset>
+    <legend>Preguntas</legend>
+
+    {{ formset.management_form }}
+    <table border="1" cellpadding="6" cellspacing="0">
+      <thead>
+        <tr>
+          <th>Pregunta</th>
+          <th>Tipo</th>
+          <th>Descripción</th>
+          <th>Eliminar</th>
+        </tr>
+      </thead>
+      <tbody id="encuesta-questions">
+        {% for f in formset %}
+        <tr class="form-row">
+          <td>{{ f.texto_pregunta }}</td>
+          <td>{{ f.tipo }}</td>
+          <td>{{ f.descripcion }}</td>
+          <td>
+            <input type="checkbox" name="{{ f.prefix }}-DELETE">
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <button id="add-q" type="button">+ Agregar pregunta</button>
+  </fieldset>
+
+  <p style="margin-top:10px">
+    <a href="{% url 'territorial_app:encuestas_lista' %}">Cancelar</a>
+    <button type="submit">
+      {% if modo == 'crear' %}Crear Encuesta{% else %}Guardar Cambios{% endif %}
+    </button>
+  </p>
+</form>
+
+<template id="empty-question">
+  <tr class="form-row">
+    <td><input type="text" name="__NAME__-texto_pregunta" maxlength="200" required></td>
+    <td>
+      <select name="__NAME__-tipo">
+        <option value="texto">Texto</option>
+        <option value="numero">Número</option>
+        <option value="opcion">Opción</option>
+        <option value="fecha">Fecha</option>
+      </select>
+    </td>
+    <td><textarea name="__NAME__-descripcion" rows="2"></textarea></td>
+    <td><input type="checkbox" name="__NAME__-DELETE"></td>
+  </tr>
+</template>
+
+{% block extrajs %}
+<script>
+(function(){
+  // Botón para añadir filas al formset de preguntas
+  const addBtn = document.getElementById('add-q');
+  if(addBtn){
+    const tbody = document.getElementById('encuesta-questions');
+    const tmpl = document.getElementById('empty-question').innerHTML.trim();
+    const total = document.querySelector('input[name$="TOTAL_FORMS"]');
+
+    addBtn.addEventListener('click', function(){
+      const idx = parseInt(total.value || "0", 10);
+      // El name base del formset puede tener prefix, p.ej. "p-"
+      const prefix = (total.name || '').replace('TOTAL_FORMS','');
+      const nameBase = prefix + idx;
+      const html = tmpl.replaceAll('__NAME__', nameBase);
+      tbody.insertAdjacentHTML('beforeend', html);
+      total.value = idx + 1;
+    });
+  }
+
+  // Al cambiar el tipo en modo "crear", recargar con ?tipo=<id> para precargar defaults
+  {% if modo == 'crear' %}
+  const tipoSelect = document.getElementById('{{ form.tipo_incidencia.id_for_label }}');
+  if (tipoSelect) {
+    tipoSelect.addEventListener('change', function(){
+      const url = new URL(window.location.href);
+      url.searchParams.set('tipo', this.value);
+      window.location = url.toString();
+    });
+  }
+  {% endif %}
+})();
+</script>
+{% endblock %}
+{% endblock %}
   {% if modo == 'crear' %}
     Crear Encuesta
   {% else %}
