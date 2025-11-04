@@ -84,6 +84,9 @@ class EncuestaForm(forms.ModelForm):
             'prioridad', 'departamento', 'estado',
             'tipo_incidencia',  # 🔹 importante
         ]
+    class Meta:
+        model = Encuesta
+        fields = ['titulo', 'descripcion', 'ubicacion', 'prioridad', 'departamento', 'estado']
         widgets = {
             'titulo': forms.TextInput(attrs={
                 'placeholder': 'Título de la encuesta',
@@ -191,3 +194,4 @@ class PreguntaSimpleForm(forms.Form):
 
 # Formset para preguntas (lo llenaremos con initial de las default)
 PreguntaFormSet = formset_factory(PreguntaSimpleForm, extra=0, can_delete=True)        
+        self.fields['departamento'].queryset = Departamento.objects.filter(estado=True)

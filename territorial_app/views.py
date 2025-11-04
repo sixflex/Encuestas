@@ -214,6 +214,10 @@ def encuesta_detalle(request, pk):
 @login_required
 @admin_o_territorial
 def encuesta_crear(request):
+    """
+    Crea una nueva encuesta.
+    Solo Territorial y Admin pueden crear.
+    """
     if request.method == "POST":
         form = EncuestaForm(request.POST)
         if form.is_valid():
@@ -235,6 +239,11 @@ def encuesta_crear(request):
     else:
         form = EncuestaForm(initial={'estado': True, 'prioridad': 'Normal'})
 
+            messages.success(request, f"Encuesta '{encuesta.titulo}' creada correctamente.")
+            return redirect("territorial_app:encuestas_lista")
+    else:
+        form = EncuestaForm(initial={'estado': True, 'prioridad': 'Normal'})
+    
     return render(request, "territorial_app/encuesta_form.html", {
         "form": form,
         "modo": "crear"

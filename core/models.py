@@ -1,13 +1,11 @@
 from django.db import models
 from registration.models import Profile
 
-
 class Perfil(models.Model):
     rol = models.CharField(max_length=50)
 
     def __str__(self):
         return self.rol
-
 
 class Direccion(models.Model):
     nombre_direccion = models.CharField(max_length=100)
@@ -98,7 +96,7 @@ class JefeCuadrilla(models.Model):
     def __str__(self):
         return self.nombre_cuadrilla
 
-
+#-------------------------------------------------
 class Incidencia(models.Model):
     ESTADO_CHOICES = (
         ('Pendiente', 'Pendiente'),
@@ -106,11 +104,25 @@ class Incidencia(models.Model):
         ('Completada', 'Completada'),
         ('Rechazada', 'Rechazada'),
         ('Validada', "Validada"),
+    #Cambios cotta
+# 1. DEFINICIÓN DE CHOICES (Opciones de Estado)
+    ESTADO_CHOICES = (
+    ('Pendiente', 'Pendiente'),
+    ('En Progreso', 'En Progreso'),
+    ('Completada', 'Completada'),
+    ('Rechazada', 'Rechazada'), 
+    ('Validada', "Validada")
     )
 
     titulo = models.CharField(max_length=200)
     descripcion = models.TextField()
     estado = models.CharField(max_length=50, choices=ESTADO_CHOICES, default='Pendiente')
+    #Cambios cotta
+    #estado = models.CharField(max_length=50)
+     # 2. CAMBIO CLAVE: Asignar el valor por defecto
+    estado = models.CharField(
+        max_length=50, choices=ESTADO_CHOICES, default='Pendiente')     # <--- ESTO MARCA EL VALOR POR DEFECTO
+    #-----------------------------------------------------------
     prioridad = models.CharField(max_length=50)
     creadoEl = models.DateTimeField(auto_now_add=True)
     actualizadoEl = models.DateTimeField(auto_now=True)

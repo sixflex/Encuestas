@@ -1,9 +1,12 @@
-
 from django import forms
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator#cotta
 
+from registration.models import Profile
+from core.models import JefeCuadrilla, Departamento
 
+# Los nombres deben coincidir EXACTO con los Group.name creados en tu DB
 ROL_CHOICES = [
     ("Administrador", "Administrador"),
     ("Dirección", "Dirección"),
@@ -12,20 +15,47 @@ ROL_CHOICES = [
     ("Territorial", "Territorial"),
 ]
 
+# ---------- Validadores utilitarios ----------
 
-def validar_email_unico_ci(value: str):
-    """
-    Valida unicidad de email sin distinguir may/min (case-insensitive).
-    """
-    if User.objects.filter(email__iexact=value).exists():
+def validar_email_unico_ci(value: str, exclude_pk: int | None = None):
+    qs = User.objects.filter(email__iexact=value)
+    if exclude_pk is not None:
+        qs = qs.exclude(pk=exclude_pk)
+    if qs.exists():
         raise ValidationError(
             "Ya existe un usuario con este correo (no distingue mayúsculas/minúsculas)."
         )
 
+def validar_username_unico_ci(value: str, exclude_pk: int | None = None):
+    qs = User.objects.filter(username__iexact=value)
+    if exclude_pk is not None:
+        qs = qs.exclude(pk=exclude_pk)
+    if qs.exists():
+        raise ValidationError(
+            "Ya existe un usuario con este nombre de usuario (no distingue mayúsculas/minúsculas)."
+        )
+#cambios cotta
+# ---------- VALIDACIONES GLOBALES (Reutilizables) ----------
+
+def validar_email_unico_ci(value: str, exclude_pk: int | None = None):
+    # ... código actual para validar unicidad de email)
+    pass # Asumir que esta función está definida fuera de la clase
+
+def validar_username_unico_ci(value: str, exclude_pk: int | None = None):
+    # ... (Tu código actual para validar unicidad de username)
+    pass 
+
+# NUEVA VALIDACIÓN: Permite letras, acentos, Ñ/ñ y espacios.
+validar_solo_letras = RegexValidator(
+    r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$', 
+    'Este campo solo puede contener letras y espacios.'
+)
+#---------------------------------------------------------------------
+# ---------- Creación ----------
 
 class UsuarioCrearForm(forms.ModelForm):
     """
-    Formulario de creación de usuario con password y asignación de rol (grupo).
+    Formulario de creación de usuario con validaciones mejoradas
     """
     password1 = forms.CharField(
         label="Contraseña",
@@ -40,6 +70,20 @@ class UsuarioCrearForm(forms.ModelForm):
         required=True,
     )
     rol = forms.ChoiceField(choices=ROL_CHOICES, required=True, label="Rol (grupo)")
+#cambios cotta
+    first_name = forms.CharField(
+        label="Nombre",
+        max_length=150,
+        required=True, # Aseguramos que sea obligatorio
+        validators=[validar_solo_letras], # Aplica Regex
+    )
+    last_name = forms.CharField(
+        label="Apellido",
+        max_length=150,
+        required=True, # Aseguramos que sea obligatorio
+        validators=[validar_solo_letras], # Aplica Regex
+    )
+    #--------------------------------------------------------
 
     class Meta:
         model = User
@@ -48,9 +92,26 @@ class UsuarioCrearForm(forms.ModelForm):
             "is_active": forms.CheckboxInput(),
             "is_staff": forms.CheckboxInput(),
         }
+        help_texts = {
+            "is_active": "Si está desmarcado, el usuario no podrá iniciar sesión (bloqueado).",
+            "is_staff": "Solo marca para dar acceso al admin de Django (no confundir con roles).",
+        }
+
+    def clean_username(self):
+        username = (self.cleaned_data.get("username") or "").strip()
+        if not username:
+            raise ValidationError("El nombre de usuario es obligatorio.")
+        validar_username_unico_ci(username)
+        return username
+
+    def clean_first_name(self):
+        return (self.cleaned_data.get("first_name") or "").strip()
+
+    def clean_last_name(self):
+        return (self.cleaned_data.get("last_name") or "").strip()
 
     def clean_email(self):
-        email = self.cleaned_data.get("email", "").strip()
+        email = (self.cleaned_data.get("email") or "").strip()
         if not email:
             raise ValidationError("El correo es obligatorio.")
         validar_email_unico_ci(email)
@@ -66,16 +127,35 @@ class UsuarioCrearForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        # Hash seguro
         user.set_password(self.cleaned_data["password1"])
+        user.username = user.username.strip()
+        user.first_name = (user.first_name or "").strip()
+        user.last_name = (user.last_name or "").strip()
+        user.email = user.email.strip()
+
         if commit:
             user.save()
-            # Asignación de grupo (rol)
             user.groups.clear()
             group, _ = Group.objects.get_or_create(name=self.cleaned_data["rol"])
             user.groups.add(group)
+            profile, _ = Profile.objects.get_or_create(user=user)
+            profile.group = group
+            profile.save()
+
+            # Si el rol es "Jefe de Cuadrilla", asegurar el registro asociado
+            if group.name == "Jefe de Cuadrilla":
+                depto = Departamento.objects.first()
+                JefeCuadrilla.objects.get_or_create(
+                    usuario=profile,
+                    defaults={
+                        "nombre_cuadrilla": f"Cuadrilla de {user.username}",
+                        "encargado": profile,
+                        "departamento": depto,
+                    },
+                )
         return user
 
+# ---------- Edición ----------
 
 class UsuarioEditarForm(forms.ModelForm):
     """
@@ -100,6 +180,7 @@ class UsuarioEditarForm(forms.ModelForm):
         fields = ["username", "first_name", "last_name", "email", "is_active", "is_staff"]
         help_texts = {
             "is_active": "Si está desmarcado, el usuario no podrá iniciar sesión (bloqueado).",
+            "is_staff": "Solo marca para dar acceso al admin de Django (no confundir con roles).",
         }
 
     def __init__(self, *args, **kwargs):
@@ -108,14 +189,24 @@ class UsuarioEditarForm(forms.ModelForm):
         if groups:
             self.fields["rol"].initial = groups[0]
 
+    def clean_username(self):
+        username = (self.cleaned_data.get("username") or "").strip()
+        if not username:
+            raise ValidationError("El nombre de usuario es obligatorio.")
+        validar_username_unico_ci(username, exclude_pk=self.instance.pk)
+        return username
+
+    def clean_first_name(self):
+        return (self.cleaned_data.get("first_name") or "").strip()
+
+    def clean_last_name(self):
+        return (self.cleaned_data.get("last_name") or "").strip()
+
     def clean_email(self):
-        email = self.cleaned_data.get("email", "").strip()
+        email = (self.cleaned_data.get("email") or "").strip()
         if not email:
             raise ValidationError("El correo es obligatorio.")
-        if User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
-            raise ValidationError(
-                "Ya existe un usuario con este correo (no distingue mayúsculas/minúsculas)."
-            )
+        validar_email_unico_ci(email, exclude_pk=self.instance.pk)
         return email
 
     def clean(self):
@@ -131,16 +222,48 @@ class UsuarioEditarForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
+        # trims
+        user.username = user.username.strip()
+        user.first_name = (user.first_name or "").strip()
+        user.last_name = (user.last_name or "").strip()
+        user.email = user.email.strip()
+
         p1 = self.cleaned_data.get("password1")
         if p1:
             user.set_password(p1)
+#Cambios barbara 
         if commit:
             user.save()
             user.groups.clear()
             group, _ = Group.objects.get_or_create(name=self.cleaned_data["rol"])
             user.groups.add(group)
-        return user
+            return user #cambio barbara
+        
+'''
+            # Mantener sincronizado el perfil
+            profile, _ = Profile.objects.get_or_create(user=user)
+            profile.group = group
+            profile.save()
 
+            # (Opcional) coherencia con Jefe de Cuadrilla
+            if group.name == "Jefe de Cuadrilla":
+                depto = Departamento.objects.first()
+                JefeCuadrilla.objects.get_or_create(
+                    usuario=profile,
+                    defaults={
+                        "nombre_cuadrilla": f"Cuadrilla de {user.username}",
+                        "encargado": profile,
+                        "departamento": depto,
+                    },
+                )
+            else:
+               
+                pass
+
+        return user
+'''
+#------------------------------------------------------
+# ---------- Confirmación Activar/Desactivar ----------
 
 class UsuarioToggleActivoForm(forms.Form):
     """

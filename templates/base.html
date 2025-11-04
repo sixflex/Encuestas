@@ -17,6 +17,8 @@
       {% if user.is_superuser or user|has_group:"Administrador" %}
         <a href="{% url 'core:usuarios_lista' %}">Filtro</a>
       {% endif %}
+        <a href="{% url 'core:usuarios_lista' %}">Filtro</a> <!--Cambio cotta-->
+        {% endif %}
     {% else %}
       <a href="{% url 'login' %}">Entrar</a>
     {% endif %}

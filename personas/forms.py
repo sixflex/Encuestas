@@ -1,22 +1,26 @@
 from django import forms
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
+from registration.models import Profile
 
+# Definimos los roles disponibles
 ROL_CHOICES = [
     ("Administrador", "Administrador"),
-    ("dirección", "dirección"),
-    ("depto", "depto"),
-    ("jefe_cuadrilla", "jefe_cuadrilla"),
-    ("territorial", "territorial"),
+    ("Dirección", "Dirección"),
+    ("Departamento", "Departamento"),
+    ("Jefe de Cuadrilla", "Jefe de Cuadrilla"),
+    ("Territorial", "Territorial"),
 ]
 
-def validar_email_unico_ci(value):
-    # Unicidad case-insensitive
-    if User.objects.filter(email__iexact=value).exists():
+def validar_email_unico_ci(value, usuario=None):
+    qs = User.objects.filter(email__iexact=value)
+    if usuario:
+        qs = qs.exclude(pk=usuario.pk)
+    if qs.exists():
         raise ValidationError("Ya existe un usuario con este correo (no distingue mayúsculas/minúsculas).")
 
 class UsuarioCrearForm(forms.ModelForm):
-    # Campos extra para password y rol
+    cargo = forms.CharField(max_length=100, required=False, label="Cargo")
     password1 = forms.CharField(
         label="Contraseña",
         widget=forms.PasswordInput(render_value=False),
@@ -41,7 +45,6 @@ class UsuarioCrearForm(forms.ModelForm):
 
     def clean_email(self):
         email = self.cleaned_data.get("email", "").strip()
-        # Valida formato básico y unicidad CI
         if not email:
             raise ValidationError("El correo es obligatorio.")
         validar_email_unico_ci(email)
@@ -51,25 +54,31 @@ class UsuarioCrearForm(forms.ModelForm):
         cleaned = super().clean()
         p1 = cleaned.get("password1")
         p2 = cleaned.get("password2")
-        if p1 and p2 and p1 != p2:
+        if p1 != p2:
             self.add_error("password2", "Las contraseñas no coinciden.")
         return cleaned
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        # set_password hace hashing seguro
         user.set_password(self.cleaned_data["password1"])
         if commit:
             user.save()
-            # grupo/rol único
+
+            # Asignar rol (grupo)
             user.groups.clear()
             group, _ = Group.objects.get_or_create(name=self.cleaned_data["rol"])
             user.groups.add(group)
+
+            # Crear o actualizar profile
+            cargo = self.cleaned_data.get("cargo", "").strip()
+            profile, created = Profile.objects.get_or_create(user=user)
+            profile.cargo = cargo
+            profile.save()
+
         return user
 
-
 class UsuarioEditarForm(forms.ModelForm):
-    # Password opcional en edición
+    cargo = forms.CharField(max_length=100, required=False, label="Cargo")
     password1 = forms.CharField(
         label="Nueva contraseña",
         widget=forms.PasswordInput(render_value=False),
@@ -90,18 +99,17 @@ class UsuarioEditarForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Preseleccionar rol actual (si tiene)
         groups = list(self.instance.groups.values_list("name", flat=True))
         if groups:
             self.fields["rol"].initial = groups[0]
+        if hasattr(self.instance, "profile"):
+            self.fields["cargo"].initial = self.instance.profile.cargo
 
     def clean_email(self):
         email = self.cleaned_data.get("email", "").strip()
         if not email:
             raise ValidationError("El correo es obligatorio.")
-        # Unicidad CI excluyendo al propio usuario
-        if User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
-            raise ValidationError("Ya existe un usuario con este correo (no distingue mayúsculas/minúsculas).")
+        validar_email_unico_ci(email, usuario=self.instance)
         return email
 
     def clean(self):
@@ -120,10 +128,19 @@ class UsuarioEditarForm(forms.ModelForm):
         p1 = self.cleaned_data.get("password1")
         if p1:
             user.set_password(p1)
+
         if commit:
             user.save()
-            # rol
+
+            # Actualizar rol
             user.groups.clear()
             group, _ = Group.objects.get_or_create(name=self.cleaned_data["rol"])
             user.groups.add(group)
+
+            # Actualizar cargo
+            cargo = self.cleaned_data.get("cargo", "").strip()
+            profile, created = Profile.objects.get_or_create(user=user)
+            profile.cargo = cargo
+            profile.save()
+
         return user

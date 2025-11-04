@@ -62,7 +62,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": ("Encuestas"),
-        "USER": ("postgres"),
+        "USER": ("administrador"),
         "PASSWORD": ("hoseok15"),
         "HOST": ("localhost"),
         "PORT": ("5432"),
@@ -70,6 +70,7 @@ DATABASES = {
         "CONN_HEALTH_CHECKS": True,
     }
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -94,6 +95,8 @@ LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+DEFAULT_FROM_EMAIL = "Sistema Municipal <no-reply@municipalidad.local>"#cambio barbara
+
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Finalizar Incidencia{% endblock %}
+
+{% block content %}
+<h2>Finalizar incidencia: {{ incidencia.titulo }}</h2>
+
+<form method="post" enctype="multipart/form-data" style="max-width: 500px;">
+    {% csrf_token %}
+    <div>
+        {{ form.observaciones.label_tag }}<br>
+        {{ form.observaciones }}
+        {{ form.observaciones.errors }}
+    </div>
+
+    <div>
+        {{ form.evidencia.label_tag }}<br>
+        {{ form.evidencia }}
+        {{ form.evidencia.errors }}
+    </div>
+
+    <br>
+    <button type="submit" style="padding: 5px 10px;">Finalizar</button>
+    <a href="{% url 'territorial_app:incidencias_lista' %}" style="margin-left: 10px;">Cancelar</a>
+</form>
+{% endblock %}
