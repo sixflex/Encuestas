@@ -1,26 +1,59 @@
-{% extends "base.html" %}
+{% extends "main_base.html" %}
+{% load widget_tweaks %}
 
-{% block title %}Finalizar Incidencia{% endblock %}
+{% block title %}Finalizar Incidencia | Gestión Municipal{% endblock %}
 
-{% block content %}
-<h2>Finalizar incidencia: {{ incidencia.titulo }}</h2>
+{% block dashboard_content %}
+<h1 class="h3 mb-4">Finalizar incidencia: {{ incidencia.titulo }}</h1>
 
-<form method="post" enctype="multipart/form-data" style="max-width: 500px;">
-    {% csrf_token %}
-    <div>
-        {{ form.observaciones.label_tag }}<br>
-        {{ form.observaciones }}
-        {{ form.observaciones.errors }}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-header py-3 app-blue text-white">
+                <h5 class="mb-0">Completar Tarea</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="{{ form.observaciones.id_for_label }}" class="form-label">
+                            {{ form.observaciones.label }}
+                        </label>
+                        {{ form.observaciones|add_class:"form-control"|attr:"rows:3" }}
+                        {% if form.observaciones.errors %}
+                            <div class="text-danger small mt-1">{{ form.observaciones.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.evidencia.id_for_label }}" class="form-label">
+                            {{ form.evidencia.label }}
+                        </label>
+                        {{ form.evidencia|add_class:"form-control" }}
+                        {% if form.evidencia.errors %}
+                            <div class="text-danger small mt-1">{{ form.evidencia.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <hr class="my-4">
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'territorial_app:incidencias_lista' %}" class="btn btn-secondary">
+                           <i class="bi bi-x-lg"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle-fill"></i> Finalizar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-
-    <div>
-        {{ form.evidencia.label_tag }}<br>
-        {{ form.evidencia }}
-        {{ form.evidencia.errors }}
-    </div>
-
-    <br>
-    <button type="submit" style="padding: 5px 10px;">Finalizar</button>
-    <a href="{% url 'territorial_app:incidencias_lista' %}" style="margin-left: 10px;">Cancelar</a>
-</form>
+</div>
 {% endblock %}

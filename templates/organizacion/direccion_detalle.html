@@ -1,35 +1,60 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>Detalle de Dirección</h2>
+{% extends "main_base.html" %}
 
-<table border="1" cellpadding="8" cellspacing="0">
-  <tr>
-    <th>Nombre de la Dirección</th>
-    <td>{{ obj.nombre_direccion }}</td>
-  </tr>
-  <tr>
-    <th>Encargado</th>
-    <td>
-      {% if obj.encargado %}
-        {{ obj.encargado.user.username }}
-      {% else %}
-        Sin encargado
-      {% endif %}
-    </td>
-  </tr>
-    <th>Estado</th>
-    <td>{{ obj.estado|yesno:"Activo,Inactivo" }}</td>
-  </tr>
-  <tr>
-    <th>Creado el</th>
-    <td>{{ obj.creadoEl|date:"d/m/Y H:i" }}</td>
-  </tr>
-  <tr>
-    <th>Actualizado el</th>
-    <td>{{ obj.actualizadoEl|date:"d/m/Y H:i" }}</td>
-  </tr>
-</table>
+{% block title %}Detalle de Dirección | Gestión Municipal{% endblock %}
 
-<br>
-<a href="{% url 'organizacion:direcciones_lista' %}">← Volver al listado</a>
+{% block dashboard_content %}
+<h1 class="h3 mb-4">Detalle de Dirección</h1>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-header py-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-building me-2"></i>
+                    {{ obj.nombre_direccion }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Nombre</dt>
+                    <dd class="col-sm-9">{{ obj.nombre_direccion }}</dd>
+
+                    <dt class="col-sm-3">Encargado</dt>
+                    <dd class="col-sm-9">
+                        {% if obj.encargado %}
+                            {{ obj.encargado.user.get_full_name|default:obj.encargado.user.username }}
+                        {% else %}
+                            <span class="text-muted">Sin encargado</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-3">Estado</dt>
+                    <dd class="col-sm-9">
+                        {% if obj.estado %}
+                            <span class="badge bg-success">Activo</span>
+                        {% else %}
+                            <span class="badge bg-danger">Bloqueado</span>
+                        {% endif %}
+                    </dd>
+                    
+                    <hr class="my-3">
+
+                    <dt class="col-sm-3">Creado el</dt>
+                    <dd class="col-sm-9">{{ obj.creadoEl|date:"d/m/Y H:i" }}</dd>
+
+                    <dt class="col-sm-3">Actualizado el</dt>
+                    <dd class="col-sm-9">{{ obj.actualizadoEl|date:"d/m/Y H:i" }}</dd>
+                </dl>
+            </div>
+            <div class="card-footer bg-light text-end gap-2 d-flex justify-content-end">
+                <a href="{% url 'organizacion:direcciones_lista' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Volver a la lista
+                </a>
+                <a href="{% url 'organizacion:direccion_editar' obj.id %}" class="btn btn-info">
+                    <i class="bi bi-pencil-fill"></i> Editar
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

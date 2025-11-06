@@ -1,42 +1,56 @@
-{% extends "base.html" %}
-{% load static %}
-{% block title %}Perfil{% endblock %}
-{% block content %}
-<style>.errorlist{color:red;} label{display:none}</style>
-<main>
-  <div>
+{% extends "registration/registration_base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Editar Perfil | Gestión Municipal{% endblock %}
+
+{% block auth_title %}
+    Editar Perfil
+{% endblock %}
+
+{% block auth_content %}
+    <p class="text-center text-muted mb-4">
+      ({{ request.user.email }})
+    </p>
+
     <form action="" method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      <h4>Editar información de {{ request.user.first_name }} {{ request.user.last_name }} ({{ request.user.email }})</h4>
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors|striptags }}
+            </div>
+        {% endif %}
 
-      <div>
-        <div>
-          Nombre (*)
-          <input type="text" id="first_name" name="first_name" maxlength="254" required value="{{ request.user.first_name }}">
+        <div class="row g-3">
+            <div class="col-md-6 mb-3">
+                <label for="first_name" class="form-label">Nombre (*)</label>
+                <input type="text" id="first_name" name="first_name" maxlength="254" required value="{{ request.user.first_name }}" class="form-control">
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                <label for="last_name" class="form-label">Apellidos (*)</label>
+                <input type="text" id="last_name" name="last_name" maxlength="254" required value="{{ request.user.last_name }}" class="form-control">
+            </div>
         </div>
-        <div>
-          Apellidos (*)
-          <input type="text" id="last_name" name="last_name" maxlength="254" required value="{{ request.user.last_name }}">
-        </div>
-      </div>
 
-      <div>
-        <div>
-          Teléfono Fijo (*)
-          <input type="text" id="phone" name="phone" maxlength="254" required value="{{ profile.phone }}">
+        <div class="row g-3">
+            <div class="col-md-6 mb-3">
+                <label for="phone" class="form-label">Teléfono Fijo (*)</label>
+                <input type="text" id="phone" name="phone" maxlength="254" required value="{{ profile.phone }}" class="form-control">
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                <label for="mobile" class="form-label">Teléfono Móvil (*)</label>
+                <input type="text" id="mobile" name="mobile" maxlength="254" required value="{{ profile.mobile }}" class="form-control">
+            </div>
         </div>
-        <div>
-          Teléfono Móvil (*)
-          <input type="text" id="mobile" name="mobile" maxlength="254" required value="{{ profile.mobile }}">
+      
+        <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-success btn-lg">Actualizar</button>
         </div>
-      </div>
-
-      <div>
-        <input type="submit" value="Actualizar">
-        {# Ajusta 'check_profile' si tu URL se llama distinto #}
-        <a href="{% url 'check_profile' %}">Volver</a>
-      </div>
     </form>
-  </div>
-</main>
+    
+    <p class="text-center mt-4 mb-0">
+        <a href="{% url 'check_profile' %}" class="text-decoration-none">Volver</a>
+    </p>
 {% endblock %}

@@ -1,20 +1,21 @@
-{% extends "base.html" %}
+{% extends "main_base.html" %}
 
-{% block content %}
-  <div class="container">
-    <h1>Panel de Dirección</h1>
-    <p>Bienvenido. Aquí puedes revisar reportes generales, supervisar departamentos y coordinar estrategias.</p>
+{% block title %}Panel de Dirección | Gestión Municipal{% endblock %}
 
-    <hr>
+{% block dashboard_content %}
+  <h1 class="h3 mb-4">Panel de Dirección</h1>
+  <p>Bienvenido. Aquí puedes revisar reportes generales, supervisar departamentos y coordinar estrategias.</p>
 
-    <h3>Gestión de Direcciones</h3>
-    <p>Desde aquí puedes administrar las direcciones registradas en el sistema.</p>
+  <hr>
 
-    <div class="acciones">
-      <a href="{% url 'organizacion:direcciones_lista' %}" class="btn btn-primary">Ver todas las Direcciones</a>
-      <a href="{% url 'organizacion:direccion_crear' %}" class="btn btn-success"> Nueva Dirección</a>
+  <div class="card shadow-sm border-0 rounded-3">
+    <div class="card-body">
+      <h3 class="card-title h5">Gestión de Direcciones</h3>
+      <p>Desde aquí puedes administrar las direcciones registradas en el sistema.</p>
+      <div class="acciones">
+        <a href="{% url 'organizacion:direcciones_lista' %}" class="btn btn-primary">Ver todas las Direcciones</a>
+        <a href="{% url 'organizacion:direccion_crear' %}" class="btn btn-success"> Nueva Dirección</a>
+      </div>
     </div>
-
-    <br>
   </div>
 {% endblock %}

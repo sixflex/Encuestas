@@ -1,99 +1,110 @@
-{% extends "base.html" %}
+{% extends "main_base.html" %}
 
-{% block title %}Detalle de Encuesta - {{ encuesta.titulo }}{% endblock %}
+{% block title %}Detalle de Encuesta - {{ encuesta.titulo }} | Gestión Municipal{% endblock %}
 
-{% block content %}
-<div class="container">
-  <h1>👁️ Detalle de Encuesta</h1>
-  
-  <hr>
+{% block dashboard_content %}
+<h1 class="h3 mb-4">
+    <i class="bi bi-eye-fill me-2"></i> Detalle de Encuesta
+</h1>
 
-  <!-- Información de la encuesta -->
-  <table border="1" cellpadding="10" cellspacing="0" style="width: 100%; max-width: 800px;">
-    <tr>
-      <th style="width: 200px; text-align: left;">ID</th>
-      <td>{{ encuesta.id }}</td>
-    </tr>
-    <tr>
-      <th style="text-align: left;">Título</th>
-      <td><strong>{{ encuesta.titulo }}</strong></td>
-    </tr>
-    <tr>
-      <th style="text-align: left;">Descripción</th>
-      <td>{{ encuesta.descripcion }}</td>
-    </tr>
-    <tr>
-      <th style="text-align: left;">Ubicación</th>
-      <td>{{ encuesta.ubicacion }}</td>
-    </tr>
-    <tr>
-      <th style="text-align: left;">Prioridad</th>
-      <td>{{ encuesta.prioridad }}</td>
-    </tr>
-    <tr>
-      <th style="text-align: left;">Departamento</th>
-      <td>{{ encuesta.departamento.nombre_departamento }}</td>
-    </tr>
-    <tr>
-      <th style="text-align: left;">Dirección</th>
-      <td>{{ encuesta.departamento.direccion.nombre_direccion }}</td>
-    </tr>
-    <tr>
-      <th style="text-align: left;">Estado</th>
-      <td>
-        {% if encuesta.estado %}
-          <span style="color: green; font-weight: bold;">✅ Activa</span>
-        {% else %}
-          <span style="color: orange; font-weight: bold;">🔒 Bloqueada</span>
-        {% endif %}
-      </td>
-    </tr>
-    <tr>
-      <th style="text-align: left;">Fecha de Creación</th>
-      <td>{{ encuesta.creadoEl|date:"d/m/Y H:i:s" }}</td>
-    </tr>
-    <tr>
-      <th style="text-align: left;">Última Actualización</th>
-      <td>{{ encuesta.actualizadoEl|date:"d/m/Y H:i:s" }}</td>
-    </tr>
-  </table>
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-header py-3">
+                <h5 class="mb-0">{{ encuesta.titulo }}</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">ID</dt>
+                    <dd class="col-sm-9">{{ encuesta.id }}</dd>
 
-  <hr>
+                    <dt class="col-sm-3">Descripción</dt>
+                    <dd class="col-sm-9">{{ encuesta.descripcion|linebreaksbr }}</dd>
+                    
+                    <dt class="col-sm-3">Ubicación</dt>
+                    <dd class="col-sm-9">{{ encuesta.ubicacion }}</dd>
+                    
+                    <dt class="col-sm-3">Prioridad</dt>
+                    <dd class="col-sm-9">{{ encuesta.prioridad }}</dd>
+                    
+                    <hr class="my-3">
+                    
+                    <dt class="col-sm-3">Departamento</dt>
+                    <dd class="col-sm-9">{{ encuesta.departamento.nombre_departamento }}</dd>
+                    
+                    <dt class="col-sm-3">Dirección</dt>
+                    <dd class="col-sm-9">{{ encuesta.departamento.direccion.nombre_direccion }}</dd>
+                    
+                    <dt class="col-sm-3">Estado</dt>
+                    <dd class="col-sm-9">
+                        {% if encuesta.estado %}
+                          <span class="badge bg-success">✅ Activa</span>
+                        {% else %}
+                          <span class="badge bg-secondary">🔒 Bloqueada</span>
+                        {% endif %}
+                    </dd>
 
-  <!-- Acciones disponibles -->
-  <div class="acciones">
-    <h3>Acciones Disponibles</h3>
-    
-    <a href="{% url 'territorial_app:encuesta_editar' encuesta.id %}" style="text-decoration: none;">
-      <button style="background: #ffc107; padding: 10px 15px; border: none; cursor: pointer;">
-        ✏️ Editar Encuesta
-      </button>
-    </a>
+                    <dt class="col-sm-3">Tipo Incidencia</dt>
+                    <dd class="col-sm-9">
+                        {% if encuesta.tipo_incidencia %}
+                            {{ encuesta.tipo_incidencia.nombre_problema }}
+                        {% else %}
+                            <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </dd>
+                    
+                    <hr class="my-3">
+                    
+                    <dt class="col-sm-3">Fecha de Creación</dt>
+                    <dd class="col-sm-9">{{ encuesta.creadoEl|date:"d/m/Y H:i:s" }}</dd>
+                    
+                    <dt class="col-sm-3">Última Actualización</dt>
+                    <dd class="col-sm-9">{{ encuesta.actualizadoEl|date:"d/m/Y H:i:s" }}</dd>
+                </dl>
+            </div>
+        </div>
 
-    <form method="post" action="{% url 'territorial_app:encuesta_toggle_estado' encuesta.id %}" style="display:inline;">
-      {% csrf_token %}
-      <button type="submit" style="background: {% if encuesta.estado %}#6c757d{% else %}#28a745{% endif %}; color: white; padding: 10px 15px; border: none; cursor: pointer;">
-        {% if encuesta.estado %}
-          🔒 Bloquear Encuesta
-        {% else %}
-          ✅ Activar Encuesta
-        {% endif %}
-      </button>
-    </form>
+        <div class="card shadow-sm border-0 rounded-3 mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Acciones Disponibles</h5>
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    
+                    <a href="{% url 'territorial_app:encuesta_editar' encuesta.id %}" class="btn btn-info">
+                        <i class="bi bi-pencil-fill"></i> Editar Encuesta
+                    </a>
 
-    <a href="{% url 'territorial_app:encuesta_eliminar' encuesta.id %}" style="text-decoration: none;">
-      <button style="background: #dc3545; color: white; padding: 10px 15px; border: none; cursor: pointer;">
-        🗑️ Eliminar Encuesta
-      </button>
-    </a>
-  </div>
+                    <form method="post" action="{% url 'territorial_app:encuesta_toggle_estado' encuesta.id %}" class="d-inline">
+                        {% csrf_token %}
+                        {% if encuesta.estado %}
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-lock-fill"></i> Bloquear Encuesta
+                            </button>
+                        {% else %}
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-unlock-fill"></i> Activar Encuesta
+                            </button>
+                        {% endif %}
+                    </form>
 
-  <hr>
+                    <a href="{% url 'territorial_app:encuesta_eliminar' encuesta.id %}" class="btn btn-danger">
+                        <i class="bi bi-trash-fill"></i> Eliminar Encuesta
+                    </a>
 
-  <!-- Enlaces de navegación -->
-  <div>
-    <a href="{% url 'territorial_app:encuestas_lista' %}">⬅️ Volver al listado</a> |
-    <a href="{% url 'personas:dashboard_territorial' %}">🏠 Ir al Dashboard</a>
-  </div>
+                    {% if encuesta.tipo_incidencia %}
+                    <form method="post" action="{% url 'territorial_app:importar_preguntas_default' encuesta.id %}" class="d-inline" onsubmit="return confirm('¿Estás seguro de importar las preguntas default? Esto se añadirá a las preguntas existentes.')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-download"></i> Importar Preguntas Default
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    <a href="{% url 'territorial_app:encuestas_lista' %}" class="btn btn-secondary ms-auto">
+                        <i class="bi bi-arrow-left"></i> Volver al listado
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

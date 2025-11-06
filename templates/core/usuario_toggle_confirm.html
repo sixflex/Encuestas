@@ -1,15 +1,39 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>Cambiar estado de usuario</h2>
+{% extends "main_base.html" %}
 
-<p>¿Seguro que deseas {% if obj.is_active %}desactivar{% else %}activar{% endif %} a 
-   <strong>{{ obj.username }}</strong>?</p>
+{% block title %}Confirmar Cambio de Estado | Gestión Municipal{% endblock %}
 
-<form method="post">
-  {% csrf_token %}
-  <button type="submit">
-    {% if obj.is_active %}Sí, desactivar{% else %}Sí, activar{% endif %}
-  </button>
-  <a href="{% url 'core:usuarios_lista' %}">No, volver</a>
-</form>
+{% block dashboard_content %}
+<h1 class="h3 mb-4">Cambiar Estado de Usuario</h1>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-body text-center">
+                <h4 class="card-title">¿Estás seguro?</h4>
+                <p class="lead">
+                    ¿Seguro que deseas {% if obj.is_active %}<strong class="text-danger">desactivar</strong>{% else %}<strong class="text-success">activar</strong>{% endif %} al usuario
+                    <strong>{{ obj.username }}</strong>?
+                </p>
+                
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    
+                    <a href="{% url 'core:usuarios_lista' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-lg"></i> No, volver
+                    </a>
+                    
+                    {% if obj.is_active %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Sí, desactivar
+                        </button>
+                    {% else %}
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg"></i> Sí, activar
+                        </button>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -1,19 +1,46 @@
-{% extends "base.html" %}
-{% load static %}
-{% block title %}Email{% endblock %}
-{% block content %}
-<style>.errorlist{color:red;} label{display:none}</style>
-<main>
-  <div>
+{% extends "registration/registration_base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Editar Email | Gestión Municipal{% endblock %}
+
+{% block auth_title %}
+    Editar Email
+{% endblock %}
+
+{% block auth_content %}
     <form action="" method="post">
-      {% csrf_token %}
-      <h3>Email</h3>
-      {{ form.as_p }}
-      <div>
-        <p><input type="submit" value="Actualizar"></p>
-        <a href="{% url 'check_profile' %}">Volver</a>
-      </div>
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors|striptags }}
+            </div>
+        {% endif %}
+
+        {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">
+                    {{ field.label }}
+                </label>
+                {{ field|add_class:"form-control"|attr:"placeholder:nuevo@correo.com" }}
+                {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+                {% if field.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ field.errors|striptags }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-success btn-lg">Actualizar Email</button>
+        </div>
     </form>
-  </div>
-</main>
+    
+    <p class="text-center mt-4 mb-0">
+         
+        <a href="{% url 'check_profile' %}" class="text-decoration-none">Volver</a>
+    </p>
 {% endblock %}

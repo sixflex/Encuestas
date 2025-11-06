@@ -1,50 +1,259 @@
-{% extends "base.html" %}
+{% extends "main_base.html" %}
+{% load widget_tweaks %}
 
-{% block title %}{{ form.instance.pk|yesno:'Editar,Nueva' }} Categoría{% endblock %}
+{% block title %}
+    {{ form.instance.pk|yesno:'Editar,Nuevo' }} Tipo de Incidencia | Gestión Municipal
+{% endblock %}
 
-{% block content %}
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title mb-0">
-                        {{ form.instance.pk|yesno:'Editar,Nueva' }} Categoría
-                    </h3>
-                </div>
+{% block extra_head %}
+<style>
+    /* Estilo para el contenedor de cada pregunta (formset) */
+    .pregunta-form {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        position: relative;
+        overflow: hidden; /* Oculta el contenido que se desborda durante la animación */
+    }
+
+    /* Animación de entrada */
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+            max-height: 0;
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 500px; /* Suficientemente grande para cualquier pregunta */
+        }
+    }
+
+    .pregunta-form.new-form {
+        animation: slideDown 0.5s ease-out;
+    }
+
+    /* Botón para eliminar la pregunta */
+    .btn-eliminar-pregunta {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+    
+    /* Plantilla vacía (oculta) */
+    #empty-form {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+
+{% block dashboard_content %}
+<h1 class="h3 mb-4">{{ form.instance.pk|yesno:'Editar,Nuevo' }} Tipo de Incidencia</h1>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 rounded-3">
                 <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        
-                        {% for field in form %}
-                        <div class="mb-3">
-                            <label for="{{ field.id_for_label }}" class="form-label">
-                                {{ field.label }}
-                            </label>
-                            {{ field }}
-                            {% if field.help_text %}
-                            <div class="form-text">{{ field.help_text }}</div>
-                            {% endif %}
-                            {% if field.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ field.errors.0 }}
-                            </div>
-                            {% endif %}
-                        </div>
-                        {% endfor %}
+                    <h5 class="card-title mb-3">Datos del Tipo de Incidencia</h5>
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
 
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'incidencias:tipo_lista' %}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Volver a Tipos
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Guardar
-                            </button>
-                        </div>
-                    </form>
+                    {% for field in form %}
+                        {% if field.field.widget.input_type == 'radio' %}
+                            <div class="mb-3">
+                                <label class="form-label">{{ field.label }}</label>
+                                <div class="d-flex gap-3 mt-2">
+                                    {% for radio in field %}
+                                        <div class="form-check">
+                                            {{ radio.tag }}
+                                            <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors|striptags }}</div>{% endif %}
+                            </div>
+                        {% else %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                {% if field.field.widget.input_type == 'textarea' %}
+                                    {{ field|add_class:"form-control"|attr:"rows:3" }}
+                                {% else %}
+                                    {{ field|add_class:"form-control" }}
+                                {% endif %}
+                                {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors|striptags }}</div>{% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
                 </div>
             </div>
         </div>
+
+        <div class="col-lg-5">
+            <h4 class="mb-3">Preguntas Default</h4>
+            
+            {{ formset.management_form }}
+            {% if formset.non_form_errors %}
+                <div class="alert alert-danger">{{ formset.non_form_errors }}</div>
+            {% endif %}
+            
+            <div id="preguntas-container">
+                {% for pregunta_form in formset %}
+                <div class="pregunta-form">
+                    {% if pregunta_form.non_field_errors %}
+                        <div class="alert alert-danger">{{ pregunta_form.non_field_errors }}</div>
+                    {% endif %}
+
+                    {% if pregunta_form.instance.pk %}
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-pregunta" onclick="eliminarForm(this)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    {% endif %}
+
+                    {{ pregunta_form.id }}
+                    {% if pregunta_form.DELETE %} {{ pregunta_form.DELETE }} {% endif %}
+
+                    <div class="mb-3">
+                        <label for="{{ pregunta_form.texto_pregunta.id_for_label }}" class="form-label">{{ pregunta_form.texto_pregunta.label }}</label>
+                        {{ pregunta_form.texto_pregunta }}
+                        {% if pregunta_form.texto_pregunta.errors %}<div class="text-danger small mt-1">{{ pregunta_form.texto_pregunta.errors|striptags }}</div>{% endif %}
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="{{ pregunta_form.tipo_pregunta.id_for_label }}" class="form-label">{{ pregunta_form.tipo_pregunta.label }}</label>
+                            {{ pregunta_form.tipo_pregunta }}
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="form-check form-switch">
+                                {{ pregunta_form.obligatoria }}
+                                <label for="{{ pregunta_form.obligatoria.id_for_label }}" class="form-check-label">{{ pregunta_form.obligatoria.label }}</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-0 mt-3">
+                        <label for="{{ pregunta_form.opciones.id_for_label }}" class="form-label">{{ pregunta_form.opciones.label }}</label>
+                        {{ pregunta_form.opciones }}
+                        <div class="form-text small">Solo para radio o checkbox. Una opción por línea.</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <button id="add-pregunta-btn" type="button" class="btn btn-primary w-100 mt-2">
+                <i class="bi bi-plus-lg"></i> Añadir Pregunta
+            </button>
+        </div>
+    </div>
+
+    <hr class="my-4">
+    <div class="d-flex justify-content-end gap-2">
+        <a href="{% url 'incidencias:tipo_lista' %}" class="btn btn-secondary">
+           <i class="bi bi-x-lg"></i> Cancelar
+        </a>
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-save"></i> Guardar Cambios
+        </button>
+    </div>
+</form>
+
+
+<div id="empty-form" class="pregunta-form new-form">
+    <button type"button" class="btn btn-sm btn-outline-danger btn-eliminar-pregunta" onclick="eliminarForm(this)">
+        <i class="bi bi-trash"></i>
+    </button>
+    
+    {{ formset.empty_form.id }}
+    {% if formset.empty_form.DELETE %} {{ formset.empty_form.DELETE }} {% endif %}
+
+    <div class="mb-3">
+        <label for="{{ formset.empty_form.texto_pregunta.id_for_label }}" class="form-label">{{ formset.empty_form.texto_pregunta.label }}</label>
+        {{ formset.empty_form.texto_pregunta }}
+    </div>
+    
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label for="{{ formset.empty_form.tipo_pregunta.id_for_label }}" class="form-label">{{ formset.empty_form.tipo_pregunta.label }}</label>
+            {{ formset.empty_form.tipo_pregunta }}
+        </div>
+        <div class="col-md-6 d-flex align-items-end">
+            <div class="form-check form-switch">
+                {{ formset.empty_form.obligatoria }}
+                <label for="{{ formset.empty_form.obligatoria.id_for_label }}" class="form-check-label">{{ formset.empty_form.obligatoria.label }}</label>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mb-0 mt-3">
+        <label for="{{ formset.empty_form.opciones.id_for_label }}" class="form-label">{{ formset.empty_form.opciones.label }}</label>
+        {{ formset.empty_form.opciones }}
+        <div class="form-text small">Solo para radio o checkbox. Una opción por línea.</div>
     </div>
 </div>
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+// --- 1. OBTENEMOS EL PREFIJO CORRECTO ---
+// El prefijo (ej: 'preguntas_default') que Django le da al formset.
+const formsetPrefix = '{{ formset.prefix }}';
+
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('preguntas-container');
+    const addButton = document.getElementById('add-pregunta-btn');
+    const emptyFormTemplate = document.getElementById('empty-form').innerHTML;
+    
+    // --- 2. BUSCAMOS EL ID CORRECTO ---
+    // Usamos el prefijo para encontrar el input 'TOTAL_FORMS'
+    const totalFormsInput = document.getElementById(`id_${formsetPrefix}-TOTAL_FORMS`);
+    
+    addButton.addEventListener('click', function() {
+        // Obtiene el número actual de formularios
+        let formNum = parseInt(totalFormsInput.value);
+        
+        // Reemplaza el prefijo '__prefix__' con el nuevo número de formulario
+        let newFormHTML = emptyFormTemplate.replace(/__prefix__/g, formNum);
+        
+        // Crea un div temporal para añadir el HTML
+        let tempDiv = document.createElement('div');
+        tempDiv.innerHTML = newFormHTML;
+        
+        // Añade el nuevo formulario al contenedor
+        container.appendChild(tempDiv.firstElementChild);
+        
+        // Incrementa el contador total de formularios
+        totalFormsInput.value = formNum + 1;
+    });
+});
+
+function eliminarForm(button) {
+    let formWrapper = button.closest('.pregunta-form');
+    let deleteInput = formWrapper.querySelector('input[id$="-DELETE"]');
+    
+    // --- 3. BUSCAMOS EL ID CORRECTO TAMBIÉN AQUÍ ---
+    let totalFormsInput = document.getElementById(`id_${formsetPrefix}-TOTAL_FORMS`);
+
+    if (deleteInput) {
+        // Si el formulario ya estaba guardado, lo marcamos para borrar
+        deleteInput.checked = true;
+        formWrapper.style.display = 'none'; // Lo ocultamos
+    } else {
+        // Si es un formulario nuevo (no guardado), simplemente lo borramos
+        formWrapper.remove();
+        
+        // Y decrementamos el TOTAL_FORMS
+        totalFormsInput.value = parseInt(totalFormsInput.value) - 1;
+    }
+}
+</script>
 {% endblock %}

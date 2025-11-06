@@ -1,84 +1,51 @@
-{% extends "base.html" %}
+{% extends "main_base.html" %}
 
-{% block title %}Eliminar Encuesta{% endblock %}
+{% block title %}Eliminar Encuesta | Gestión Municipal{% endblock %}
 
-{% block content %}
-<div class="container">
-  <h1>Eliminar Encuesta</h1>
+{% block dashboard_content %}
+<h1 class="h3 mb-4">Eliminar Encuesta</h1>
 
-  <hr>
-
-  <div style="background-color: #f8d7da; padding: 20px; border: 2px solid #f5c6cb; margin-bottom: 20px;">
-    <h2 style="margin-top: 0; color: #721c24;"> Confirmación de Eliminación</h2>
-    <p><strong>¿Estás seguro de que deseas eliminar esta encuesta?</strong></p>
-    <p>Esta acción no se puede deshacer.</p>
-  </div>
-
-  <!-- Información de la encuesta a eliminar -->
-  <h3>Datos de la Encuesta</h3>
-  <table border="1" cellpadding="10" cellspacing="0" style="width: 100%; max-width: 600px;">
-    <tr>
-      <th style="width: 150px; text-align: left;">ID</th>
-      <td>{{ encuesta.id }}</td>
-    </tr>
-    <tr>
-      <th style="text-align: left;">Título</th>
-      <td><strong>{{ encuesta.titulo }}</strong></td>
-    </tr>
-    <tr>
-      <th style="text-align: left;">Departamento</th>
-      <td>{{ encuesta.departamento.nombre_departamento }}</td>
-    </tr>
-    <tr>
-      <th style="text-align: left;">Ubicación</th>
-      <td>{{ encuesta.ubicacion }}</td>
-    </tr>
-    <tr>
-      <th style="text-align: left;">Prioridad</th>
-      <td>{{ encuesta.prioridad }}</td>
-    </tr>
-    <tr>
-      <th style="text-align: left;">Estado</th>
-      <td>
-        {% if encuesta.estado %}
-          <span style="color: green;">Activa</span>
-        {% else %}
-          <span style="color: orange;"> Bloqueada</span>
-        {% endif %}
-      </td>
-    </tr>
-    <tr>
-      <th style="text-align: left;">Creada el</th>
-      <td>{{ encuesta.creadoEl|date:"d/m/Y H:i" }}</td>
-    </tr>
-  </table>
-
-  <hr>
-
-  <!-- Formulario de confirmación -->
-  <form method="post" action="">
-    {% csrf_token %}
-    
-    <div style="margin: 20px 0;">
-      <button type="submit" style="background: #dc3545; color: white; padding: 12px 25px; border: none; cursor: pointer; font-size: 16px; font-weight: bold;">
-        Sí, eliminar encuesta
-      </button>
-      
-      <a href="{% url 'territorial_app:encuesta_detalle' encuesta.id %}" style="margin-left: 15px; text-decoration: none;">
-        <button type="button" style="background: #6c757d; color: white; padding: 12px 25px; border: none; cursor: pointer; font-size: 16px;">
-           No, cancelar
-        </button>
-      </a>
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-danger rounded-3">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirmación Requerida
+                </h5>
+            </div>
+            <div class="card-body">
+                <h4 class="card-title text-center">¿Estás realmente seguro?</h4>
+                <p class="lead text-center">
+                    Estás a punto de eliminar la encuesta:
+                    <br>
+                    <strong>"{{ encuesta.titulo }}"</strong>
+                </p>
+                
+                <div class="alert alert-danger" role="alert">
+                  <p class="mb-0"><strong>Departamento:</strong> {{ encuesta.departamento.nombre_departamento }}</p>
+                  <p class="mb-0"><strong>Ubicación:</strong> {{ encuesta.ubicacion }}</p>
+                  <p class="mb-0">Esta acción no se puede deshacer.</p>
+                </div>
+                
+                <form method="post" class="mt-4 text-center">
+                    {% csrf_token %}
+                    
+                    <a href="{% url 'territorial_app:encuesta_detalle' encuesta.id %}" class="btn btn-secondary">
+                        <i class="bi bi-x-lg"></i> No, cancelar
+                    </a>
+                    
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash-fill"></i> Sí, eliminar encuesta
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
-  </form>
+</div>
 
-  <hr>
-
-  <!-- Enlaces de navegación -->
-  <div>
-    <a href="{% url 'territorial_app:encuesta_detalle' encuesta.id %}"> Volver al detalle</a> |
-    <a href="{% url 'territorial_app:encuestas_lista' %}">Ir al listado</a> |
-    <a href="{% url 'personas:dashboard_territorial' %}">Ir al Dashboard</a>
-  </div>
+<div class="mt-4">
+    <a href="{% url 'territorial_app:encuestas_lista' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Volver al listado
+    </a>
 </div>
 {% endblock %}

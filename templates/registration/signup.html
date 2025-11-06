@@ -1,16 +1,53 @@
-{% extends "base.html" %}
-{% load static %}
-{% block title %}Registro{% endblock %}
-{% block content %}
-<style>.errorlist{color:red;} label{display:none}</style>
-<main>
-  <div>
+{% extends "registration/registration_base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Registro | Gestión Municipal{% endblock %}
+
+{% block auth_title %}
+    Registro de Nuevo Usuario
+{% endblock %}
+
+{% block auth_content %}
     <form action="" method="post">
-      {% csrf_token %}
-      <h3>Registro</h3>
-      {{ form.as_p }}
-      <p><input type="submit" value="Confirmar"></p>
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors|striptags }}
+            </div>
+        {% endif %}
+
+        {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">
+                    {{ field.label }}
+                </label>
+                
+                {% if field.field.widget.input_type == 'checkbox' %}
+                    <div class="form-check form-switch">
+                        {{ field|add_class:"form-check-input" }}
+                    </div>
+                {% else %}
+                    {{ field|add_class:"form-control" }}
+                {% endif %}
+
+                {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+                {% if field.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ field.errors|striptags }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-success btn-lg">Confirmar Registro</button>
+        </div>
     </form>
-  </div>
-</main>
+    
+    <p class="text-center mt-4 mb-0">
+        ¿Ya tienes cuenta? <a href="{% url 'login' %}" class="text-decoration-none">Inicia sesión</a>
+    </p>
 {% endblock %}
