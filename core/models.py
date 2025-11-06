@@ -52,7 +52,13 @@ class Encuesta(models.Model):
 class PreguntaEncuesta(models.Model):
     texto_pregunta = models.CharField(max_length=200)
     descripcion = models.TextField()
-    tipo = models.CharField(max_length=50)
+    tipo = models.CharField(max_length=50, choices=[
+            ('texto', 'Texto'),
+            ('numero', 'Número'),
+            ('opcion', 'Opción múltiple')
+        ],
+        default='texto'
+    )
     encuesta = models.ForeignKey(Encuesta, on_delete=models.CASCADE)
     def __str__(self):
         return self.texto_pregunta
@@ -61,7 +67,8 @@ class PreguntaEncuesta(models.Model):
 class RespuestaEncuesta(models.Model):
     texto_respuesta = models.TextField()
     tipo = models.CharField(max_length=50)
-    pregunta = models.ForeignKey(PreguntaEncuesta, on_delete=models.CASCADE)
+    pregunta = models.ForeignKey(PreguntaEncuesta, on_delete=models.CASCADE, 
+        related_name='respuestas')
 
     def __str__(self):
         return self.texto_respuesta[:50]
@@ -163,3 +170,18 @@ class Derivacion(models.Model):
 
     def __str__(self):
         return f"Derivación de {self.incidencia}"
+    
+class PreguntaBase(models.Model):
+    tipo_incidencia = models.ForeignKey(TipoIncidencia, on_delete=models.CASCADE, related_name='preguntas_base')
+    texto_pregunta = models.CharField(max_length=200)
+    tipo = models.CharField(max_length=50, choices=[
+            ('texto', 'Texto'),
+            ('numero', 'Número'),
+            ('opcion', 'Opción múltiple')
+        ],
+        default='texto'
+    )
+
+    def __str__(self):
+        return f"{self.tipo_incidencia.nombre_problema} - {self.texto_pregunta}"
+

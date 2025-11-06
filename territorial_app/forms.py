@@ -1,6 +1,7 @@
 from django import forms
-from core.models import Incidencia, JefeCuadrilla, Departamento, Encuesta, TipoIncidencia
+from core.models import Incidencia, JefeCuadrilla, Departamento, Encuesta, TipoIncidencia , PreguntaEncuesta
 from registration.models import Profile
+from django.forms import modelformset_factory
 
 class RechazarIncidenciaForm(forms.Form):
     motivo = forms.CharField(
@@ -40,62 +41,22 @@ class FinalizarIncidenciaForm(forms.ModelForm):
         model = Incidencia
         fields = ['observaciones']
 
-class EncuestaForm(forms.ModelForm):
-    """
-    Formulario para crear/editar encuestas.
-    """
-    PRIORIDAD_CHOICES = [
-        ('Alta', 'Alta'),
-        ('Normal', 'Normal'),
-        ('Baja', 'Baja'),
-    ]
 
-    prioridad = forms.ChoiceField(
-        choices=PRIORIDAD_CHOICES,
-        required=True,
-        label="Prioridad",
-        widget=forms.Select()
-    )
-    #cambios bernardo
-    tipo_incidencia = forms.ModelChoiceField(
-        queryset=TipoIncidencia.objects.all(),
-        required=True,
-        label="Tipo de incidencia",
-        widget=forms.Select(attrs={'class': 'form-control'})
-    )
+
+class EncuestaForm(forms.ModelForm):
+   
+    tipo_incidencia = forms.ModelChoiceField(queryset=TipoIncidencia.objects.all(), widget=forms.Select(attrs={'class':'form-control'}))
 
     class Meta:
         model = Encuesta
-        fields = ['titulo', 'descripcion', 'ubicacion', 'prioridad', 'departamento','tipo_incidencia', 'estado']
+        fields = ['titulo', 'descripcion', 'ubicacion', 'departamento', 'tipo_incidencia', 'estado']
         widgets = {
-            'titulo': forms.TextInput(attrs={
-                'placeholder': 'Título de la encuesta',
-                'maxlength': '100'
-            }),
-            'descripcion': forms.Textarea(attrs={
-                'rows': 4,
-                'placeholder': 'Descripción detallada de la encuesta'
-            }),
-            'ubicacion': forms.TextInput(attrs={
-                'placeholder': 'Ubicación de la encuesta',
-                'maxlength': '200'
-            }),
-            'departamento': forms.Select(),
+            'titulo': forms.TextInput(attrs={'class':'form-control'}),
+            'descripcion': forms.Textarea(attrs={'class':'form-control', 'rows':3}),
+            'ubicacion': forms.TextInput(attrs={'class':'form-control'}),
+            'departamento': forms.Select(attrs={'class':'form-control'}),
             'estado': forms.CheckboxInput(),
         }
-        labels = {
-            'titulo': 'Título',
-            'descripcion': 'Descripción',
-            'ubicacion': 'Ubicación',
-            'prioridad': 'Prioridad',
-            'departamento': 'Departamento',
-            'estado': 'Activa',
-        }
-        help_texts = {
-            'estado': 'Marcar si la encuesta está activa',
-        }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Solo departamentos activos
-        self.fields['departamento'].queryset = Departamento.objects.filter(estado=True)
+class PreguntaEncuestaForm(forms.Form):
+    texto_pregunta = forms.CharField(label='Pregunta', widget=forms.TextInput(attrs={'class':'form-control'}))

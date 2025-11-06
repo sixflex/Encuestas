@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Agregar Pregunta - {{ encuesta.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1>➕ Agregar Pregunta a "{{ encuesta.titulo }}"</h1>
+  <hr>
+
+  <form method="post">
+    {% csrf_token %}
+    <table border="1" cellpadding="10" cellspacing="0" style="width: 100%; max-width: 700px;">
+      {{ form.as_table }}
+    </table>
+
+    <div style="margin-top: 20px;">
+      <button type="submit" style="background: #28a745; color: white; padding: 10px 20px; border: none; cursor: pointer;">
+        💾 Guardar Pregunta
+      </button>
+
+      <a href="{% url 'territorial_app:encuesta_detalle' encuesta.id %}" style="text-decoration: none; margin-left: 10px;">
+        <button type="button" style="background: #6c757d; color: white; padding: 10px 20px; border: none; cursor: pointer;">
+          ↩️ Volver a la encuesta
+        </button>
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

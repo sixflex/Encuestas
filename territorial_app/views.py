@@ -2,11 +2,12 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q #cambio barbara
-from core.models import Incidencia, JefeCuadrilla, Departamento, Encuesta
-from .forms import RechazarIncidenciaForm, ReasignarIncidenciaForm, EncuestaForm, FinalizarIncidenciaForm #cambio barbara
+from django.db.models import Q
+from core.models import Incidencia, JefeCuadrilla, Departamento, Encuesta, PreguntaEncuesta, TipoIncidencia, PreguntaBase, RespuestaEncuesta
+from .forms import RechazarIncidenciaForm, ReasignarIncidenciaForm, EncuestaForm, FinalizarIncidenciaForm, PreguntaEncuestaForm
 from core.utils import solo_admin, admin_o_territorial
-
+from django.forms import formset_factory, modelformset_factory
+from django.http import JsonResponse
 # ---------------------------------
 # Lista de incidencias
 # ---------------------------------
@@ -97,35 +98,7 @@ def reasignar_incidencia(request, pk):
 
     return render(request,'territorial_app/reasignar_incidencia.html', ctx)
 
-'''
-#cambios barbara, esta malo asi que deje el del bernardo, ese funciona
-@login_required
-def reasignar_incidencia(request, pk):
-    incidencia = get_object_or_404(Incidencia, pk=pk)
-
-    if request.method == 'POST':
-        form = ReasignarIncidenciaForm(request.POST, instance=incidencia)
-        if form.is_valid():
-            incidencia_obj = form.save(commit=False)
-            incidencia_obj.cuadrilla = form.cleaned_data['cuadrilla']
-            incidencia_obj.save()
-
-            messages.success(
-                request,
-                f"Incidencia '{incidencia.titulo}' reasignada a departamento '{incidencia.departamento}'."
-            )
-            return redirect('territorial_app:incidencias_lista')
-    else:
-        form = ReasignarIncidenciaForm(instance=incidencia)
-
-    return render(
-        request,
-        'territorial_app/reasignar_incidencia.html',
-        {'form': form, 'incidencia': incidencia}
-    )
-'''
 # Finalizar incidencia
-
 @login_required
 def finalizar_incidencia(request, pk):
     incidencia = get_object_or_404(Incidencia, pk=pk)
@@ -194,65 +167,221 @@ def encuestas_lista(request):
 
 @login_required
 @admin_o_territorial
-def encuesta_detalle(request, pk):
+def encuesta_detalle(request, encuesta_id):
     """
-    Muestra el detalle de una encuesta.
+    Muestra los detalles de una encuesta y sus preguntas (con o sin respuesta).
     """
-    encuesta = get_object_or_404(Encuesta, pk=pk)
-    return render(request, "territorial_app/encuesta_detalle.html", {"encuesta": encuesta})
+    encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
+    preguntas = encuesta.preguntaencuesta_set.all().prefetch_related('respuestas')
+
+    preguntas_con_respuestas = []
+    for p in preguntas:
+        respuesta = p.respuestas.first()
+        texto = respuesta.texto_respuesta if respuesta and respuesta.texto_respuesta.strip() else "No respondida"
+        preguntas_con_respuestas.append({
+            "texto_pregunta": p.texto_pregunta,
+            "tipo_pregunta": getattr(p, "tipo_pregunta", "texto"),
+            "respuesta": texto
+        })
+
+    return render(request, "territorial_app/encuesta_detalle.html", {
+        "encuesta": encuesta,
+        "preguntas_con_respuestas": preguntas_con_respuestas,
+    })
+
+
 
 
 @login_required
 @admin_o_territorial
+def json_preguntas(request):
+    tipo_id = request.GET.get('tipo')
+    preguntas = []
+    if tipo_id:
+        preguntas = list(PreguntaBase.objects.filter(tipo_incidencia_id=tipo_id).values('texto_pregunta'))
+    return JsonResponse(preguntas, safe=False)
+
+@login_required
+@admin_o_territorial
 def encuesta_crear(request):
-    """
-    Crea una nueva encuesta.
-    Solo Territorial y Admin pueden crear.
-    """
-    if request.method == "POST":
-        form = EncuestaForm(request.POST)
-        if form.is_valid():
-            encuesta = form.save()
-            messages.success(request, f"Encuesta '{encuesta.titulo}' creada correctamente.")
-            return redirect("territorial_app:encuestas_lista")
+    PreguntaFormSet = formset_factory(PreguntaEncuestaForm, extra=0, can_delete=False)
+    preguntas_base = []
+    tipo_incidencia_id = None
+
+    if request.method == 'POST':
+        encuesta_form = EncuestaForm(request.POST)
+        formset = PreguntaFormSet(request.POST, prefix='manual')
+
+        tipo_incidencia_id = request.POST.get('tipo_incidencia')
+        if tipo_incidencia_id:
+            preguntas_base = PreguntaBase.objects.filter(tipo_incidencia_id=tipo_incidencia_id)
+
+        # Botón agregar pregunta
+        if 'agregar' in request.POST:
+            # reconstruimos el formset conservando los datos del POST
+            initial_list = []
+            i = 0
+            while f'manual-{i}-texto_pregunta' in request.POST:
+                initial_list.append({'texto_pregunta': request.POST.get(f'manual-{i}-texto_pregunta')})
+                i += 1
+            # agregamos un formulario vacío
+            initial_list.append({'texto_pregunta': ''})
+            formset = PreguntaFormSet(initial=initial_list, prefix='manual')
+
+        elif 'guardar' in request.POST:
+            if encuesta_form.is_valid() and formset.is_valid():
+                encuesta = encuesta_form.save()
+
+                # Guardar preguntas base
+                for pb in preguntas_base:
+                    PreguntaEncuesta.objects.create(
+                        encuesta=encuesta,
+                        texto_pregunta=pb.texto_pregunta,
+                        tipo=pb.tipo,
+                        descripcion=''
+                    )
+
+                # Guardar preguntas manuales
+                for f in formset.cleaned_data:
+                    if f and f.get('texto_pregunta'):
+                        PreguntaEncuesta.objects.create(
+                            encuesta=encuesta,
+                            texto_pregunta=f.get('texto_pregunta'),
+                            tipo='texto',
+                            descripcion=''
+                        )
+
+                return redirect('territorial_app:encuestas_lista')
     else:
-        form = EncuestaForm(initial={'estado': True, 'prioridad': 'Normal'})
-    
-    return render(request, "territorial_app/encuesta_form.html", {
-        "form": form,
-        "modo": "crear"
+        encuesta_form = EncuestaForm()
+        formset = PreguntaFormSet(prefix='manual')
+
+    return render(request, 'territorial_app/encuesta_form.html', {
+        'encuesta_form': encuesta_form,
+        'formset': formset,
+        'preguntas_base': preguntas_base,
     })
 
+
+
+@login_required
+@admin_o_territorial
+def pregunta_agregar(request, encuesta_id):
+    from core.models import PreguntaEncuesta
+    encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
+
+    if request.method == "POST":
+        texto = request.POST.get("texto_pregunta")
+        tipo = request.POST.get("tipo", "texto")
+        descripcion = request.POST.get("descripcion", "")
+
+        if texto:
+            PreguntaEncuesta.objects.create(
+                encuesta=encuesta,
+                texto_pregunta=texto,
+                descripcion=descripcion,
+                tipo=tipo
+            )
+            messages.success(request, f"Pregunta agregada a la encuesta '{encuesta.titulo}'.")
+            return redirect("territorial_app:encuesta_detalle", pk=encuesta.id)
+        else:
+            messages.error(request, "Debes escribir una pregunta antes de guardar.")
+
+    return render(request, "territorial_app/pregunta_form.html", {"encuesta": encuesta})
+
+@login_required
+@admin_o_territorial
+def responder_encuesta(request, encuesta_id):
+    """
+    Permite responder las preguntas de una encuesta.
+    """
+    encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
+    preguntas = encuesta.preguntaencuesta_set.all().prefetch_related('respuestas')
+
+    if request.method == "POST":
+        for pregunta in preguntas:
+            texto = request.POST.get(f"respuesta_{pregunta.id}", "").strip()
+            if texto:
+                # Guarda la respuesta: crea si no existe, actualiza si ya existe
+                respuesta, created = RespuestaEncuesta.objects.get_or_create(
+                    pregunta=pregunta,
+                    defaults={"texto_respuesta": texto, "tipo": pregunta.tipo}
+                )
+                if not created:
+                    respuesta.texto_respuesta = texto
+                    respuesta.save()
+        messages.success(request, "Respuestas guardadas correctamente.")
+        return redirect("territorial_app:encuesta_detalle", encuesta_id=encuesta.id)
+
+    return render(request, "territorial_app/responder_encuesta.html", {
+        "encuesta": encuesta,
+        "preguntas": preguntas,
+    })
 
 @login_required
 @admin_o_territorial
 def encuesta_editar(request, pk):
     """
     Edita una encuesta existente.
-    Según requerimientos: solo se puede editar si está bloqueada (inactiva).
+    Permite:
+      - Modificar preguntas manuales existentes
+      - Agregar nuevas preguntas
+      - Eliminar preguntas
+    No se pueden editar preguntas base.
     """
     encuesta = get_object_or_404(Encuesta, pk=pk)
-    
-    # Validación: no se puede editar una encuesta activa
-    if encuesta.estado and request.method == "POST":
-        messages.error(request, "No se puede editar una encuesta activa. Debes desactivarla primero.")
-        return redirect("territorial_app:encuesta_detalle", pk=pk)
-    
-    if request.method == "POST":
-        form = EncuestaForm(request.POST, instance=encuesta)
-        if form.is_valid():
-            encuesta = form.save()
-            messages.success(request, f"Encuesta '{encuesta.titulo}' actualizada correctamente.")
-            return redirect("territorial_app:encuestas_lista")
-    else:
-        form = EncuestaForm(instance=encuesta)
-    
-    return render(request, "territorial_app/encuesta_form.html", {
-        "form": form,
-        "modo": "editar",
-        "encuesta": encuesta
-    })
 
+    if encuesta.estado:
+        messages.error(request, "No se puede editar una encuesta activa. Debes desactivarla primero.")
+        return redirect("territorial_app:encuesta_detalle", encuesta_id=pk)
+
+    # Solo preguntas manuales
+    preguntas_manual = list(encuesta.preguntaencuesta_set.filter(tipo='texto').order_by('id'))
+
+    # Creamos formset con opción de eliminar
+    PreguntaFormSet = formset_factory(PreguntaEncuestaForm, extra=1, can_delete=True)
+
+    if request.method == 'POST':
+        formset = PreguntaFormSet(request.POST, prefix='manual')
+
+        if formset.is_valid():
+            # Guardar/Actualizar preguntas existentes
+            for i, f in enumerate(formset.cleaned_data):
+                if not f:
+                    continue
+                if f.get('DELETE'):
+                    # Si está marcado para borrar, eliminamos la pregunta correspondiente si existe
+                    if i < len(preguntas_manual):
+                        preguntas_manual[i].delete()
+                else:
+                    if i < len(preguntas_manual):
+                        # Actualizar pregunta existente
+                        pregunta = preguntas_manual[i]
+                        pregunta.texto_pregunta = f['texto_pregunta']
+                        pregunta.save()
+                    else:
+                        # Crear nueva pregunta manual
+                        if f.get('texto_pregunta'):
+                            PreguntaEncuesta.objects.create(
+                                encuesta=encuesta,
+                                texto_pregunta=f['texto_pregunta'],
+                                tipo='texto'
+                            )
+            messages.success(request, f"Encuesta '{encuesta.titulo}' actualizada correctamente.")
+            return redirect("territorial_app:encuesta_detalle", encuesta_id=encuesta.id)
+    else:
+        # Inicializamos el formset con preguntas existentes
+        initial_data = [{'texto_pregunta': p.texto_pregunta} for p in preguntas_manual]
+        formset = PreguntaFormSet(initial=initial_data, prefix='manual')
+
+    encuesta_form = EncuestaForm(instance=encuesta)
+
+    return render(request, "territorial_app/encuesta_form.html", {
+        'encuesta_form': encuesta_form,
+        'formset': formset,
+        'encuesta': encuesta,
+        'modo': 'editar'
+    })
 
 @login_required
 @admin_o_territorial
@@ -287,7 +416,7 @@ def encuesta_eliminar(request, pk):
     # Opcional: solo permitir eliminar si está bloqueada
     if encuesta.estado:
         messages.error(request, "No se puede eliminar una encuesta activa. Debes desactivarla primero.")
-        return redirect("territorial_app:encuesta_detalle", pk=pk)
+        return redirect("territorial_app:encuesta_detalle", encuesta_id=pk)
     
     if request.method == "POST":
         titulo = encuesta.titulo

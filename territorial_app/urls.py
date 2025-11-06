@@ -22,9 +22,9 @@ urlpatterns = [
     # Crear encuesta
     path("encuestas/nueva/", views.encuesta_crear, name="encuesta_crear"),
     
-    # Ver detalle de encuesta
-    path("encuestas/<int:pk>/", views.encuesta_detalle, name="encuesta_detalle"),
-    
+    # Ver detalle de encuesta,
+    path('encuestas/<int:encuesta_id>/', views.encuesta_detalle, name='encuesta_detalle'),
+
     # Editar encuesta
     path("encuestas/<int:pk>/editar/", views.encuesta_editar, name="encuesta_editar"),
     
@@ -33,5 +33,11 @@ urlpatterns = [
     
     # Eliminar encuesta
     path("encuestas/<int:pk>/eliminar/", views.encuesta_eliminar, name="encuesta_eliminar"),
+
+    # Agregar pregunta manual
+    path('encuestas/<int:encuesta_id>/pregunta/nueva/', views.pregunta_agregar, name='pregunta_agregar'),
+
+    path('encuesta/<int:encuesta_id>/responder/', views.responder_encuesta, name='responder_encuesta'),
 #----------------------------------------------------------
+    path('encuestas/json_preguntas/', views.json_preguntas, name='json_preguntas'),
 ]
