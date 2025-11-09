@@ -29,7 +29,7 @@ def cargar_tipos(request):
     if not categoria_id:
         return JsonResponse({'tipos': []})
     
-    tipos = Tipo.objects.filter(
+    tipos = TipoIncidencia.objects.filter(
         categoria_id=categoria_id,
         activo=True
     ).values('id', 'nombre', 'prioridad_predeterminada')
@@ -46,7 +46,7 @@ def _filtrar_por_rol(qs, user):
     Reglas:
       - Admin (is_superuser) o grupo 'Administrador' y 'Dirección' ven todo.
       - 'Departamento' ve todo.
-      - 'Jefe de Cuadrilla' -> solo pendiente y en_proceso.
+      - 'Jefe de Cuadrilla' -> solo pendiente y en_progreso.
       - 'Territorial' -> solo pendiente.
       - Sin grupo -> solo incidencias asociadas a su email.
     """
@@ -72,24 +72,10 @@ def _filtrar_por_rol(qs, user):
             )
         except:
             return qs.none()
-        #return qs.filter(estado__in=["pendiente", "en_proceso"])
+        #return qs.filter(estado__in=["pendiente", "en_progreso"])
 
     if "Territorial" in roles:
-    # Solo incidencias pendientes de cuadrillas donde el usuario es jefe o encargado
-            from core.models import JefeCuadrilla
-            from django.db.models import Q
-            try:
-                profile = user.profile
-                cuadrillas = JefeCuadrilla.objects.filter(
-                    Q(usuario=profile) | Q(encargado=profile)
-                )
-                return qs.filter(
-                    cuadrilla__in=cuadrillas,
-                    estado="pendiente"
-                )
-            except:
-                return qs.none()
-        #return qs.filter(estado="pendiente")
+        return qs
 #---------------------------------------------------------------------------------------------------
     # Sin rol: solo ve las suyas (por email)
     return qs.filter(email_usuario=user.email)
@@ -99,9 +85,9 @@ def _filtrar_por_rol(qs, user):
 @login_required
 def incidencias_lista(request):
     q = (request.GET.get("q") or "").strip()
-    estado = request.GET.get("estado")  # 'pendiente' | 'en_proceso' | 'resuelto' | None
+    estado = request.GET.get("estado")  # 'pendiente' | 'en_progreso' | 'resuelto' | None
     departamento_id = request.GET.get("departamento") #nuevo filtro
-    tipo_id = request.GET.get("tipo")#nuevo
+    tipo_id = request.GET.get("tipo_id")#nuevo
     tipos = TipoIncidencia.objects.all()#nuevo
 
     qs = Incidencia.objects.all().order_by("-creadoEl")
@@ -130,7 +116,7 @@ def incidencias_lista(request):
     ESTADOS_COLORES = {
     "Pendiente": "secondary",
     "En progreso": "warning",
-    "finalizada": "success",
+    "Completada": "success",
     "validada": "info",
     "rechazada": "danger",
 }
@@ -150,7 +136,6 @@ def incidencias_lista(request):
         except Departamento.DoesNotExist:
             departamento_nombre = ""
 
-    tipos_incidencia = TipoIncidencia.objects.all()
     ctx = {
         "incidencias": qs,
         "q": q,
@@ -169,17 +154,35 @@ def incidencias_lista(request):
     }
 
     return render(request, "incidencias/incidencias_lista.html", ctx)
-
+    
 @login_required
 def incidencia_detalle(request, pk):
     incidencia = get_object_or_404(Incidencia, pk=pk)
-    # protección de acceso al detalle según rol
+
     visible = _filtrar_por_rol(Incidencia.objects.filter(pk=pk), request.user).exists()
     if not visible:
         messages.error(request, "No tienes permisos para ver esta incidencia.")
         return redirect("incidencias:incidencias_lista")
-    return render(request, "incidencias/incidencia_detalle.html", {"obj": incidencia})
 
+    encuesta = getattr(incidencia, "encuesta", None)
+    preguntas_con_respuestas = []
+
+    if encuesta:
+        preguntas = encuesta.preguntaencuesta_set.all().prefetch_related("respuestas")
+        for p in preguntas:
+            respuesta = p.respuestas.first()
+            preguntas_con_respuestas.append({
+                "texto_pregunta": p.texto_pregunta,
+                "respuesta": respuesta.texto_respuesta if respuesta else "No respondida"
+            })
+
+    contexto = {
+        "obj": incidencia,
+        "encuesta": encuesta,
+        "preguntas_con_respuestas": preguntas_con_respuestas,
+    }
+
+    return render(request, "incidencias/incidencia_detalle.html", contexto)
 
 # ----------------- CRUD (solo administrador) -----------------
 @login_required
@@ -227,16 +230,16 @@ def incidencia_editar(request, pk):
             if request.user.is_superuser or 'Administrador' in roles:
                 puede_cambiar = True
             elif 'Territorial' in roles:
-                # Territorial solo puede crear (pendiente) y validar/rechazar finalizadas
-                if estado_anterior == 'finalizada' and nuevo_estado in ['validada', 'rechazada']:
+                # Territorial solo puede crear (pendiente) y validar/rechazar completadas
+                if estado_anterior == 'Completada' and nuevo_estado in ['Validada', 'Rechazada']:
                     puede_cambiar = True
             elif 'Departamento' in roles:
                 # Departamento solo puede poner en proceso las pendientes
-                if estado_anterior == 'pendiente' and nuevo_estado == 'en_proceso':
+                if estado_anterior == 'Pendiente' and nuevo_estado == 'En Progreso':
                     puede_cambiar = True
             elif 'Jefe de Cuadrilla' in roles:
                 # Cuadrilla solo puede finalizar las que están en proceso
-                if estado_anterior == 'en_proceso' and nuevo_estado == 'finalizada':
+                if estado_anterior == 'En Progreso' and nuevo_estado == 'Completada':
                     puede_cambiar = True
                     
             if not puede_cambiar:
@@ -246,7 +249,7 @@ def incidencia_editar(request, pk):
             incidencia = form.save(commit=False)
             
             # Si se está rechazando la incidencia, guardar el motivo
-            if incidencia.estado == 'rechazada' and motivo_rechazo:
+            if incidencia.estado == 'Rechazada' and motivo_rechazo:
                 incidencia.motivo_rechazo = motivo_rechazo
             
             incidencia.save()
@@ -370,8 +373,8 @@ def subir_evidencia(request, pk):
             )
             return redirect("incidencias:incidencias_lista")
     
-    # Validación 3: Solo se puede subir evidencia si está en estado "en_proceso"
-    if incidencia.estado != "en_proceso":
+    # Validación 3: Solo se puede subir evidencia si está en estado "en_progreso"
+    if incidencia.estado != "En Progreso":
         messages.warning(
             request,
             f"Solo se puede subir evidencia cuando la incidencia está 'En proceso'. Estado actual: {incidencia.estado}"
@@ -403,7 +406,7 @@ def subir_evidencia(request, pk):
                 incidencia=incidencia
             )
             
-            # NO cambiar automáticamente a finalizada - permitir subir múltiples evidencias
+            # NO cambiar automáticamente a Completada - permitir subir múltiples evidencias
             # La cuadrilla debe finalizar manualmente cuando termine
             
             messages.success(
@@ -425,7 +428,7 @@ def subir_evidencia(request, pk):
 @login_required
 def finalizar_incidencia(request, pk):
     """
-    Vista para que la cuadrilla marque una incidencia como finalizada después de subir evidencias.
+    Vista para que la cuadrilla marque una incidencia como Completada después de subir evidencias.
     """
     incidencia = get_object_or_404(Incidencia, pk=pk)
     roles = set(request.user.groups.values_list("name", flat=True))
@@ -454,8 +457,8 @@ def finalizar_incidencia(request, pk):
             messages.error(request, f"Solo la cuadrilla '{incidencia.cuadrilla.nombre_cuadrilla}' puede finalizar esta incidencia.")
             return redirect("incidencias:incidencias_lista")
     
-    # Validación 3: Debe estar en "en_proceso"
-    if incidencia.estado != "en_proceso":
+    # Validación 3: Debe estar en "en_progreso"
+    if incidencia.estado != "en_progreso":
         messages.warning(request, f"Solo se pueden finalizar incidencias en estado 'En proceso'. Estado actual: {incidencia.estado}")
         return redirect("incidencias:incidencia_detalle", pk=pk)
     
@@ -465,12 +468,12 @@ def finalizar_incidencia(request, pk):
         return redirect("incidencias:subir_evidencia", pk=pk)
     
     # Finalizar incidencia
-    incidencia.estado = "finalizada"
+    incidencia.estado = "Completada"
     incidencia.save()
     
     messages.success(
         request,
-        f"¡Incidencia finalizada correctamente! El territorial ahora puede validar o rechazar el trabajo realizado."
+        f"¡Incidencia Completada correctamente! El territorial ahora puede validar o rechazar el trabajo realizado."
     )
     return redirect("incidencias:incidencia_detalle", pk=pk)
 

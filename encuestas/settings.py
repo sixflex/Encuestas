@@ -61,7 +61,7 @@ WSGI_APPLICATION = "encuestas.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": ("muni3"),
+        "NAME": ("muni"),
         "USER": ("postgres"),
         "PASSWORD": ("3581321"),
         "HOST": ("localhost"),
@@ -70,6 +70,7 @@ DATABASES = {
         "CONN_HEALTH_CHECKS": True,
     }
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

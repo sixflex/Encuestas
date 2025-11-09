@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Finalizar Incidencia{% endblock %}
+{% block title %}Completar Incidencia{% endblock %}
 
 {% block content %}
-<h2>Finalizar incidencia: {{ incidencia.titulo }}</h2>
+<h2>Completar incidencia: {{ incidencia.titulo }}</h2>
 
 <form method="post" enctype="multipart/form-data" style="max-width: 500px;">
     {% csrf_token %}
@@ -20,7 +20,7 @@
     </div>
 
     <br>
-    <button type="submit" style="padding: 5px 10px;">Finalizar</button>
+    <button type="submit" style="padding: 5px 10px;">Completar</button>
     <a href="{% url 'territorial_app:incidencias_lista' %}" style="margin-left: 10px;">Cancelar</a>
 </form>
 {% endblock %}

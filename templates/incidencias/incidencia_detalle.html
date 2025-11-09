@@ -67,7 +67,7 @@
     <a href="{% url 'incidencias:incidencia_eliminar' obj.pk %}" class="btn btn-danger"> Eliminar</a>
   {% endif %}
 
-  {% if obj.estado == 'en_proceso' and obj.cuadrilla %}
+  {% if obj.estado == 'en_progreso' and obj.cuadrilla %}
     {% if user.is_superuser or user|has_group:"Administrador" or user|has_group:"Jefe de Cuadrilla" or user|has_group:"Cuadrilla" %}
       <a href="{% url 'incidencias:subir_evidencia' obj.pk %}" class="btn btn-success">Subir evidencia</a>
       
