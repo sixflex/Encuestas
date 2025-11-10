@@ -35,8 +35,8 @@
       {% endfor %}
     </select>
 
-    <!-- NUEVO Filtro por tipo de incidencia -->
-    <select name="tipo" class="form-select" style="max-width:220px;" onchange="this.form.submit()">
+    <!--Filtro por tipo de incidencia -->
+    <select name="tipo_id" class="form-select" style="max-width:220px;" onchange="this.form.submit()">
       <option value="">-- Todos los tipos --</option>
       {% for tipo in tipos %}
         <option value="{{ tipo.id }}" {% if tipo_seleccionado == tipo.id|stringformat:"s" %}selected{% endif %}>
@@ -68,6 +68,7 @@
       <tr>
         <th>ID</th>
         <th>Título</th>
+        <th>Tipo</th>
         <th>Encuesta</th>
         <th>Estado</th>
         <th>Prioridad</th>
@@ -83,6 +84,13 @@
           <td>{{ incidencia.id }}</td>
           <td>{{ incidencia.titulo }}</td>
           <td>
+            {% if incidencia.tipo_incidencia %}
+              {{incidencia.tipo_incidencia.nombre_gravedad}}
+            {% else %} 
+              Sin tipo 
+             {% endif %}
+          </td>
+          <td>
           {% if incidencia.encuesta %}
             {{ incidencia.encuesta.titulo }}
           {% else %}
@@ -94,8 +102,8 @@
               <span class="badge bg-secondary">Pendiente</span>
             {% elif incidencia.estado == 'en_progreso' %}
               <span class="badge bg-warning text-dark">En progreso</span>
-            {% elif incidencia.estado == 'finalizada' %}
-              <span class="badge bg-success">Finalizada</span>
+            {% elif incidencia.estado == 'completada' %}
+              <span class="badge bg-success">Completada</span>
             {% elif incidencia.estado == 'validada' %}
               <span class="badge bg-info">Validada</span>
             {% elif incidencia.estado == 'rechazada' %}
@@ -141,36 +149,31 @@
             {% endif %}
 
             <!--  Acciones para Territorial -->
-            {% if is_territorial %}
+            {% if is_territorial and incidencia.encuesta%}
               <a href="{% url 'incidencias:incidencia_editar' incidencia.id %}" class="btn btn-sm btn-info"> Editar</a>
               <a href="{% url 'territorial_app:validar_incidencia' incidencia.id %}" class="btn btn-sm btn-success">Validar</a>
+              <a href="{% url 'territorial_app:rechazar_incidencia' incidencia.id %}" class="btn btn-sm btn-danger">Rechazar</a>
               <a href="{% url 'territorial_app:reasignar_incidencia' incidencia.id %}" class="btn btn-sm btn-warning"> Reasignar</a>
+              <a href="{% url 'territorial_app:responder_encuesta' incidencia.encuesta.id incidencia.id %}" class="btn btn-sm btn-warning">Responder encuesta</a>
+
             {% endif %}
 
             <!-- Acciones para Jefe de Cuadrilla -->
-            {% if is_jefe %}
-              <a href="{% url 'territorial_app:finalizar_incidencia' incidencia.id %}" class="btn btn-sm btn-warning"> Finalizar</a>
+            {% if is_jefe and incidencia.encuesta%}
+              <a href="{% url 'territorial_app:finalizar_incidencia' incidencia.id %}" class="btn btn-sm btn-warning"> Completar</a>
+              <a href="{% url 'territorial_app:responder_encuesta' incidencia.encuesta.id incidencia.id %}" class="btn btn-sm btn-warning">Responder encuesta</a>
             {% endif %}
 
             <!--  Subir evidencia y finalizar -->
-            {% if incidencia.estado == 'en_proceso' and incidencia.cuadrilla %}
+            {% if incidencia.estado == 'en_progreso' and incidencia.cuadrilla %}
             {% if user.is_superuser or is_admin or is_jefe %}
                 <a href="{% url 'incidencias:subir_evidencia' incidencia.id %}" class="btn btn-sm btn-success"> Subir evidencia</a>
               {% endif %}
 
               {% if incidencia.multimedias.exists %}
                 {% if user.is_superuser or is_admin or is_jefe %}
-                  <a href="{% url 'territorial:finalizar_incidencia' incidencia.id %}" class="btn btn-sm btn-primary" onclick="return confirm('¿Finalizar esta incidencia?')">✅ Finalizar</a>
+                  <a href="{% url 'territorial:finalizar_incidencia' incidencia.id %}" class="btn btn-sm btn-primary" onclick="return confirm('¿Completar esta incidencia?')">✅ Completar</a>
                 {% endif %}
-              {% endif %}
-            {% endif %}
-
-            <!--  Validar/Rechazar/Reasignar para Territorial -->
-            {% if user.is_territorial %}
-              {% if incidencia.estado == 'pendiente' or incidencia.estado == 'en_proceso' %}
-                <a href="{% url 'territorial_app:validar_incidencia' incidencia.id %}" class="btn btn-sm btn-success">Validar</a>
-                <a href="{% url 'territorial_app:rechazar_incidencia' incidencia.id %}" class="btn btn-sm btn-danger">Rechazar</a>
-                <a href="{% url 'territorial_app:reasignar_incidencia' incidencia.id %}" class="btn btn-sm btn-warning">Reasignar</a>
               {% endif %}
             {% endif %}
           </td>

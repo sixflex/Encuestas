@@ -23,6 +23,7 @@ urlpatterns = [
     path("tipos/<int:tipo_id>/preguntas/nueva/", views_clasificacion.pregunta_base_crear, name="pregunta_base_crear"),
     path("preguntas/<int:pk>/editar/", views_clasificacion.pregunta_base_editar, name="pregunta_base_editar"),
     path("preguntas/<int:pk>/eliminar/", views_clasificacion.pregunta_base_eliminar, name="pregunta_base_eliminar"),
+    
 
     # ----------------- Incidencias -----------------
     path("incidencias/", views.incidencias_lista, name="incidencias_lista"),

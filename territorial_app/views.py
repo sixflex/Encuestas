@@ -3,11 +3,19 @@ from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from core.models import Incidencia, JefeCuadrilla, Departamento, Encuesta, PreguntaEncuesta, TipoIncidencia, PreguntaBase, RespuestaEncuesta
+from core.models import Incidencia, JefeCuadrilla, Departamento, Encuesta, PreguntaEncuesta, TipoIncidencia, PreguntaBase, RespuestaEncuesta, Multimedia
 from .forms import RechazarIncidenciaForm, ReasignarIncidenciaForm, EncuestaForm, FinalizarIncidenciaForm, PreguntaEncuestaForm
+from incidencias.forms import SubirEvidenciaForm
 from core.utils import solo_admin, admin_o_territorial
 from django.forms import formset_factory, modelformset_factory
 from django.http import JsonResponse
+
+#imports necesarios para evidencias
+from django.http import JsonResponse
+from .forms import EvidenciaForm
+from core.models import Multimedia
+import os
+
 # ---------------------------------
 # Lista de incidencias
 # ---------------------------------
@@ -117,10 +125,10 @@ def finalizar_incidencia(request, pk):
         form = FinalizarIncidenciaForm(request.POST, request.FILES, instance=incidencia)
         if form.is_valid():
             incidencia = form.save(commit=False)
-            incidencia.estado = 'Finalizada'
+            incidencia.estado = 'Completada'
             incidencia.fecha_finalizacion = timezone.now()
             incidencia.save()
-            messages.success(request, f"La incidencia '{incidencia.titulo}' ha sido finalizada.")
+            messages.success(request, f"La incidencia '{incidencia.titulo}' ha sido Completada.")
             return redirect('territorial_app:incidencias_lista')
     else:
         form = FinalizarIncidenciaForm(instance=incidencia)
@@ -166,13 +174,17 @@ def encuestas_lista(request):
 
 
 @login_required
-@admin_o_territorial
+#@admin_o_territorial
 def encuesta_detalle(request, encuesta_id):
     """
-    Muestra los detalles de una encuesta y sus preguntas (con o sin respuesta).
+    Muestra los detalles de una encuesta, sus preguntas y evidencias.
     """
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
     preguntas = encuesta.preguntaencuesta_set.all().prefetch_related('respuestas')
+    evidencias = encuesta.evidencias.all().order_by('-creadoEl')
+    
+    # Formulario para subir evidencias
+    evidencia_form = EvidenciaForm()
 
     preguntas_con_respuestas = []
     for p in preguntas:
@@ -183,10 +195,15 @@ def encuesta_detalle(request, encuesta_id):
             "tipo_pregunta": getattr(p, "tipo_pregunta", "texto"),
             "respuesta": texto
         })
+    
+    incidencia = encuesta.incidencia_set.first()
 
     return render(request, "territorial_app/encuesta_detalle.html", {
         "encuesta": encuesta,
         "preguntas_con_respuestas": preguntas_con_respuestas,
+        "incidencia": incidencia,
+        "evidencias": evidencias,
+        "evidencia_form": evidencia_form,
     })
 
 
@@ -290,13 +307,15 @@ def pregunta_agregar(request, encuesta_id):
     return render(request, "territorial_app/pregunta_form.html", {"encuesta": encuesta})
 
 @login_required
-@admin_o_territorial
-def responder_encuesta(request, encuesta_id):
+#@admin_o_territorial
+def responder_encuesta(request, encuesta_id, incidencia_id):
     """
     Permite responder las preguntas de una encuesta.
     """
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
+    incidencia = get_object_or_404(Incidencia, pk=incidencia_id)
     preguntas = encuesta.preguntaencuesta_set.all().prefetch_related('respuestas')
+    evidencia_form = SubirEvidenciaForm(request.POST or None, request.FILES or None)
 
     if request.method == "POST":
         for pregunta in preguntas:
@@ -310,12 +329,27 @@ def responder_encuesta(request, encuesta_id):
                 if not created:
                     respuesta.texto_respuesta = texto
                     respuesta.save()
-        messages.success(request, "Respuestas guardadas correctamente.")
-        return redirect("territorial_app:encuesta_detalle", encuesta_id=encuesta.id)
 
+        if evidencia_form.is_valid() and evidencia_form.cleaned_data.get('archivo'):
+            archivo = evidencia_form.cleaned_data['archivo']
+            nombre= evidencia_form.cleaned_data.get('nombre') or archivo.name
+
+            Multimedia.objects.create(
+                incidencia=incidencia,
+                nombre=nombre,
+                url= archivo.url,
+                tipo = 'archivo',
+                formato=archivo.name.split('.'[-1])
+            )
+
+        messages.success(request, "Encuesta enviada correctamente.")
+        return redirect(request.path)
+           
     return render(request, "territorial_app/responder_encuesta.html", {
         "encuesta": encuesta,
         "preguntas": preguntas,
+        "incidencia":incidencia,
+        "form":evidencia_form,
     })
 
 @login_required
@@ -425,3 +459,98 @@ def encuesta_eliminar(request, pk):
         return redirect("territorial_app:encuestas_lista")
     
     return render(request, "territorial_app/encuesta_eliminar.html", {"encuesta": encuesta})
+
+#Funciones para manejar evidencias
+
+@login_required
+@admin_o_territorial
+def evidencia_subir(request, encuesta_id):
+    """
+    Sube una evidencia (imagen, video, audio, documento) a una encuesta.
+    Usa AJAX para subida dinámica sin recargar la página.
+    """
+    encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
+    
+    if request.method == 'POST':
+        form = EvidenciaForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            evidencia = form.save(commit=False)
+            evidencia.encuesta = encuesta
+            
+            # Si hay una incidencia asociada, también la vinculamos
+            incidencia = encuesta.incidencia_set.first()
+            if incidencia:
+                evidencia.incidencia = incidencia
+            
+            evidencia.save()
+            
+            # Respuesta para AJAX
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Evidencia subida correctamente',
+                    'evidencia': {
+                        'id': evidencia.id,
+                        'nombre': evidencia.nombre,
+                        'tipo': evidencia.tipo,
+                        'formato': evidencia.formato,
+                        'url': evidencia.archivo.url,
+                        'icono': evidencia.get_icono(),
+                        'tamanio': evidencia.tamanio,
+                    }
+                })
+            
+            messages.success(request, f'Evidencia "{evidencia.nombre}" subida correctamente.')
+            return redirect('territorial_app:encuesta_detalle', encuesta_id=encuesta.id)
+        else:
+            # Errores del formulario
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                errors = {}
+                for field, error_list in form.errors.items():
+                    errors[field] = [str(e) for e in error_list]
+                return JsonResponse({
+                    'success': False,
+                    'errors': errors
+                }, status=400)
+            
+            messages.error(request, 'Error al subir la evidencia. Verifica el formulario.')
+    
+    return redirect('territorial_app:encuesta_detalle', encuesta_id=encuesta.id)
+
+
+@login_required
+@admin_o_territorial
+def evidencia_eliminar(request, evidencia_id):
+    """
+    Elimina una evidencia.
+    """
+    evidencia = get_object_or_404(Multimedia, pk=evidencia_id)
+    encuesta_id = evidencia.encuesta.id if evidencia.encuesta else None
+    
+    if request.method == 'POST':
+        nombre = evidencia.nombre
+        
+        # Eliminar archivo físico
+        if evidencia.archivo:
+            try:
+                if os.path.isfile(evidencia.archivo.path):
+                    os.remove(evidencia.archivo.path)
+            except Exception as e:
+                print(f"Error al eliminar archivo físico: {e}")
+        
+        evidencia.delete()
+        
+        # Respuesta para AJAX
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': f'Evidencia "{nombre}" eliminada correctamente'
+            })
+        
+        messages.success(request, f'Evidencia "{nombre}" eliminada correctamente.')
+        
+        if encuesta_id:
+            return redirect('territorial_app:encuesta_detalle', encuesta_id=encuesta_id)
+    
+    return redirect('territorial_app:encuestas_lista')

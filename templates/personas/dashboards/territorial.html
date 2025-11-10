@@ -25,16 +25,14 @@
   </div>
 
   <hr>
-
   <!-- SECCIÓN DE INCIDENCIAS -->
   <h3>Gestión de Incidencias</h3>
   <p>Accede a las incidencias para crearlas, editarlas, validarlas, rechazarlas o reasignarlas:</p>
 
   <div class="acciones mb-3">
-    <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-primary"> Ver todas las Incidencias</a>
-    <a href="{% url 'incidencias:incidencia_crear' %}" class="btn btn-success ms-2"> Crear Incidencia</a>
+      <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-primary">Ver todas las Incidencias</a>
+      <a href="{% url 'incidencias:incidencia_crear' %}" class="btn btn-success ms-2"> Crear Incidencia</a>
   </div>
-
   <hr>
 
 {% endblock %}

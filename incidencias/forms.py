@@ -33,7 +33,7 @@ class IncidenciaForm(forms.ModelForm):
     )
     encuesta = forms.ModelChoiceField(
         queryset=Encuesta.objects.filter(estado=True),
-        required=False,  # si quieres que no sea obligatorio
+        required=True,  # para que no se pueda crear incidencia si no esta asociado a una encuesta
         label="Encuesta asociada",
         widget=forms.Select(attrs={"class": "form-select"})
     )
@@ -158,32 +158,23 @@ class IncidenciaForm(forms.ModelForm):
             incidencia.save()
         return incidencia
     
-#cambios barbara
 class SubirEvidenciaForm(forms.Form):
-    """
-    Formulario para subir evidencia multimedia de una incidencia.
-    La evidencia se asociará al modelo Multimedia relacionado con la incidencia.
-    """
     archivo = forms.FileField(
         label="Archivo de evidencia",
-        required=True,
+        required=False,
         widget=forms.FileInput(attrs={
             'class': 'form-control',
             'accept': 'image/*,video/*,application/pdf'
         }),
         help_text="Formatos permitidos: imágenes, videos, PDF. Tamaño máximo: 10MB"
     )
-    
     nombre = forms.CharField(
         max_length=100,
         label="Nombre de la evidencia",
         required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Ej: Foto del problema resuelto'
-        })
+        widget=forms.TextInput(attrs={'class':'form-control','placeholder':'Ej: Foto del problema'})
     )
-    
+
     def clean_archivo(self):
         archivo = self.cleaned_data.get('archivo')
         if archivo:

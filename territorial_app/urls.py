@@ -37,7 +37,19 @@ urlpatterns = [
     # Agregar pregunta manual
     path('encuestas/<int:encuesta_id>/pregunta/nueva/', views.pregunta_agregar, name='pregunta_agregar'),
 
-    path('encuesta/<int:encuesta_id>/responder/', views.responder_encuesta, name='responder_encuesta'),
+    path('encuesta/<int:encuesta_id>/incidencia/<int:incidencia_id>/responder/', views.responder_encuesta, name='responder_encuesta'),
 #----------------------------------------------------------
     path('encuestas/json_preguntas/', views.json_preguntas, name='json_preguntas'),
+
+#=========================================================
+# RUTAS DE EVIDENCIAS (NUEVO)
+
+    path('encuestas/<int:encuesta_id>/evidencia/subir/', 
+         views.evidencia_subir, 
+         name='evidencia_subir'),
+         
+    path('evidencia/<int:evidencia_id>/eliminar/', 
+         views.evidencia_eliminar, 
+         name='evidencia_eliminar'),
+
 ]
