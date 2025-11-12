@@ -1,3 +1,45 @@
+<form method="post">
+    {% csrf_token %}
+    {{ encuesta_form.as_p }}
+
+    <h4>Preguntas Base</h4>
+    <div id="preguntas_base_container">
+        {% for pb in preguntas_base %}
+            <p>{{ pb.texto_pregunta }}</p>
+        {% endfor %}
+    </div>
+
+    <h4>Preguntas Manuales</h4>
+    <div id="manual_formset">
+        {{ formset.management_form }}
+        {% for form in formset %}
+            {{ form.as_p }}
+        {% endfor %}
+    </div>
+
+    <button type="submit" name="agregar">Agregar Pregunta</button>
+    <button type="submit" name="guardar">Guardar Encuesta</button>
+</form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const tipoSelect = document.querySelector('select[name="tipo_incidencia"]');
+    tipoSelect.addEventListener('change', function() {
+        const tipoId = this.value;
+        fetch("{% url 'territorial_app:json_preguntas' %}?tipo=" + tipoId)
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('preguntas_base_container');
+                container.innerHTML = '';
+                data.forEach(function(preg) {
+                    const p = document.createElement('p');
+                    p.textContent = preg.texto_pregunta;
+                    container.appendChild(p);
+                });
+            });
+    });
+});
+</script>
 {% extends "main_base.html" %}
 {% load widget_tweaks %}
 

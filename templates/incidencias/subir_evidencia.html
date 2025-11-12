@@ -3,6 +3,38 @@
 
 {% block title %}Subir Evidencia - Incidencia #{{ incidencia.id }} | Gestión Municipal{% endblock %}
 
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <h2>Subir Evidencia</h2>
+      
+      <!-- Información de la incidencia -->
+      <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">Información de la Incidencia</h5>
+        </div>
+        <div class="card-body">
+          <p><strong>ID:</strong> {{ incidencia.id }}</p>
+          <p><strong>Título:</strong> {{ incidencia.titulo }}</p>
+          <p><strong>Descripción:</strong> {{ incidencia.descripcion }}</p>
+          <p><strong>Estado actual:</strong> 
+            <span class="badge bg-warning text-dark">{{ incidencia.get_estado_display|default:incidencia.estado }}</span>
+          </p>
+          <p><strong>Cuadrilla asignada:</strong> {{ incidencia.cuadrilla.nombre_cuadrilla }}</p>
+          <p><strong>Departamento:</strong> {{ incidencia.departamento.nombre_departamento }}</p>
+        </div>
+      </div>
+
+      <!-- Formulario para subir evidencia -->
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Cargar Evidencia</h5>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-info">
+            <strong>Nota:</strong> Al subir la evidencia, la incidencia cambiará automáticamente al estado "Completada".
+          </div>
 {% block dashboard_content %}
 <h1 class="h3 mb-4">Subir Evidencia</h1>
 <h2 class="h5 text-muted mb-4">Incidencia #{{ incidencia.id }}: {{ incidencia.titulo }}</h2>

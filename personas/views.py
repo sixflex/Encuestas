@@ -52,7 +52,7 @@ def dashboard_jefe(request):
     # Obtener las incidencias asignadas a las cuadrillas del usuario
     incidencias_pendientes = []
     incidencias_en_progreso = []
-    incidencias_finalizadas = []
+    incidencias_Completadas = []
     
     if cuadrillas.exists():
         # Filtrar incidencias por las cuadrillas del usuario
@@ -63,19 +63,19 @@ def dashboard_jefe(request):
         
         incidencias_en_progreso = Incidencia.objects.filter(
             cuadrilla__in=cuadrillas,
-            estado='En progreso'
+            estado='En Progreso'
         ).order_by('-creadoEl')
         
-        incidencias_finalizadas = Incidencia.objects.filter(
+        incidencias_Completadas = Incidencia.objects.filter(
             cuadrilla__in=cuadrillas,
-            estado__in=['Finalizada', 'Validada', 'Rechazada']
-        ).order_by('-actualizadoEl')[:10]  # Últimas 10 finalizadas
+            estado__in=['Completada', 'Validada', 'Rechazada']
+        ).order_by('-actualizadoEl')[:10]  # Últimas 10 Completadas
     
     return render(request, "personas/dashboards/jefeCuadrilla.html", {
         'cuadrillas': cuadrillas,
         'incidencias_pendientes': incidencias_pendientes,
         'incidencias_en_progreso': incidencias_en_progreso,
-        'incidencias_finalizadas': incidencias_finalizadas,
+        'incidencias_Completadas': incidencias_Completadas,
     })
 #----------------------------------------------------------------------
 @login_required
@@ -118,9 +118,9 @@ def dashboard_departamento(request):
             estado='En progreso'
         ).order_by('-creadoEl')
         
-        incidencias_finalizadas = Incidencia.objects.filter(
+        incidencias_Completadas = Incidencia.objects.filter(
             departamento=departamento,
-            estado='Finalizada'
+            estado='Completada'
         ).order_by('-creadoEl')
         
         # Cuadrillas del departamento
@@ -129,18 +129,18 @@ def dashboard_departamento(request):
         # Si es admin, ver todas
         incidencias_pendientes = Incidencia.objects.filter(estado='Pendiente').order_by('-creadoEl')
         incidencias_en_progreso = Incidencia.objects.filter(estado='En Progreso').order_by('-creadoEl')
-        incidencias_finalizadas = Incidencia.objects.filter(estado='Finalizada').order_by('-creadoEl')
+        incidencias_Completadas = Incidencia.objects.filter(estado='Completada').order_by('-creadoEl')
         cuadrillas = JefeCuadrilla.objects.all()
     
     ctx = {
         'departamento': departamento,
         'incidencias_pendientes': incidencias_pendientes,
         'incidencias_en_progreso': incidencias_en_progreso,
-        'incidencias_finalizadas': incidencias_finalizadas,
+        'incidencias_Completadas': incidencias_Completadas,
         'cuadrillas': cuadrillas,
         'total_pendientes': incidencias_pendientes.count(),
         'total_en_progreso': incidencias_en_progreso.count(),
-        'total_finalizadas': incidencias_finalizadas.count(),
+        'total_Completadas': incidencias_Completadas.count(),
     }
     
     return render(request, 'personas/dashboards/departamento.html', ctx)

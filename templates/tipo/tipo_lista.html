@@ -11,6 +11,40 @@
     </a>
 </div>
 
+<table class="table table-striped" style="width: 100%;">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre Problema</th>
+            <th>Descripción</th>
+            <th>Gravedad</th>
+            <th>Preguntas Base</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tipo in tipos %}
+        <tr>
+            <td>{{ tipo.id }}</td>
+            <td><strong>{{ tipo.nombre_problema }}</strong></td>
+            <td>{{ tipo.descripcion }}</td>
+            <td>{{ tipo.tipo_gravedad }}</td>
+            <td>{{ tipo.preguntas_base.count }} pregunta(s)</td>
+            <td>
+                <a href="{% url 'incidencias:tipo_editar' tipo.id %}" class="btn btn-sm btn-warning"> Editar</a>
+                <a href="{% url 'incidencias:tipo_eliminar' tipo.id %}" class="btn btn-sm btn-danger"> Eliminar</a>
+                <a href="{% url 'incidencias:pregunta_base_crear' tipo.id %}" class="btn btn-sm btn-primary">+ Agregar Pregunta Base</a>
+                <a href="{% url 'incidencias:preguntas_base_lista' tipo.id %}" class="btn btn-sm btn-secondary"> Ver Preguntas</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="text-center">No hay tipos de incidencia.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
 <div class="card shadow-sm border-0 rounded-3">
     <div class="card-body">
         <div class="table-responsive">

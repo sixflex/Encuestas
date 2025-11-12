@@ -1,5 +1,6 @@
 from django.db import models
 from registration.models import Profile
+from django.core.validators import FileExtensionValidator #ESTO SE USA PARA VALIDAR EXTENSIONES DE ARCHIVOS (NUEVO)
 
 class Perfil(models.Model):
     rol = models.CharField(max_length=50)
@@ -43,6 +44,7 @@ class Encuesta(models.Model):
     actualizadoEl = models.DateTimeField(auto_now=True)
     prioridad = models.CharField(max_length=50)
     departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE)
+    tipo_incidencia = models.ForeignKey('TipoIncidencia', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.titulo
@@ -51,9 +53,14 @@ class Encuesta(models.Model):
 class PreguntaEncuesta(models.Model):
     texto_pregunta = models.CharField(max_length=200)
     descripcion = models.TextField()
-    tipo = models.CharField(max_length=50)
+    tipo = models.CharField(max_length=50, choices=[
+            ('texto', 'Texto'),
+            ('numero', 'Número'),
+            ('opcion', 'Opción múltiple')
+        ],
+        default='texto'
+    )
     encuesta = models.ForeignKey(Encuesta, on_delete=models.CASCADE)
-
     def __str__(self):
         return self.texto_pregunta
 
@@ -61,22 +68,61 @@ class PreguntaEncuesta(models.Model):
 class RespuestaEncuesta(models.Model):
     texto_respuesta = models.TextField()
     tipo = models.CharField(max_length=50)
-    pregunta = models.ForeignKey(PreguntaEncuesta, on_delete=models.CASCADE)
+    pregunta = models.ForeignKey(PreguntaEncuesta, on_delete=models.CASCADE, 
+        related_name='respuestas')
 
     def __str__(self):
         return self.texto_respuesta[:50]
 
-
 class Multimedia(models.Model):
+    TIPO_CHOICES = [
+        ('imagen', 'Imagen'),
+        ('video', 'Video'),
+        ('audio', 'Audio'),
+        ('documento', 'Documento'),
+        ('otro', 'Otro'),
+    ]
+    
     nombre = models.CharField(max_length=100)
-    url = models.URLField()
-    tipo = models.CharField(max_length=50)
+    archivo = models.FileField(
+        upload_to='evidencias/%Y/%m/%d/',
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=[
+                    'jpg', 'jpeg', 'png', 'gif', 'webp',  # Imágenes
+                    'mp4', 'mpeg', 'avi', 'mov',          # Videos
+                    'mp3', 'wav', 'ogg', 'm4a',           # Audios
+                    'pdf', 'doc', 'docx', 'txt'           # Documentos
+                ]
+            )
+        ]
+    )
+    tipo = models.CharField(max_length=50, choices=TIPO_CHOICES)
     formato = models.CharField(max_length=50)
+    tamanio = models.IntegerField(help_text="Tamaño en bytes", null=True, blank=True)
     creadoEl = models.DateTimeField(auto_now_add=True)
     incidencia = models.ForeignKey("Incidencia", on_delete=models.CASCADE, related_name="multimedias")
+    encuesta = models.ForeignKey("Encuesta", on_delete=models.CASCADE, related_name="evidencias", 
+                                 null=True, blank=True)
+
+    class Meta:
+        ordering = ['-creadoEl']
+        verbose_name = 'Evidencia Multimedia'
+        verbose_name_plural = 'Evidencias Multimedia'
 
     def __str__(self):
-        return self.nombre
+        return f"{self.nombre} ({self.tipo})"
+    
+    def get_icono(self):
+        """Retorna el icono a mostrar según el tipo de archivo"""
+        iconos = {
+            'imagen': '🖼️',
+            'video': '🎥',
+            'audio': '🎵',
+            'documento': '📄',
+            'otro': '📎'
+        }
+        return iconos.get(self.tipo, '📎')
 
 
 class TipoIncidencia(models.Model):
@@ -163,3 +209,18 @@ class Derivacion(models.Model):
 
     def __str__(self):
         return f"Derivación de {self.incidencia}"
+    
+class PreguntaBase(models.Model):
+    tipo_incidencia = models.ForeignKey(TipoIncidencia, on_delete=models.CASCADE, related_name='preguntas_base')
+    texto_pregunta = models.CharField(max_length=200)
+    tipo = models.CharField(max_length=50, choices=[
+            ('texto', 'Texto'),
+            ('numero', 'Número'),
+            ('opcion', 'Opción múltiple')
+        ],
+        default='texto'
+    )
+
+    def __str__(self):
+        return f"{self.tipo_incidencia.nombre_problema} - {self.texto_pregunta}"
+

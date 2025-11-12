@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Preguntas Base - {{ tipo.nombre_problema }}{% endblock %}
+
+{% block content %}
+<h1>Preguntas Base de "{{ tipo.nombre_problema }}"</h1>
+
+<div class="mb-3">
+    <a href="{% url 'incidencias:pregunta_base_crear' tipo.id %}" class="btn btn-success">➕ Nueva Pregunta Base</a>
+    <a href="{% url 'incidencias:tipo_lista' %}" class="btn btn-secondary">⬅️ Volver a Tipos de Incidencia</a>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Texto Pregunta</th>
+            <th>Tipo</th>
+            <th>Descripción</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for pregunta in preguntas %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ pregunta.texto_pregunta }}</td>
+            <td>{{ pregunta.get_tipo_display }}</td>
+            <td>{{ pregunta.descripcion|default:"—" }}</td>
+            <td>
+                <a href="{% url 'incidencias:pregunta_base_editar' pregunta.id %}" class="btn btn-sm btn-warning">✏️ Editar</a>
+                <a href="{% url 'incidencias:pregunta_base_eliminar' pregunta.id %}" class="btn btn-sm btn-danger">🗑️ Eliminar</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center">No hay preguntas base.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

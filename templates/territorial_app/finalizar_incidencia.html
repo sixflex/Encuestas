@@ -1,6 +1,10 @@
 {% extends "main_base.html" %}
 {% load widget_tweaks %}
 
+{% block title %}Completar Incidencia{% endblock %}
+
+{% block content %}
+<h2>Completar incidencia: {{ incidencia.titulo }}</h2>
 {% block title %}Finalizar Incidencia | Gestión Municipal{% endblock %}
 
 {% block dashboard_content %}
@@ -32,6 +36,11 @@
                         {% endif %}
                     </div>
 
+    <br>
+    <button type="submit" style="padding: 5px 10px;">Completar</button>
+    <a href="{% url 'territorial_app:incidencias_lista' %}" style="margin-left: 10px;">Cancelar</a>
+</form>
+{% endblock %}
                     <div class="mb-3">
                         <label for="{{ form.evidencia.id_for_label }}" class="form-label">
                             {{ form.evidencia.label }}

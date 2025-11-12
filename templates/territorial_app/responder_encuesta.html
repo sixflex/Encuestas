@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Responder encuesta{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Responder encuesta de incidencia: {{ encuesta.titulo }}</h2>
+
+    <!-- Información de la incidencia -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Información de la incidencia</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>ID:</strong> {{ incidencia.id }}</p>
+            <p><strong>Título:</strong> {{ incidencia.titulo }}</p>
+            <p><strong>Estado:</strong> 
+                <span class="badge bg-warning text-dark">{{ incidencia.get_estado_display|default:incidencia.estado }}</span>
+            </p>
+            <p><strong>Departamento:</strong> {{ incidencia.departamento.nombre_departamento }}</p>
+            <p><strong>Cuadrilla:</strong> {{ incidencia.cuadrilla.nombre_cuadrilla }}</p>
+        </div>
+    </div>
+
+    <!-- Formulario unificado -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Encuesta y Evidencia</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Preguntas de la encuesta -->
+                <h6>Respuestas de la encuesta:</h6>
+                {% for pregunta in preguntas %}
+                    <div class="mb-3">
+                        <label for="respuesta_{{ pregunta.id }}" class="form-label">{{ pregunta.texto_pregunta }}</label>
+                        <input type="text"
+                               class="form-control"
+                               name="respuesta_{{ pregunta.id }}"
+                               id="respuesta_{{ pregunta.id }}"
+                               value="{{ pregunta.respuestas.first.texto_respuesta|default_if_none:'' }}">
+                    </div>
+                {% endfor %}
+
+                <hr>
+
+                <!-- Subir evidencia -->
+                <h6>Subir evidencia (opcional):</h6>
+                <div class="mb-3">
+                    <label for="{{ form.nombre.id_for_label }}" class="form-label">{{ form.nombre.label }}</label>
+                    {{ form.nombre }}
+                </div>
+                <div class="mb-3">
+                    {{ form.archivo.label_tag }}
+                    {{ form.archivo }}
+                    {% if form.archivo.help_text %}
+                        <div class="form-text">{{ form.archivo.help_text }}</div>
+                    {% endif %}
+                    {% for error in form.archivo.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success"> Completar Encuesta</button>
+                    <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+
+            <!-- Listado de evidencias existentes -->
+            {% if incidencia.multimedias.exists %}
+                <hr>
+                <h6>Evidencias previas:</h6>
+                <ul class="list-group mt-2">
+                    {% for multimedia in incidencia.multimedias.all %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ multimedia.nombre }} - {{ multimedia.tipo }}
+                            <a href="{{ multimedia.url }}" target="_blank" class="btn btn-sm btn-outline-primary">Ver</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

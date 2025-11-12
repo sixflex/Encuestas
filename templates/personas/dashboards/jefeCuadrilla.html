@@ -97,7 +97,6 @@ CAMBIOS BARBARA, USAMOS TEMPLATE NUEVO, ORIGINAL EN COMENTARIO
         <td>{{ incidencia.prioridad }}</td>
         <td>
           <a href="{% url 'incidencias:incidencia_detalle' incidencia.id %}" class="btn btn-sm btn-primary">Ver</a>
-          <a href="{% url 'incidencias:subir_evidencia' incidencia.id %}" class="btn btn-sm btn-success">Subir evidencia</a>
         </td>
       </tr>
       {% endfor %}

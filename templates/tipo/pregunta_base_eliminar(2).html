@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Eliminar Pregunta Base{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin-top: 50px;">
+    <h2>⚠️ Eliminar Pregunta Base</h2>
+    <p>¿Estás seguro de que quieres eliminar la siguiente pregunta base?</p>
+
+    <div style="padding: 15px; border: 1px solid #ccc; margin-bottom: 20px; background-color: #f8f9fa;">
+        <strong>Pregunta:</strong> {{ pregunta.texto_pregunta }}<br>
+        <strong>Tipo:</strong> {{ pregunta.get_tipo_display }}<br>
+        <strong>Descripción:</strong> {{ pregunta.descripcion|default:"—" }}
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">🗑️ Eliminar Pregunta</button>
+        <a href="{% url 'incidencias:preguntas_base_lista' pregunta.tipo_incidencia.id %}" class="btn btn-secondary">↩️ Cancelar</a>
+    </form>
+</div>
+{% endblock %}
