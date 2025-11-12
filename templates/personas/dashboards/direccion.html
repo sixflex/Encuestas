@@ -1,21 +1,26 @@
-{% extends "main_base.html" %}
+{% extends "base.html" %}
 
-{% block title %}Panel de Dirección | Gestión Municipal{% endblock %}
+{% block content %}
+  <div class="container">
+    <h1>Panel de Dirección</h1>
+    <p>Bienvenido. Aquí puedes revisar reportes generales, supervisar departamentos y coordinar estrategias.</p>
 
-{% block dashboard_content %}
-  <h1 class="h3 mb-4">Panel de Dirección</h1>
-  <p>Bienvenido. Aquí puedes revisar reportes generales, supervisar departamentos y coordinar estrategias.</p>
+    <hr>
 
-  <hr>
+    <h3>Gestión de Direcciones</h3>
+    <p>Desde aquí puedes administrar las direcciones registradas en el sistema.</p>
 
-  <div class="card shadow-sm border-0 rounded-3">
-    <div class="card-body">
-      <h3 class="card-title h5">Gestión de Direcciones</h3>
-      <p>Desde aquí puedes administrar las direcciones registradas en el sistema.</p>
-      <div class="acciones">
-        <a href="{% url 'organizacion:direcciones_lista' %}" class="btn btn-primary">Ver todas las Direcciones</a>
-        <a href="{% url 'organizacion:direccion_crear' %}" class="btn btn-success"> Nueva Dirección</a>
-      </div>
-    </div>
-  </div>
+    <div class="acciones">
+      <a href="{% url 'organizacion:direcciones_lista' %}" class="btn btn-primary">Ver todas las Direcciones</a>
+      <a href="{% url 'organizacion:direccion_crear' %}" class="btn btn-success"> Nueva Dirección</a>
+    </div>
+
+    <hr>         <h3>Gestión de Incidencias</h3>
+    <p>Desde aquí puedes revisar todas las incidencias reportadas en el sistema.</p>
+    
+    <div class="acciones">
+            <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-info">Ver todas las Incidencias</a>
+    </div>
+        <br>
+  </div>
 {% endblock %}
