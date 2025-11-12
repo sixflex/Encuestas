@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load static %}
+
+{# Ocultamos el header y footer de la plantilla "abuela" #}
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Definición de la animación del fondo */
+    @keyframes animated-gradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* Definición de la animación de la tarjeta */
+    @keyframes fade-in-card {
+        0% {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Contenedor principal que ocupa toda la pantalla */
+    .auth-wrapper {
+        min-height: 100vh;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        
+        /* El fondo degradado y animado */
+        background: linear-gradient(-45deg, #20a0bd, #5bc0de, #4fb3c9, #2a7f94);
+        background-size: 400% 400%;
+        animation: animated-gradient 15s ease infinite;
+    }
+
+    /* La tarjeta blanca donde irá el formulario */
+    .auth-card {
+        max-width: 450px;
+        width: 100%;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 2.5rem; /* 40px */
+        
+        /* Animación de entrada */
+        animation: fade-in-card 0.7s ease-out;
+    }
+    
+    .auth-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .auth-title {
+        text-align: center;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+
+{% block layout %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+    
+        <div class="auth-logo">
+            <div class="logo-circle d-inline-block align-text-top"></div>
+            <span class="fs-4 fw-bold text-dark ms-2">Gestión Municipal</span>
+        </div>
+        
+        <h2 class="auth-title">
+            {% block auth_title %}
+                Acceso de Usuarios
+            {% endblock %}
+        </h2>
+
+        {% block auth_content %}
+        {% endblock %}
+
+    </div>
+</div>
+{% endblock %}

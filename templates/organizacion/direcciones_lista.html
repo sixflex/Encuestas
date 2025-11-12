@@ -1,53 +1,78 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>Direcciones</h2>
+{% extends "main_base.html" %}
 
-<form method="get" style="margin-bottom: 10px;">
-  <input type="text" name="q" value="{{ q }}" placeholder="Buscar dirección">
-  <button type="submit">Buscar</button>
-  <a href="{% url 'organizacion:direccion_crear' %}">+ Nueva</a>
-</form>
+{% block title %}Gestión de Direcciones | Gestión Municipal{% endblock %}
 
-{% if direcciones %}
-<table border="1" cellspacing="0" cellpadding="5">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Nombre</th>
-      <th>Encargado</th>
-      <th>Estado</th>
-      <th>Acciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for d in direcciones %}
-    <tr>
-      <td>{{ d.id }}</td>
-      <td>{{ d.nombre_direccion }}</td>
-      <td>
-        {% if d.encargado %}
-          {{ d.encargado.user.get_full_name|default:d.encargado.user.username }}
-        {% else %}
-          -
-        {% endif %}
-      </td>
-      <td>
-        {% if d.estado %}
-          Activo
-        {% else %}
-          Bloqueado
-        {% endif %}
-      </td>
-      <td>
-        <a href="{% url 'organizacion:direccion_detalle' d.id %}">Ver</a>
-        <a href="{% url 'organizacion:direccion_editar' d.id %}">Editar</a> |
-        <a href="{% url 'organizacion:direccion_eliminar' d.id %}">Eliminar</a>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% else %}
-<p>No hay direcciones registradas.</p>
-{% endif %}
+{% block dashboard_content %}
+<h1 class="h3 mb-4">Gestión de Direcciones</h1>
+
+<div class="card shadow-sm border-0 rounded-3 mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="id_q" class="form-label">Buscar Dirección</label>
+                <input type="text" name="q" id="id_q" value="{{ q }}" placeholder="Buscar por nombre" class="form-control form-control-sm">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-app-blue btn-sm">Buscar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="mb-3">
+    <a href="{% url 'organizacion:direccion_crear' %}" class="btn btn-success">
+        <i class="bi bi-plus-lg"></i> Nueva Dirección
+    </a>
+</div>
+
+<div class="card shadow-sm border-0 rounded-3">
+    <div class="card-body">
+        <div class="table-responsive">
+            {% if direcciones %}
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Encargado</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in direcciones %}
+                    <tr>
+                        <td>{{ d.id }}</td>
+                        <td>{{ d.nombre_direccion }}</td>
+                        <td>
+                            {% if d.encargado %}
+                                {{ d.encargado.user.get_full_name|default:d.encargado.user.username }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if d.estado %}
+                                <span class="badge bg-success">Activo</span>
+                            {% else %}
+                                <span class="badge bg-danger">Bloqueado</span>
+                            {% endif %}
+                        </td>
+                        <td class="d-flex flex-wrap gap-2">
+                            <a href="{% url 'organizacion:direccion_detalle' d.id %}" class="btn btn-sm btn-secondary">Ver</a>
+                            <a href="{% url 'organizacion:direccion_editar' d.id %}" class="btn btn-sm btn-info">Editar</a>
+                            <a href="{% url 'organizacion:direccion_eliminar' d.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="alert alert-info" role="alert">
+                No hay direcciones registradas.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}

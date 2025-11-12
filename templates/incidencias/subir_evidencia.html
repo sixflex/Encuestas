@@ -1,6 +1,7 @@
-{% extends "base.html" %}
+{% extends "main_base.html" %}
+{% load widget_tweaks %}
 
-{% block title %}Subir Evidencia - Incidencia #{{ incidencia.id }}{% endblock %}
+{% block title %}Subir Evidencia - Incidencia #{{ incidencia.id }} | Gestión Municipal{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
@@ -34,90 +35,115 @@
           <div class="alert alert-info">
             <strong>Nota:</strong> Al subir la evidencia, la incidencia cambiará automáticamente al estado "Completada".
           </div>
+{% block dashboard_content %}
+<h1 class="h3 mb-4">Subir Evidencia</h1>
+<h2 class="h5 text-muted mb-4">Incidencia #{{ incidencia.id }}: {{ incidencia.titulo }}</h2>
 
-          <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            
-            <!-- Campo de nombre -->
-            <div class="mb-3">
-              <label for="{{ form.nombre.id_for_label }}" class="form-label">
-                {{ form.nombre.label }}
-              </label>
-              {{ form.nombre }}
-              {% if form.nombre.help_text %}
-                <div class="form-text">{{ form.nombre.help_text }}</div>
-              {% endif %}
-              {% if form.nombre.errors %}
-                <div class="text-danger">
-                  {% for error in form.nombre.errors %}
-                    <small>{{ error }}</small>
-                  {% endfor %}
-                </div>
-              {% endif %}
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-header py-3 app-blue text-white">
+                <h5 class="mb-0">Cargar Nueva Evidencia</h5>
             </div>
-
-            <!-- Campo de archivo -->
-            <div class="mb-3">
-              <label for="{{ form.archivo.id_for_label }}" class="form-label">
-                {{ form.archivo.label }} <span class="text-danger">*</span>
-              </label>
-              {{ form.archivo }}
-              {% if form.archivo.help_text %}
-                <div class="form-text">{{ form.archivo.help_text }}</div>
-              {% endif %}
-              {% if form.archivo.errors %}
-                <div class="text-danger">
-                  {% for error in form.archivo.errors %}
-                    <small>{{ error }}</small>
-                  {% endfor %}
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <strong>Nota:</strong> Al subir la evidencia, la incidencia cambiará automáticamente al estado "Finalizada".
                 </div>
-              {% endif %}
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.nombre.id_for_label }}" class="form-label">
+                            {{ form.nombre.label }}
+                        </label>
+                        {{ form.nombre|add_class:"form-control" }}
+                        {% if form.nombre.help_text %}
+                            <div class="form-text">{{ form.nombre.help_text }}</div>
+                        {% endif %}
+                        {% if form.nombre.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.nombre.errors|striptags }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.archivo.id_for_label }}" class="form-label">
+                            {{ form.archivo.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ form.archivo|add_class:"form-control" }}
+                        {% if form.archivo.help_text %}
+                            <div class="form-text">{{ form.archivo.help_text }}</div>
+                        {% endif %}
+                        {% if form.archivo.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.archivo.errors|striptags }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <hr class="my-4">
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a href="{% url 'incidencias:incidencia_detalle' incidencia.pk %}" class="btn btn-secondary">
+                            <i class="bi bi-x-lg"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-upload"></i> Subir evidencia y finalizar
+                        </button>
+                    </div>
+                </form>
             </div>
-
-            <!-- Botones de acción -->
-            <div class="d-flex gap-2 justify-content-end">
-              <a href="{% url 'incidencias:incidencia_detalle' incidencia.pk %}" class="btn btn-secondary">
-                Cancelar
-              </a>
-              <button type="submit" class="btn btn-success">
-                📤 Subir evidencia y finalizar
-              </button>
-            </div>
-          </form>
         </div>
-      </div>
-
-      <!-- Evidencias existentes (si las hay) -->
-      {% if incidencia.multimedias.exists %}
-      <div class="card mt-4">
-        <div class="card-header bg-secondary text-white">
-          <h5 class="mb-0">Evidencias Previas</h5>
-        </div>
-        <div class="card-body">
-          <div class="list-group">
-            {% for multimedia in incidencia.multimedias.all %}
-              <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 class="mb-1">{{ multimedia.nombre }}</h6>
-                    <small class="text-muted">
-                      Tipo: {{ multimedia.tipo|upper }} | 
-                      Formato: {{ multimedia.formato|upper }} | 
-                      Subido: {{ multimedia.creadoEl|date:"d/m/Y H:i" }}
-                    </small>
-                  </div>
-                  <a href="{{ multimedia.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                    Ver
-                  </a>
-                </div>
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-      {% endif %}
-
     </div>
-  </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow-sm border-0 rounded-3 mb-4">
+            <div class="card-header py-3">
+                <h5 class="mb-0">Información de la Incidencia</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Estado actual</dt>
+                    <dd class="col-sm-7"><span class="badge bg-warning text-dark">{{ incidencia.get_estado_display|default:incidencia.estado }}</span></dd>
+                    
+                    <dt class="col-sm-5">Cuadrilla</dt>
+                    <dd class="col-sm-7">{{ incidencia.cuadrilla.nombre_cuadrilla }}</dd>
+                    
+                    <dt class="col-sm-5">Departamento</dt>
+                    <dd class="col-sm-7">{{ incidencia.departamento.nombre_departamento }}</dd>
+                </dl>
+            </div>
+        </div>
+
+        {% if incidencia.multimedias.exists %}
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-header py-3">
+                <h5 class="mb-0">Evidencias Previas</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for multimedia in incidencia.multimedias.all %}
+                    <a href="{{ multimedia.url }}" target="_blank" class="list-group-item list-group-item-action d-flex align-items-center">
+                        {% if multimedia.tipo == 'image' %}
+                            <i class="bi bi-image fs-4 me-3"></i>
+                        {% elif multimedia.tipo == 'video' %}
+                            <i class="bi bi-film fs-4 me-3"></i>
+                        {% elif multimedia.formato|lower == 'pdf' %}
+                            <i class="bi bi-filetype-pdf fs-4 me-3"></i>
+                        {% else %}
+                            <i class="bi bi-file-earmark fs-4 me-3"></i>
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0">{{ multimedia.nombre }}</h6>
+                            <small class="text-muted">{{ multimedia.creadoEl|date:"d/m/Y H:i" }}</G small>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

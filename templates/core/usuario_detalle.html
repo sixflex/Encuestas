@@ -1,17 +1,70 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>Detalle de Usuario</h2>
-<ul>
-  <li><strong>Usuario:</strong> {{ obj.username }}</li>
-  <li><strong>Nombre:</strong> {{ obj.first_name }}</li>
-  <li><strong>Apellido:</strong> {{ obj.last_name }}</li>
-  <li><strong>Email:</strong> {{ obj.email }}</li>
-  <li><strong>Activo:</strong> {{ obj.is_active|yesno:"Sí,No" }}</li>
-  <li><strong>Grupos:</strong> {{ groups|join:", " }}</li>
-</ul>
+{% extends "main_base.html" %}
 
-<p>
-  <a href="{% url 'core:usuario_editar' obj.id %}">Editar</a> | 
-  <a href="{% url 'core:usuarios_lista' %}">Volver</a>
-</p>
+{% block title %}Detalle de Usuario | Gestión Municipal{% endblock %}
+
+{% block dashboard_content %}
+<h1 class="h3 mb-4">Detalle de Usuario</h1>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-header py-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-circle me-2"></i>
+                    {{ obj.get_full_name|default:obj.username }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Nombre de usuario</dt>
+                    <dd class="col-sm-9">{{ obj.username }}</dd>
+
+                    <dt class="col-sm-3">Nombre</dt>
+                    <dd class="col-sm-9">{{ obj.first_name|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">Apellidos</dt>
+                    <dd class="col-sm-9">{{ obj.last_name|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">Email</dt>
+                    <dd class="col-sm-9">{{ obj.email|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">Rol (Grupo)</dt>
+                    <dd class="col-sm-9">
+                        {% for group in groups %}
+                            <span class="badge bg-secondary">{{ group.name }}</span>
+                        {% empty %}
+                            <span class="text-muted">Sin rol asignado</span>
+                        {% endfor %}
+                    </dd>
+
+                    <dt class="col-sm-3">Estado</dt>
+                    <dd class="col-sm-9">
+                        {% if obj.is_active %}
+                            <span class="badge bg-success">Activo</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactivo</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-3">Acceso al Admin</dt>
+                    <dd class="col-sm-9">
+                        {% if obj.is_staff %}
+                            <span class="badge bg-primary">Sí (Staff)</span>
+                        {% else %}
+                            <span class="badge bg-light text-dark">No</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+            <div class="card-footer bg-light text-end gap-2 d-flex justify-content-end">
+                <a href="{% url 'core:usuarios_lista' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Volver a la lista
+                </a>
+                <a href="{% url 'core:usuario_editar' obj.id %}" class="btn btn-info">
+                    <i class="bi bi-pencil-fill"></i> Editar
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

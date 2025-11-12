@@ -1,15 +1,40 @@
-{% extends "base.html" %}
+{% extends "main_base.html" %}
 
-{% block title %}Eliminar Categoría{% endblock %}
+{% block title %}Eliminar Tipo de Incidencia | Gestión Municipal{% endblock %}
 
-{% block content %}
-<h1>Confirmar eliminación</h1>
+{% block dashboard_content %}
+<h1 class="h3 mb-4">Eliminar Tipo de Incidencia</h1>
 
-<p>¿Está seguro que desea eliminar esta categoría? Esta acción no se puede deshacer.</p>
-
-<form method="POST">
-    {% csrf_token %}
-    <button type="submit">Eliminar</button>
-    <a href="{% url 'incidencias:tipo_lista' %}">Cancelar</a>
-</form>
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-danger rounded-3">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirmación Requerida
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <h4 class="card-title">¿Estás realmente seguro?</h4>
+                <p class="lead">
+                    Estás a punto de eliminar esta categoría:
+                    <br>
+                    <strong>"{{ obj.nombre_problema }}"</strong>
+                </p>
+                <p class="text-danger">Esta acción no se puede deshacer.</p>
+                
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    
+                    <a href="{% url 'incidencias:tipo_lista' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-lg"></i> No, cancelar
+                    </a>
+                    
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash-fill"></i> Sí, eliminar permanentemente
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

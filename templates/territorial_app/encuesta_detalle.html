@@ -9,8 +9,51 @@
   <p><strong>Ubicación:</strong> {{ encuesta.ubicacion }}</p>
   <p><strong>Estado:</strong> {% if encuesta.estado %}Activa{% else %}Bloqueada{% endif %}</p>
   <p><strong>Descripción:</strong> {{ encuesta.descripcion }}</p>
+{% extends "main_base.html" %}
 
-  <hr>
+{% block title %}Detalle de Encuesta - {{ encuesta.titulo }} | Gestión Municipal{% endblock %}
+
+{% block dashboard_content %}
+<h1 class="h3 mb-4">
+    <i class="bi bi-eye-fill me-2"></i> Detalle de Encuesta
+</h1>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-header py-3">
+                <h5 class="mb-0">{{ encuesta.titulo }}</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">ID</dt>
+                    <dd class="col-sm-9">{{ encuesta.id }}</dd>
+
+                    <dt class="col-sm-3">Descripción</dt>
+                    <dd class="col-sm-9">{{ encuesta.descripcion|linebreaksbr }}</dd>
+                    
+                    <dt class="col-sm-3">Ubicación</dt>
+                    <dd class="col-sm-9">{{ encuesta.ubicacion }}</dd>
+                    
+                    <dt class="col-sm-3">Prioridad</dt>
+                    <dd class="col-sm-9">{{ encuesta.prioridad }}</dd>
+                    
+                    <hr class="my-3">
+                    
+                    <dt class="col-sm-3">Departamento</dt>
+                    <dd class="col-sm-9">{{ encuesta.departamento.nombre_departamento }}</dd>
+                    
+                    <dt class="col-sm-3">Dirección</dt>
+                    <dd class="col-sm-9">{{ encuesta.departamento.direccion.nombre_direccion }}</dd>
+                    
+                    <dt class="col-sm-3">Estado</dt>
+                    <dd class="col-sm-9">
+                        {% if encuesta.estado %}
+                          <span class="badge bg-success">✅ Activa</span>
+                        {% else %}
+                          <span class="badge bg-secondary">🔒 Bloqueada</span>
+                        {% endif %}
+                    </dd>
 
   <h3>Preguntas Asociadas</h3>
 
@@ -114,5 +157,67 @@
 
   <hr>
   <a href="{% url 'territorial_app:encuestas_lista' %}">Volver</a>
+                    <dt class="col-sm-3">Tipo Incidencia</dt>
+                    <dd class="col-sm-9">
+                        {% if encuesta.tipo_incidencia %}
+                            {{ encuesta.tipo_incidencia.nombre_problema }}
+                        {% else %}
+                            <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </dd>
+                    
+                    <hr class="my-3">
+                    
+                    <dt class="col-sm-3">Fecha de Creación</dt>
+                    <dd class="col-sm-9">{{ encuesta.creadoEl|date:"d/m/Y H:i:s" }}</dd>
+                    
+                    <dt class="col-sm-3">Última Actualización</dt>
+                    <dd class="col-sm-9">{{ encuesta.actualizadoEl|date:"d/m/Y H:i:s" }}</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 rounded-3 mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Acciones Disponibles</h5>
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    
+                    <a href="{% url 'territorial_app:encuesta_editar' encuesta.id %}" class="btn btn-info">
+                        <i class="bi bi-pencil-fill"></i> Editar Encuesta
+                    </a>
+
+                    <form method="post" action="{% url 'territorial_app:encuesta_toggle_estado' encuesta.id %}" class="d-inline">
+                        {% csrf_token %}
+                        {% if encuesta.estado %}
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-lock-fill"></i> Bloquear Encuesta
+                            </button>
+                        {% else %}
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-unlock-fill"></i> Activar Encuesta
+                            </button>
+                        {% endif %}
+                    </form>
+
+                    <a href="{% url 'territorial_app:encuesta_eliminar' encuesta.id %}" class="btn btn-danger">
+                        <i class="bi bi-trash-fill"></i> Eliminar Encuesta
+                    </a>
+
+                    {% if encuesta.tipo_incidencia %}
+                    <form method="post" action="{% url 'territorial_app:importar_preguntas_default' encuesta.id %}" class="d-inline" onsubmit="return confirm('¿Estás seguro de importar las preguntas default? Esto se añadirá a las preguntas existentes.')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-download"></i> Importar Preguntas Default
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    <a href="{% url 'territorial_app:encuestas_lista' %}" class="btn btn-secondary ms-auto">
+                        <i class="bi bi-arrow-left"></i> Volver al listado
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

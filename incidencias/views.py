@@ -4,6 +4,7 @@ from .forms import IncidenciaForm, SubirEvidenciaForm #cambio barbraa
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from core.utils import solo_admin
+
 #Cambio barbara
 from django.http import JsonResponse 
 from django.core.mail import send_mail
@@ -54,6 +55,10 @@ def _filtrar_por_rol(qs, user):
 
     if user.is_superuser or "Administrador" in roles or "Dirección" in roles:
         return qs
+    
+    
+    
+        
 
     if "Departamento" in roles:
         return qs
@@ -187,6 +192,13 @@ def incidencia_detalle(request, pk):
 # ----------------- CRUD (solo administrador) -----------------
 @login_required
 def incidencia_crear(request):
+#  VERIFICACIÓN PARA BLOQUEAR A 'DIRECCIÓN'
+    roles = _roles_usuario(request.user)
+    if "Dirección" in roles and not request.user.is_superuser:
+        messages.error(request, "El rol 'Dirección' no tiene permisos para crear incidencias.")
+        return redirect("incidencias:incidencias_lista") # Redirigir a la lista
+
+    # 2. El resto de la vista sigue igual
     if request.method == "POST":
         form = IncidenciaForm(request.POST)
         if form.is_valid():
@@ -476,6 +488,3 @@ def finalizar_incidencia(request, pk):
         f"¡Incidencia Completada correctamente! El territorial ahora puede validar o rechazar el trabajo realizado."
     )
     return redirect("incidencias:incidencia_detalle", pk=pk)
-
-#-----------------------------------------------------------------
-

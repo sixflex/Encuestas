@@ -3,35 +3,100 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <title>{% block title %}Encuestas{% endblock %}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Gestión Municipal{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .custom-blue { background-color: #20a0bd; color: white; }
+        .sidebar { min-height: 100vh; }
+
+        .body-bg { background-color: #f5f5f5; }
+        .btn-custom-blue {
+            background-color: #5bc0de;
+            border-color: #5bc0de;
+            color: white;
+            font-weight: bold;
+        }
+        .btn-custom-blue:hover {
+            background-color: #4fb3c9;
+            border-color: #4fb3c9;
+        }
+        .text-link-secondary {
+            color: #6c757d !important; 
+            font-size: 0.9em;
+        }
+        .logo-circle {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background-color: #5bc0de;
+            display: inline-block;
+            margin-right: 8px;
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
 </head>
-<body>
-  <nav>
-    {% if user.is_authenticated %}
-      Hola, {{ user.username }} |
-      <a href="{% url 'personas:cerrar_sesion' %}">Salir</a>
-      {% if user.is_superuser or user|has_group:"Administrador" %}
-        <a href="{% url 'core:usuarios_lista' %}">Filtro</a> <!--Cambio cotta-->
-        {% endif %}
-    {% else %}
-      <a href="{% url 'login' %}">Entrar</a>
-    {% endif %}
-  </nav>
-  <hr>
 
-  {% if messages %}
-    <ul>
-      {% for m in messages %}
-        <li>{{ m }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+<body {% block body_attributes %}{% endblock %}>
 
-  {% block content %}
-  {% endblock %}
+    {% block layout %}
+        {% block header %}
+        <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm mb-4">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{% url 'core:usuarios_lista' %}">
+                    <div class="logo-circle d-inline-block align-text-top"></div>
+                    Gestión Municipal
+                </a>
+
+                <div class="ms-auto">
+                    {% if user.is_authenticated %}
+                        Hola, <strong>{{ user.username }}</strong> |
+                        <a href="{% url 'personas:cerrar_sesion' %}" class="btn btn-sm btn-outline-danger">Salir</a>
+                        {% if user.is_superuser or user|has_group:"Administrador" %}
+                            <a href="{% url 'core:usuarios_lista' %}" class="btn btn-sm btn-outline-primary">Filtro</a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-sm btn-primary custom-blue">Entrar</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+        {% endblock %}
+
+        <div class="container">
+            {% if messages %}
+                <ul class="list-unstyled">
+                    {% for m in messages %}
+                        <li class="alert alert-{{ m.tags }}">{{ m }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <main class="{% block main_class %}container{% endblock %}">
+            {% block content %}{% endblock %}
+        </main>
+
+        {% block footer %}
+        <footer class="text-center py-3 mt-5 border-top">
+            &copy; 2025 Gestión Municipal
+        </footer>
+        {% endblock %}
+
+    {% endblock layout %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extrajs %}{% endblock %}
 </body>
 </html>
-
-
