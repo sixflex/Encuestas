@@ -25,6 +25,11 @@ INSTALLED_APPS = [
     "territorial_app",
     "registration",
     "personas",
+    'widget_tweaks',
+    "rest_framework", 
+    "rest_framework.authtoken",
+
+    
 ]
 
 MIDDLEWARE = [
