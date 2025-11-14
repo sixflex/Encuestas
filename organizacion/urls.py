@@ -1,7 +1,7 @@
 from django.urls import path, include
 from . import views
 
-app_name = "organizacion"  # si usas namespacing en include()
+app_name = "organizacion"
 
 urlpatterns = [
     path("direccion/", views.direcciones_lista, name="direcciones_lista"),
@@ -9,6 +9,7 @@ urlpatterns = [
     path("direccion/<int:pk>/", views.direccion_editar, name="direccion_editar"),
     path("direccion/<int:pk>/detalle/", views.direccion_detalle, name="direccion_detalle"),
     path("direccion/<int:pk>/eliminar/", views.direccion_eliminar, name="direccion_eliminar"),
+    path("direccion/<int:pk>/toggle/", views.direccion_toggle_estado, name="direccion_toggle_estado"),
 
     path("departamento/", views.departamentos_lista, name="departamentos_lista"),
     path("departamento/nuevo/", views.departamento_crear, name="departamento_crear"),
@@ -16,6 +17,4 @@ urlpatterns = [
     path("departamento/<int:pk>/detalle/", views.departamento_detalle, name="departamento_detalle"),
     path("departamento/<int:pk>/eliminar/", views.departamento_eliminar, name="departamento_eliminar"),
     path("departamento/<int:pk>/toggle/", views.departamento_toggle_estado, name="departamento_toggle_estado"),
-
-    path("asignar-cuadrilla/<int:pk>/", views.asignar_cuadrilla_view, name="asignar_cuadrilla"),#cambio barbara
 ]

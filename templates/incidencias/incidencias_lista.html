@@ -72,8 +72,8 @@
 
             <div class="col-md-2">
                 <label for="id_estado" class="form-label">Estado</label>
-                <select name="estado" id="id_estado" class="form-select form-select-sm">
-                    <option value="">-- Todos --</option>
+                <select name="estado" id="id_estado" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">-- Todos los estados --</option>
                     <option value="Pendiente" {% if estado_seleccionado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
                     <option value="En Progreso" {% if estado_seleccionado == 'En Progreso' %}selected{% endif %}>En Progreso</option>
                     <option value="Completada" {% if estado_seleccionado == 'Completada' %}selected{% endif %}>Completada</option>
@@ -84,8 +84,8 @@
 
             <div class="col-md-2">
                 <label for="id_departamento" class="form-label">Departamento</label>
-                <select name="departamento" id="id_departamento" class="form-select form-select-sm">
-                    <option value="">-- Todos --</option>
+                <select name="departamento" id="id_departamento" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">-- Todos los departamentos --</option>
                     {% for depto in departamentos %}
                         <option value="{{ depto.id }}" {% if departamento_seleccionado == depto.id|stringformat:"s" %}selected{% endif %}>
                             {{ depto.nombre_departamento }}
@@ -95,8 +95,8 @@
             </div>
 
             <div class="col-md-2">
-                <label for="id_tipo" class="form-label">Tipo</label>
-                <select name="tipo" id="id_tipo" class="form-select form-select-sm">
+                <label for="id_tipo" class="form-label">Tipo Incidencia</label>
+                <select name="tipo" id="id_tipo" class="form-select form-select-sm" onchange="this.form.submit()">
                     <option value="">-- Todos --</option>
                     {% for tipo in tipos %}
                         <option value="{{ tipo.id }}" {% if tipo_seleccionado == tipo.id|stringformat:"s" %}selected{% endif %}>
@@ -210,8 +210,8 @@
                             {% if user.is_territorial %}
                                 {% if incidencia.estado == 'pendiente' or incidencia.estado == 'en_proceso' %}
                                 <a href="{% url 'territorial_app:validar_incidencia' incidencia.id %}" class="btn btn-sm btn-success">Validar</a>
-                                <a href="{% url 'territorial_app:rechazar_incidencia' incidencia.id %}" class="btn btn-sm btn-danger">Rechazar</a>
                                 <a href="{% url 'territorial_app:reasignar_incidencia' incidencia.id %}" class="btn btn-sm btn-warning">Reasignar</a>
+                                <a href="{% url 'territorial_app:rechazar_incidencia' incidencia.id %}" class="btn btn-sm btn-danger">Rechazar</a>
                                 {% endif %}
                             {% endif %}
                         </td>
@@ -352,3 +352,5 @@
   </table>
 </div>
 {% endblock %}
+
+<a href="{% url 'territorial_app:rechazar_incidencia' incidencia.id %}" class="btn btn-sm btn-danger">Rechazar</a>

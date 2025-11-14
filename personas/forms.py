@@ -3,7 +3,6 @@ from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
 from registration.models import Profile
 
-# Definimos los roles disponibles
 ROL_CHOICES = [
     ("Administrador", "Administrador"),
     ("Dirección", "Dirección"),
@@ -64,12 +63,10 @@ class UsuarioCrearForm(forms.ModelForm):
         if commit:
             user.save()
 
-            # Asignar rol (grupo)
             user.groups.clear()
             group, _ = Group.objects.get_or_create(name=self.cleaned_data["rol"])
             user.groups.add(group)
 
-            # Crear o actualizar profile
             cargo = self.cleaned_data.get("cargo", "").strip()
             profile, created = Profile.objects.get_or_create(user=user)
             profile.cargo = cargo
@@ -132,15 +129,17 @@ class UsuarioEditarForm(forms.ModelForm):
         if commit:
             user.save()
 
-            # Actualizar rol
-            user.groups.clear()
-            group, _ = Group.objects.get_or_create(name=self.cleaned_data["rol"])
-            user.groups.add(group)
+            rol = self.cleaned_data.get("rol")
+            if rol:
+                user.groups.clear()
+                group, _ = Group.objects.get_or_create(name=rol)
+                user.groups.add(group)
+                user.save() 
 
-            # Actualizar cargo
             cargo = self.cleaned_data.get("cargo", "").strip()
             profile, created = Profile.objects.get_or_create(user=user)
             profile.cargo = cargo
+            profile.group = group 
             profile.save()
 
         return user
