@@ -1,4 +1,3 @@
-
 from pathlib import Path
 import os
 
@@ -28,6 +27,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
     "rest_framework", 
     "rest_framework.authtoken",
+    
 
     
 ]
@@ -66,11 +66,11 @@ WSGI_APPLICATION = "encuestas.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": ("muni"),
-        "USER": ("postgres"),
-        "PASSWORD": ("postgres"),
-        "HOST": ("localhost"),
-        "PORT": ("5432"),
+        "NAME": "Encuestas",
+        "USER": "administrador",
+        "PASSWORD": "hoseok15",
+        "HOST": "localhost",
+        "PORT": "5432",
         "CONN_MAX_AGE": 60,
         "CONN_HEALTH_CHECKS": True,
     }
@@ -122,3 +122,4 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = ("EMAIL_HOST_USER", "tu-correo@gmail.com")
 EMAIL_HOST_PASSWORD = ("EMAIL_HOST_PASSWORD", "tu-password")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
