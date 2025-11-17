@@ -1,29 +1,25 @@
-{% extends "base.html" %}
+{% extends "main_base.html" %}
 
-{% block content %}
-  <div class="container">
-    <h1>Panel de Dirección</h1>
-    <p>Bienvenido. Aquí puedes revisar reportes generales, supervisar departamentos y coordinar estrategias.</p>
+{% block dashboard_content %}
+<div class="container">
+    <h1>Panel de Dirección</h1>
+    <p>Bienvenido. Aquí puedes revisar reportes generales, supervisar departamentos y coordinar estrategias.</p>
 
-    <hr>
+    <hr>
 
-    <h3>Gestión de Direcciones</h3>
-    <p>Desde aquí puedes administrar las direcciones registradas en el sistema.</p>
+    <h3>Gestión de Direcciones</h3>
+    <p>Desde aquí puedes administrar las direcciones registradas en el sistema.</p>
+
+    <div class="acciones mb-3">
+        <a href="{% url 'organizacion:direcciones_lista' %}" class="btn btn-primary">Ver todas las Direcciones</a>
+    </div>
+
+    <hr>
+    <h3>Gestión de Incidencias</h3>
+    <p>Desde aquí puedes revisar todas las incidencias reportadas en el sistema.</p>
 
     <div class="acciones">
-      <a href="{% url 'organizacion:direcciones_lista' %}" class="btn btn-primary">Ver todas las Direcciones</a>
+        <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-info">Ver todas las Incidencias</a>
     </div>
-    <div class="acciones">
-      <a href="{% url 'organizacion:direcciones_lista' %}" class="btn btn-primary">Ver todas las Direcciones</a>
-      <a href="{% url 'organizacion:direccion_crear' %}" class="btn btn-success"> Nueva Dirección</a>
-    </div>
-
-    <hr>         <h3>Gestión de Incidencias</h3>
-    <p>Desde aquí puedes revisar todas las incidencias reportadas en el sistema.</p>
-    
-    <div class="acciones">
-            <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-info">Ver todas las Incidencias</a>
-    </div>
-        <br>
-  </div>
+</div>
 {% endblock %}

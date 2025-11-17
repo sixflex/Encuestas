@@ -49,7 +49,7 @@ class EncuestaForm(forms.ModelForm):
 
     class Meta:
         model = Encuesta
-        fields = ['titulo', 'descripcion', 'ubicacion', 'departamento', 'tipo_incidencia', 'estado']
+        fields = ['titulo', 'descripcion', 'ubicacion', 'departamento', 'tipo_incidencia', 'estado', 'prioridad']
         widgets = {
             'titulo': forms.TextInput(attrs={'class':'form-control'}),
             'descripcion': forms.Textarea(attrs={'class':'form-control', 'rows':3}),

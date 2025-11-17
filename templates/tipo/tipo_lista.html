@@ -31,10 +31,10 @@
             <td>{{ tipo.tipo_gravedad }}</td>
             <td>{{ tipo.preguntas_base.count }} pregunta(s)</td>
             <td>
-                <a href="{% url 'incidencias:tipo_editar' tipo.id %}" class="btn btn-sm btn-warning"> Editar</a>
-                <a href="{% url 'incidencias:tipo_eliminar' tipo.id %}" class="btn btn-sm btn-danger"> Eliminar</a>
+                <a href="{% url 'incidencias:tipo_editar' tipo.id %}" class="btn btn-sm btn-warning">Editar</a>
+                <a href="{% url 'incidencias:tipo_eliminar' tipo.id %}" class="btn btn-sm btn-danger">Eliminar</a>
                 <a href="{% url 'incidencias:pregunta_base_crear' tipo.id %}" class="btn btn-sm btn-primary">+ Agregar Pregunta Base</a>
-                <a href="{% url 'incidencias:preguntas_base_lista' tipo.id %}" class="btn btn-sm btn-secondary"> Ver Preguntas</a>
+                <a href="{% url 'incidencias:preguntas_base_lista' tipo.id %}" class="btn btn-sm btn-secondary">Ver Preguntas</a>
             </td>
         </tr>
         {% empty %}
@@ -44,8 +44,8 @@
         {% endfor %}
     </tbody>
 </table>
-{% endblock %}
-<div class="card shadow-sm border-0 rounded-3">
+
+<div class="card shadow-sm border-0 rounded-3 mt-4">
     <div class="card-body">
         <div class="table-responsive">
             {% if tipos %}
@@ -66,9 +66,7 @@
                         <td>{{ tipo.nombre_problema }}</td>
                         <td>{{ tipo.descripcion|default:"-" }}</td>
                         <td>{{ tipo.tipo_gravedad|default:"-" }}</td>
-                        <td classd="d-flex flex-wrap gap-2">
-                            {# Había un error en tu código original, este botón estaba duplicado #}
-                            {# <li><a href="{% url 'incidencias:tipo_crear' %}">Crear Nuevo Tipo de Incidencia</a></li> #}
+                        <td class="d-flex flex-wrap gap-2">
                             <a href="{% url 'incidencias:tipo_editar' tipo.id %}" class="btn btn-sm btn-info">Editar</a>
                             <a href="{% url 'incidencias:tipo_eliminar' tipo.id %}" class="btn btn-sm btn-danger">Eliminar</a>
                         </td>

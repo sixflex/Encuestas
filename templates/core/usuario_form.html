@@ -26,7 +26,6 @@
                         {% if field.field.widget.input_type == 'checkbox' %}
                             <div class="mb-3">
                                 <div class="form-check form-switch">
-                                    {# Añadimos la clase 'form-check-input' #}
                                     {{ field|add_class:"form-check-input" }}
                                     <label for="{{ field.id_for_label }}" class="form-check-label">
                                         {{ field.label }}
@@ -42,14 +41,14 @@
                                 {% endif %}
                             </div>
                         
-                        {# Si no es checkbox, lo tratamos como campo de texto normal #}
+                        {# Campo normal de texto o select #}
                         {% else %}
-                            <div class="mb-3">
+                            <div class="mb-3" 
+                                 {% if field.name == "departamento" %} id="departamento-wrapper" {% endif %}>
                                 <label for="{{ field.id_for_label }}" class="form-label">
                                     {{ field.label }}
                                 </label>
                                 
-                                {# Añadimos la clase 'form-control' #}
                                 {{ field|add_class:"form-control" }}
 
                                 {% if field.help_text %}
@@ -76,4 +75,27 @@
         </div>
     </div>
 </div>
+
+{# JavaScript para mostrar/ocultar departamento según el rol #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const rolField = document.querySelector('select[name="rol"]');
+    const deptoWrapper = document.getElementById('departamento-wrapper');
+
+    function toggleDepartamento() {
+        if (rolField.value === "Jefe de Cuadrilla") {
+            deptoWrapper.style.display = 'block';
+        } else {
+            deptoWrapper.style.display = 'none';
+        }
+    }
+
+    // Inicial
+    toggleDepartamento();
+
+    // Al cambiar rol
+    rolField.addEventListener('change', toggleDepartamento);
+});
+</script>
+
 {% endblock %}

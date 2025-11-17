@@ -36,13 +36,19 @@ class Departamento(models.Model):
 
 
 class Encuesta(models.Model):
+    PRIORIDAD_CHOICES = [
+        ('Baja', 'Baja'),
+        ('Media', 'Media'),
+        ('Alta', 'Alta'),
+    ]
+    
     titulo = models.CharField(max_length=100)
     descripcion = models.TextField()
     ubicacion = models.CharField(max_length=200)
     estado = models.BooleanField(default=True)
     creadoEl = models.DateTimeField(auto_now_add=True)
     actualizadoEl = models.DateTimeField(auto_now=True)
-    prioridad = models.CharField(max_length=50)
+    prioridad = models.CharField(max_length=50, choices=PRIORIDAD_CHOICES)
     departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE)
     tipo_incidencia = models.ForeignKey('TipoIncidencia', on_delete=models.SET_NULL, null=True, blank=True)
 

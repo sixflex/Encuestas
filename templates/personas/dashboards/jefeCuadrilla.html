@@ -1,33 +1,8 @@
-{% extends "base.html" %}
-
-{# 
-CAMBIOS BARBARA, USAMOS TEMPLATE NUEVO, ORIGINAL EN COMENTARIO
-
-<h1>Panel Jefe de Cuadrilla</h1>
-<p>Bienvenido. Aquí puedes organizar tus cuadrillas, registrar avances y reportar a la unidad territorial.</p>
-<hr>
-<h3>Gestión de Incidencias</h3>
-<p>Accede a las incidencias verlas, asignarlas a una cuadrilla o rechazarlas</p>
-
-<div class="acciones mb-3">
-   <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-primary">📋 Ver todas las Incidencias</a>
-</div>
-<br>
-#}
-
-{% block content %}
+{% extends "main_base.html" %}
+{% block dashboard_content %}
 <div class="container mt-4">
   <h1>Panel Jefe de Cuadrilla</h1>
   <p>Bienvenido, <strong>{{ user.first_name }} {{ user.last_name }}</strong>. Aquí puedes organizar tus cuadrillas y gestionar incidencias.</p>
-
-  {% if messages %}
-    <div class="messages mt-3">
-      {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-      {% endfor %}
-    </div>
-  {% endif %}
-
   <hr>
 
   {% if cuadrillas %}
@@ -67,6 +42,18 @@ CAMBIOS BARBARA, USAMOS TEMPLATE NUEVO, ORIGINAL EN COMENTARIO
         <td>{{ incidencia.prioridad }}</td>
         <td>
           <a href="{% url 'incidencias:incidencia_detalle' incidencia.id %}" class="btn btn-sm btn-primary">Ver</a>
+
+          {% if user.is_superuser or user.is_jefe %}
+            <a href="{% url 'incidencias:incidencia_editar' incidencia.id %}" class="btn btn-sm btn-info">Editar</a>
+            <form method="post" action="{% url 'incidencias:incidencia_toggle_estado' incidencia.id %}" class="d-inline">
+              {% csrf_token %}
+              {% if incidencia.estado %}
+                <button type="submit" class="btn btn-sm btn-warning">Bloquear</button>
+              {% else %}
+                <button type="submit" class="btn btn-sm btn-success">Activar</button>
+              {% endif %}
+            </form>
+          {% endif %}
         </td>
       </tr>
       {% endfor %}
@@ -97,6 +84,17 @@ CAMBIOS BARBARA, USAMOS TEMPLATE NUEVO, ORIGINAL EN COMENTARIO
         <td>{{ incidencia.prioridad }}</td>
         <td>
           <a href="{% url 'incidencias:incidencia_detalle' incidencia.id %}" class="btn btn-sm btn-primary">Ver</a>
+          {% if user.is_superuser or user.is_jefe %}
+            <a href="{% url 'incidencias:incidencia_editar' incidencia.id %}" class="btn btn-sm btn-info">Editar</a>
+            <form method="post" action="{% url 'incidencias:incidencia_toggle_estado' incidencia.id %}" class="d-inline">
+              {% csrf_token %}
+              {% if incidencia.estado %}
+                <button type="submit" class="btn btn-sm btn-warning">Bloquear</button>
+              {% else %}
+                <button type="submit" class="btn btn-sm btn-success">Activar</button>
+              {% endif %}
+            </form>
+          {% endif %}
         </td>
       </tr>
       {% endfor %}
@@ -110,8 +108,6 @@ CAMBIOS BARBARA, USAMOS TEMPLATE NUEVO, ORIGINAL EN COMENTARIO
 
   <div class="mt-4">
     <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-primary"> Ver todas las Incidencias</a>
-    <a href="{% url 'personas:cerrar_sesion' %}" class="btn btn-secondary"> Cerrar Sesión</a>
   </div>
 </div>
 {% endblock %}
-

@@ -8,14 +8,34 @@ from django.db.models import Q
 from django.views.decorators.http import require_POST
 from .forms import UsuarioCrearForm, UsuarioEditarForm
 from .utils import solo_admin
-from core.models import Incidencia
+from core.utils import solo_direccion, solo_cuadrilla, solo_territorial
+from core.models import Incidencia, Departamento, Direccion
 from registration.models import Profile
 
 @login_required
 def dashboard_admin(request):
-    return render(request, "personas/dashboards/admin.html")
+    ultimos_usuarios = Profile.objects.order_by('-id')[:5] 
+    ultimas_direcciones = Direccion.objects.order_by('-creadoEl')[:5]
+    ultimos_departamentos = Departamento.objects.order_by('-creadoEl')[:5]
+    ultimas_incidencias = Incidencia.objects.order_by('-creadoEl')[:5]
+    total_usuarios = Profile.objects.count()
+    total_incidencias_creadas = Incidencia.objects.count()
+    total_incidencias_finalizadas = Incidencia.objects.filter(estado='Completada').count()
+
+    contexto = {
+        'ultimos_usuarios': ultimos_usuarios,
+        'ultimas_direcciones': ultimas_direcciones,
+        'ultimos_departamentos': ultimos_departamentos,
+        'ultimas_incidencias': ultimas_incidencias,
+        'total_usuarios': total_usuarios,
+        'total_incidencias_creadas': total_incidencias_creadas,
+        'total_incidencias_finalizadas': total_incidencias_finalizadas,
+    }
+
+    return render(request, "personas/dashboards/admin.html", contexto)
 
 @login_required
+@solo_territorial
 def dashboard_territorial(request):
     # Obtener las últimas 10 incidencias para mostrar en el dashboard
     incidencias = Incidencia.objects.all().order_by('-creadoEl')[:10]
@@ -23,11 +43,8 @@ def dashboard_territorial(request):
         'incidencias': incidencias
     })
 
-#----CAMBISO BARBARA
-#@login_required
-#def dashboard_jefe(request):
- #   return render(request, "personas/dashboards/jefeCuadrilla.html")
-@login_required
+
+@solo_cuadrilla
 def dashboard_jefe(request):
     """
     Dashboard para Jefe de Cuadrilla.
@@ -79,12 +96,10 @@ def dashboard_jefe(request):
     })
 #----------------------------------------------------------------------
 @login_required
+@solo_direccion
 def dashboard_direccion(request):
     return render(request, "personas/dashboards/direccion.html")
-#-----------CAMBIOS 
-#@login_required
-#def dashboard_departamento(request):
- #   return render(request, "personas/dashboards/departamento.html")
+
 @login_required
 def dashboard_departamento(request):
     """
@@ -98,7 +113,7 @@ def dashboard_departamento(request):
     
     if not ("Departamento" in roles or request.user.is_superuser or "Administrador" in roles):
         messages.error(request, "No tienes acceso a este dashboard")
-        return redirect("incidencias:incidencias_lista")
+        return check_profile(request)
     
     # Obtener departamento del usuario
     try:

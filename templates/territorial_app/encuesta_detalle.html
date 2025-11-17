@@ -1,14 +1,3 @@
-{% extends "base.html" %}
-{% block title %}Detalle de Encuesta{% endblock %}
-
-{% block content %}
-<div class="container">
-  <h1>Encuesta: {{ encuesta.titulo }}</h1>
-
-  <p><strong>Departamento:</strong> {{ encuesta.departamento.nombre_departamento }}</p>
-  <p><strong>Ubicación:</strong> {{ encuesta.ubicacion }}</p>
-  <p><strong>Estado:</strong> {% if encuesta.estado %}Activa{% else %}Bloqueada{% endif %}</p>
-  <p><strong>Descripción:</strong> {{ encuesta.descripcion }}</p>
 {% extends "main_base.html" %}
 
 {% block title %}Detalle de Encuesta - {{ encuesta.titulo }} | Gestión Municipal{% endblock %}
@@ -38,8 +27,6 @@
                     <dt class="col-sm-3">Prioridad</dt>
                     <dd class="col-sm-9">{{ encuesta.prioridad }}</dd>
                     
-                    <hr class="my-3">
-                    
                     <dt class="col-sm-3">Departamento</dt>
                     <dd class="col-sm-9">{{ encuesta.departamento.nombre_departamento }}</dd>
                     
@@ -55,108 +42,6 @@
                         {% endif %}
                     </dd>
 
-  <h3>Preguntas Asociadas</h3>
-
-  {% if preguntas_con_respuestas %}
-    <ul>
-      {% for item in preguntas_con_respuestas %}
-        <li>
-          <strong>{{ item.texto_pregunta }}</strong> ({{ item.tipo_pregunta }})<br>
-          Respuesta: {{ item.respuesta }}
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p><em>No hay preguntas asociadas.</em></p>
-  {% endif %}
-
-  <hr>
-  
-  <h3>Evidencias Subidas</h3>
-
-  <!-- Formulario para subir nueva evidencia -->
-  {% if evidencia_form %}
-  <div>
-    <h4>Subir Nueva Evidencia</h4>
-    <form method="post" enctype="multipart/form-data" action="{% url 'territorial_app:evidencia_subir' encuesta.id %}">
-      {% csrf_token %}
-      
-      <p>
-        <label>Nombre:</label><br>
-        {{ evidencia_form.nombre }}
-        {% if evidencia_form.nombre.errors %}
-          <span style="color: red;">{{ evidencia_form.nombre.errors }}</span>
-        {% endif %}
-      </p>
-
-      <p>
-        <label>Archivo:</label><br>
-        {{ evidencia_form.archivo }}
-        {% if evidencia_form.archivo.errors %}
-          <span style="color: red;">{{ evidencia_form.archivo.errors }}</span>
-        {% endif %}
-      </p>
-
-      <button type="submit">Subir Evidencia</button>
-    </form>
-  </div>
-  <hr>
-  {% endif %}
-
-  <!-- Lista de evidencias existentes -->
-  {% if evidencias %}
-    <ul>
-      {% for evidencia in evidencias %}
-        <li>
-          <strong>{{ evidencia.nombre }}</strong> - {{ evidencia.tipo }} ({{ evidencia.formato }})
-          
-          <!-- Preview según tipo -->
-          {% if evidencia.tipo == 'imagen' %}
-            <br><img src="{{ evidencia.archivo.url }}" alt="{{ evidencia.nombre }}" style="max-width: 300px; max-height: 300px;">
-          
-          {% elif evidencia.tipo == 'video' %}
-            <br><video controls style="max-width: 300px;">
-              <source src="{{ evidencia.archivo.url }}" type="video/{{ evidencia.formato }}">
-            </video>
-          
-          {% elif evidencia.tipo == 'audio' %}
-            <br><audio controls>
-              <source src="{{ evidencia.archivo.url }}" type="audio/{{ evidencia.formato }}">
-            </audio>
-          
-          {% else %}
-            <br><a href="{{ evidencia.archivo.url }}" target="_blank">Descargar {{ evidencia.formato|upper }}</a>
-          {% endif %}
-
-          {% if evidencia.tamanio %}
-            <br><small>Tamaño: {{ evidencia.tamanio|filesizeformat }}</small>
-          {% endif %}
-          <small>Subido: {{ evidencia.creadoEl|date:"d/m/Y H:i" }}</small>
-
-          <!-- Botón para eliminar -->
-          <form method="post" action="{% url 'territorial_app:evidencia_eliminar' evidencia.id %}" style="display: inline;">
-            {% csrf_token %}
-            <button type="submit" onclick="return confirm('¿Seguro que deseas eliminar esta evidencia?')">Eliminar</button>
-          </form>
-        </li>
-      {% endfor %}
-    </ul>
-  {% elif incidencia and incidencia.multimedias.exists %}
-    <!-- Compatibilidad con modelo anterior -->
-    <ul>
-      {% for multimedia in incidencia.multimedias.all %}
-        <li>
-          {{ multimedia.nombre }} - {{ multimedia.tipo }} ({{ multimedia.formato }})
-          <a href="{{ multimedia.url }}" target="_blank">Ver</a>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p><em>No hay evidencias asociadas.</em></p>
-  {% endif %}
-
-  <hr>
-  <a href="{% url 'territorial_app:encuestas_lista' %}">Volver</a>
                     <dt class="col-sm-3">Tipo Incidencia</dt>
                     <dd class="col-sm-9">
                         {% if encuesta.tipo_incidencia %}
@@ -166,56 +51,89 @@
                         {% endif %}
                     </dd>
                     
-                    <hr class="my-3">
-                    
                     <dt class="col-sm-3">Fecha de Creación</dt>
                     <dd class="col-sm-9">{{ encuesta.creadoEl|date:"d/m/Y H:i:s" }}</dd>
                     
                     <dt class="col-sm-3">Última Actualización</dt>
                     <dd class="col-sm-9">{{ encuesta.actualizadoEl|date:"d/m/Y H:i:s" }}</dd>
                 </dl>
-            </div>
-        </div>
 
-        <div class="card shadow-sm border-0 rounded-3 mt-4">
-            <div class="card-body">
-                <h5 class="card-title">Acciones Disponibles</h5>
-                <div class="d-flex flex-wrap gap-2 mt-3">
-                    
-                    <a href="{% url 'territorial_app:encuesta_editar' encuesta.id %}" class="btn btn-info">
-                        <i class="bi bi-pencil-fill"></i> Editar Encuesta
-                    </a>
+                <hr>
+                <h3>Preguntas Asociadas</h3>
+                {% if preguntas_con_respuestas %}
+                    <ul>
+                        {% for item in preguntas_con_respuestas %}
+                            <li>
+                                <strong>{{ item.texto_pregunta }}</strong> ({{ item.tipo_pregunta }})<br>
+                                Respuesta: {{ item.respuesta }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p><em>No hay preguntas asociadas.</em></p>
+                {% endif %}
 
-                    <form method="post" action="{% url 'territorial_app:encuesta_toggle_estado' encuesta.id %}" class="d-inline">
-                        {% csrf_token %}
-                        {% if encuesta.estado %}
-                            <button type="submit" class="btn btn-warning">
-                                <i class="bi bi-lock-fill"></i> Bloquear Encuesta
-                            </button>
-                        {% else %}
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-unlock-fill"></i> Activar Encuesta
-                            </button>
-                        {% endif %}
-                    </form>
+                <hr>
+                <h3>Evidencias Subidas</h3>
+                {% if evidencia_form %}
+                    <div>
+                        <h4>Subir Nueva Evidencia</h4>
+                        <form method="post" enctype="multipart/form-data" action="{% url 'territorial_app:evidencia_subir' encuesta.id %}">
+                            {% csrf_token %}
+                            <p>
+                                <label>Nombre:</label><br>
+                                {{ evidencia_form.nombre }}
+                                {% if evidencia_form.nombre.errors %}
+                                    <span style="color: red;">{{ evidencia_form.nombre.errors }}</span>
+                                {% endif %}
+                            </p>
 
-                    <a href="{% url 'territorial_app:encuesta_eliminar' encuesta.id %}" class="btn btn-danger">
-                        <i class="bi bi-trash-fill"></i> Eliminar Encuesta
-                    </a>
+                            <p>
+                                <label>Archivo:</label><br>
+                                {{ evidencia_form.archivo }}
+                                {% if evidencia_form.archivo.errors %}
+                                    <span style="color: red;">{{ evidencia_form.archivo.errors }}</span>
+                                {% endif %}
+                            </p>
 
-                    {% if encuesta.tipo_incidencia %}
-                    <form method="post" action="{% url 'territorial_app:importar_preguntas_default' encuesta.id %}" class="d-inline" onsubmit="return confirm('¿Estás seguro de importar las preguntas default? Esto se añadirá a las preguntas existentes.')">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-download"></i> Importar Preguntas Default
-                        </button>
-                    </form>
-                    {% endif %}
-                    
-                    <a href="{% url 'territorial_app:encuestas_lista' %}" class="btn btn-secondary ms-auto">
-                        <i class="bi bi-arrow-left"></i> Volver al listado
-                    </a>
-                </div>
+                            <button type="submit">Subir Evidencia</button>
+                        </form>
+                    </div>
+                    <hr>
+                {% endif %}
+
+                {% if evidencias %}
+                    <ul>
+                        {% for evidencia in evidencias %}
+                            <li>
+                                <strong>{{ evidencia.nombre }}</strong> - {{ evidencia.tipo }} ({{ evidencia.formato }})
+                                {% if evidencia.tipo == 'imagen' %}
+                                    <br><img src="{{ evidencia.archivo.url }}" alt="{{ evidencia.nombre }}" style="max-width: 300px; max-height: 300px;">
+                                {% elif evidencia.tipo == 'video' %}
+                                    <br><video controls style="max-width: 300px;"><source src="{{ evidencia.archivo.url }}" type="video/{{ evidencia.formato }}"></video>
+                                {% elif evidencia.tipo == 'audio' %}
+                                    <br><audio controls><source src="{{ evidencia.archivo.url }}" type="audio/{{ evidencia.formato }}"></audio>
+                                {% else %}
+                                    <br><a href="{{ evidencia.archivo.url }}" target="_blank">Descargar {{ evidencia.formato|upper }}</a>
+                                {% endif %}
+                                {% if evidencia.tamanio %}
+                                    <br><small>Tamaño: {{ evidencia.tamanio|filesizeformat }}</small>
+                                {% endif %}
+                                <small>Subido: {{ evidencia.creadoEl|date:"d/m/Y H:i" }}</small>
+
+                                <form method="post" action="{% url 'territorial_app:evidencia_eliminar' evidencia.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" onclick="return confirm('¿Seguro que deseas eliminar esta evidencia?')">Eliminar</button>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p><em>No hay evidencias asociadas.</em></p>
+                {% endif %}
+
+                <hr>
+                <a href="{% url 'territorial_app:encuestas_lista' %}" class="btn btn-secondary">Volver</a>
             </div>
         </div>
     </div>

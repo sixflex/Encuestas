@@ -57,9 +57,6 @@ def _filtrar_por_rol(qs, user):
         return qs
     
     
-    
-        
-
     if "Departamento" in roles:
         return qs
 #-------------cambios barbara-------

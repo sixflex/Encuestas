@@ -80,4 +80,22 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const rolField = document.querySelector('select[name="rol"]');
+    const deptoWrapper = document.getElementById('departamento-wrapper');
+
+    function toggleDepartamento() {
+        if (rolField.value === "Jefe de Cuadrilla") {
+            deptoWrapper.style.display = 'block';
+        } else {
+            deptoWrapper.style.display = 'none';
+        }
+    }
+
+    toggleDepartamento();
+    rolField.addEventListener('change', toggleDepartamento);
+});
+</script>
+
 {% endblock %}

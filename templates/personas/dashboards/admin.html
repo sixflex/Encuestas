@@ -6,7 +6,7 @@
 
 {% block dashboard_content %}
 <h1 class="h3 mb-4">Panel de Administración</h1>
-<p>Bienvenido, {{ request.user.username }} | <a href="{% url 'personas:cerrar_sesion' %}">Salir</a></p>
+<p>Bienvenido, {{ request.user.username }}</p>
 
 <!-- Tarjetas con totales -->
 <div class="row mb-4">
@@ -53,7 +53,7 @@
                         <td>{{ u.user.first_name }} {{ u.user.last_name }}</td>
                         <td>{{ u.user.email }}</td>
                         <td>{{ u.telefono }}</td>
-                        <td>{{ u.perfil.rol }}</td>
+                        <td>{{ u.group.name }}</td>
                         <td>
                             <a href="{% url 'personas:usuarios_lista' %}" class="btn btn-sm btn-outline-primary">Ver</a>
                         </td>
@@ -112,8 +112,8 @@
                         <td>{{ forloop.counter }}</td>
                         <td>{{ i.titulo }}</td>
                         <td>
-                            {% if i.direccion %}
-                                {{ i.direccion.nombre_direccion }}
+                            {% if i.departamento and i.departamento.direccion %}
+                                {{ i.departamento.direccion.nombre_direccion }}
                             {% else %}
                                 -
                             {% endif %}

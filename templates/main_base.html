@@ -79,14 +79,61 @@
     <div class="sidebar" id="sidebar-wrapper" style="width: 220px;">
         <h6 class="text-uppercase text-muted small fw-bold mb-1 px-3">Módulos</h6>
         <div class="list-group list-group-flush">
-            <a href="{% url 'personas:usuarios_lista' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'usuarios_lista' %}active{% endif %}">Usuarios</a>
-            <a href="{% url 'personas:dashboard_direccion' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'dashboard_direccion' %}active{% endif %}">Direcciones</a>
-            <a href="{% url 'personas:dashboard_departamento' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'dashboard_departamento' %}active{% endif %}">Departamentos</a>
-            <a href="{% url 'incidencias:incidencias_lista' %}" class="list-group-item list-group-item-action {% if request.resolver_match.app_name == 'incidencias' %}active{% endif %}">Incidencias</a>
-            
-            <a href="{% url 'incidencias:tipo_lista' %}" class="list-group-item list-group-item-action {% if 'tipo_' in request.resolver_match.url_name %}active{% endif %}">Tipos de Incidencia</a>
-            
-            <a href="{% url 'territorial_app:encuestas_lista' %}" class="list-group-item list-group-item-action {% if request.resolver_match.app_name == 'territorial_app' %}active{% endif %}">Encuestas</a>
+
+            {# ----------------------------------------------------------- #}
+            {#   SI NO ES JEFE DE CUADRILLA → PUEDE VER TODO EL SISTEMA   #}
+            {# ----------------------------------------------------------- #}
+            {% if not user|has_group:"Jefe de Cuadrilla" %}
+
+                <a href="{% url 'personas:usuarios_lista' %}" 
+                   class="list-group-item list-group-item-action 
+                   {% if request.resolver_match.url_name == 'usuarios_lista' %}active{% endif %}">
+                    Usuarios
+                </a>
+
+                <a href="{% url 'personas:dashboard_direccion' %}" 
+                   class="list-group-item list-group-item-action 
+                   {% if request.resolver_match.url_name == 'dashboard_direccion' %}active{% endif %}">
+                    Direcciones
+                </a>
+
+                <a href="{% url 'personas:dashboard_departamento' %}" 
+                   class="list-group-item list-group-item-action 
+                   {% if request.resolver_match.url_name == 'dashboard_departamento' %}active{% endif %}">
+                    Departamentos
+                </a>
+
+                <!-- Tipos de incidencia -->
+                <a href="{% url 'incidencias:tipo_lista' %}"
+                   class="list-group-item list-group-item-action
+                   {% if 'tipo_' in request.resolver_match.url_name %}active{% endif %}">
+                    Tipos de Incidencia
+                </a>
+
+                
+            {% endif %}
+
+            {# ----------------------------------------------------------- #}
+            {#       ESTO LO PUEDE VER CUALQUIER USUARIO, INCLUIDO        #}
+            {#               EL JEFE DE CUADRILLA                         #}
+            {# ----------------------------------------------------------- #}
+
+            <!-- Incidencias (SIEMPRE visible) -->
+            <a href="{% url 'incidencias:incidencias_lista' %}"
+               class="list-group-item list-group-item-action
+               {% if request.resolver_match.app_name == 'incidencias' %}active{% endif %}">
+                Incidencias
+            </a>
+
+            <!-- Organización de cuadrillas (visible también para jefe) -->
+            {% if not user|has_group:"Jefe de Cuadrilla" %}
+                <a href="{% url 'territorial_app:encuestas_lista' %}"
+                   class="list-group-item list-group-item-action 
+                   {% if request.resolver_match.app_name == 'territorial_app' %}active{% endif %}">
+                    Encuesta
+                </a>
+            {% endif %}
+
         </div>
     </div>
 

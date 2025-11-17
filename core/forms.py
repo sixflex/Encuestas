@@ -85,6 +85,20 @@ class UsuarioCrearForm(forms.ModelForm):
     )
     #--------------------------------------------------------
 
+    departamento = forms.ModelChoiceField(
+        queryset=Departamento.objects.all(),
+        required=False,  # Solo obligatorio si el rol es Jefe de Cuadrilla
+        label="Departamento",
+        empty_label="Seleccione un departamento"
+    )
+
+    telefono = forms.CharField(
+        label="Teléfono",
+        required=False,
+        max_length=20,
+        help_text="Opcional, formato: +56912345678"
+    )
+
     class Meta:
         model = User
         fields = ["username", "first_name", "last_name", "email", "is_active", "is_staff"]
@@ -121,8 +135,14 @@ class UsuarioCrearForm(forms.ModelForm):
         cleaned = super().clean()
         p1 = cleaned.get("password1")
         p2 = cleaned.get("password2")
+        rol = cleaned.get("rol")
+        depto = cleaned.get("departamento")
         if p1 and p2 and p1 != p2:
             self.add_error("password2", "Las contraseñas no coinciden.")
+
+        if rol == "Jefe de Cuadrilla" and not depto:
+            self.add_error("departamento", "Debe seleccionar un departamento para un Jefe de Cuadrilla.")
+
         return cleaned
 
     def save(self, commit=True):
@@ -132,6 +152,7 @@ class UsuarioCrearForm(forms.ModelForm):
         user.first_name = (user.first_name or "").strip()
         user.last_name = (user.last_name or "").strip()
         user.email = user.email.strip()
+        
 
         if commit:
             user.save()
@@ -140,11 +161,12 @@ class UsuarioCrearForm(forms.ModelForm):
             user.groups.add(group)
             profile, _ = Profile.objects.get_or_create(user=user)
             profile.group = group
+            profile.telefono = self.cleaned_data.get("telefono", "")
             profile.save()
 
             # Si el rol es "Jefe de Cuadrilla", asegurar el registro asociado
             if group.name == "Jefe de Cuadrilla":
-                depto = Departamento.objects.first()
+                depto = self.cleaned_data.get("departamento")
                 JefeCuadrilla.objects.get_or_create(
                     usuario=profile,
                     defaults={
@@ -159,7 +181,7 @@ class UsuarioCrearForm(forms.ModelForm):
 
 class UsuarioEditarForm(forms.ModelForm):
     """
-    Edición de usuario con cambio opcional de contraseña y rol.
+    Edición de usuario con cambio opcional de contraseña, rol y departamento.
     """
     password1 = forms.CharField(
         label="Nueva contraseña",
@@ -174,6 +196,19 @@ class UsuarioEditarForm(forms.ModelForm):
         required=False,
     )
     rol = forms.ChoiceField(choices=ROL_CHOICES, required=True, label="Rol (grupo)")
+    departamento = forms.ModelChoiceField(
+        queryset=Departamento.objects.all(),
+        required=False,
+        label="Departamento",
+        empty_label="Seleccione un departamento"
+    )
+
+    telefono = forms.CharField(
+        label="Teléfono",
+        required=False,
+        max_length=20,
+        help_text="Opcional, formato: +56912345678"
+    )
 
     class Meta:
         model = User
@@ -185,10 +220,26 @@ class UsuarioEditarForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Inicializar rol
         groups = list(self.instance.groups.values_list("name", flat=True))
         if groups:
             self.fields["rol"].initial = groups[0]
 
+        # Inicializar departamento si es Jefe de Cuadrilla
+        try:
+            perfil = self.instance.profile
+            self.fields["telefono"].initial = perfil.telefono
+        except Profile.DoesNotExist:
+         perfil = None
+
+        if perfil:
+            try:
+                jefe = JefeCuadrilla.objects.get(usuario=perfil)
+                self.fields["departamento"].initial = jefe.departamento
+            except JefeCuadrilla.DoesNotExist:
+                pass
+
+    # Validaciones
     def clean_username(self):
         username = (self.cleaned_data.get("username") or "").strip()
         if not username:
@@ -213,42 +264,55 @@ class UsuarioEditarForm(forms.ModelForm):
         cleaned = super().clean()
         p1 = cleaned.get("password1")
         p2 = cleaned.get("password2")
+        rol = cleaned.get("rol")
+        depto = cleaned.get("departamento")
+
+        # Validar cambio de contraseña opcional
         if p1 or p2:
             if not p1 or not p2:
                 self.add_error("password2", "Debes completar ambas contraseñas si vas a cambiarla.")
             elif p1 != p2:
                 self.add_error("password2", "Las contraseñas no coinciden.")
+
+        # Validar departamento si es Jefe de Cuadrilla
+        if rol == "Jefe de Cuadrilla" and not depto:
+            self.add_error("departamento", "Debe seleccionar un departamento para un Jefe de Cuadrilla.")
+
         return cleaned
 
+    # Guardar usuario y sincronizar perfil y Jefe de Cuadrilla
     def save(self, commit=True):
         user = super().save(commit=False)
-        # trims
+
+        # Cambiar contraseña si se proporcionó
+        p1 = self.cleaned_data.get("password1")
+        if p1:
+            user.set_password(p1)
+
+        # Limpiar datos
         user.username = user.username.strip()
         user.first_name = (user.first_name or "").strip()
         user.last_name = (user.last_name or "").strip()
         user.email = user.email.strip()
 
-        p1 = self.cleaned_data.get("password1")
-        if p1:
-            user.set_password(p1)
-#Cambios barbara 
         if commit:
             user.save()
+
+            # Actualizar grupo
             user.groups.clear()
             group, _ = Group.objects.get_or_create(name=self.cleaned_data["rol"])
             user.groups.add(group)
-            return user #cambio barbara
-        
-'''
-            # Mantener sincronizado el perfil
+
+            # Sincronizar profile
             profile, _ = Profile.objects.get_or_create(user=user)
             profile.group = group
+            profile.telefono = self.cleaned_data.get("telefono", "")
             profile.save()
 
-            # (Opcional) coherencia con Jefe de Cuadrilla
+            # Actualizar o crear Jefe de Cuadrilla
             if group.name == "Jefe de Cuadrilla":
-                depto = Departamento.objects.first()
-                JefeCuadrilla.objects.get_or_create(
+                depto = self.cleaned_data.get("departamento")
+                JefeCuadrilla.objects.update_or_create(
                     usuario=profile,
                     defaults={
                         "nombre_cuadrilla": f"Cuadrilla de {user.username}",
@@ -257,11 +321,11 @@ class UsuarioEditarForm(forms.ModelForm):
                     },
                 )
             else:
-               
-                pass
+                # Si cambió a otro rol, eliminar registro de Jefe de Cuadrilla si existía
+                JefeCuadrilla.objects.filter(usuario=profile).delete()
 
         return user
-'''
+
 #------------------------------------------------------
 # ---------- Confirmación Activar/Desactivar ----------
 

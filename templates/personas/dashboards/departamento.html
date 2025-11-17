@@ -1,33 +1,25 @@
 {% extends "main_base.html" %}
 
-{% block title %}Panel de Departamento | Gestión Municipal{% endblock %}
-
 {% block dashboard_content %}
-  <h1 class="h3 mb-4">Panel de Departamento</h1>
-  <p>Bienvenido. Aquí puedes revisar reportes generales, supervisar departamentos y coordinar estrategias.</p>
+<div class="container">
+    <h1>Panel de Departamento</h1>
+    <p>Bienvenido. Aquí puedes revisar reportes generales, supervisar departamentos y coordinar estrategias.</p>
 
-  <hr>
+    <hr>
+
+    <h3>Gestión de Departamento</h3>
+    <p>Bienvenido. Aquí puedes revisar reportes generales, supervisar departamentos y coordinar estrategias.</p>
+
+    <div class="acciones mb-3">
+        <a href="{% url 'organizacion:departamentos_lista' %}" class="btn btn-primary">Ver todos los departamentos</a>
+    </div>
+
+    <hr>
+    <h3>Gestión de Incidencias</h3>
+    <p>Desde aquí puedes revisar todas las incidencias reportadas en el sistema.</p>
 
     <div class="acciones">
-      <a href="{% url 'organizacion:departamentos_lista' %}" class="btn btn-primary"> Ver todos los Departamentos</a>
-  <div class="card shadow-sm border-0 rounded-3 mb-4">
-    <div class="card-body">
-      <h3 class="card-title h5">Gestión de Departamentos</h3>
-      <p>Desde aquí puedes administrar los departamentos registrados en el sistema.</p>
-      <div class="acciones">
-        <a href="{% url 'organizacion:departamentos_lista' %}" class="btn btn-primary"> Ver todos los Departamentos</a>
-        <a href="{% url 'organizacion:departamento_crear' %}" class="btn btn-success">Nuevo Departamento</a>
-      </div>
+        <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-info">Ver todas las Incidencias</a>
     </div>
-  </div>
-
-  <div class="card shadow-sm border-0 rounded-3">
-    <div class="card-body">
-      <h3 class="card-title h5">Gestión de Incidencias</h3>
-      <p>Accede a las incidencias verlas, asignarlas a una cuadrilla o rechazarlas</p>
-      <div class="acciones mb-3">
-        <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-primary">Ver todas las Incidencias</a>
-      </div>
-    </div>
-  </div>
+</div>
 {% endblock %}

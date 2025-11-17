@@ -48,7 +48,7 @@ class IncidenciaForm(forms.ModelForm):
         widgets = {
             "titulo": forms.TextInput(attrs={"class": "form-control", "placeholder": "Título"}),
             "descripcion": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
-            "fecha_cierre": forms.DateTimeInput(attrs={"type": "datetime-local", "class": "form-control"}),
+            #"fecha_cierre": forms.DateTimeInput(attrs={"type": "datetime-local", "class": "form-control"}),
             "fecha_cierre": forms.DateTimeInput(format="%Y-%m-%dT%H:%M", attrs={"type": "datetime-local", "class": "form-control"}), #cambio bernardo
             "latitud": forms.NumberInput(attrs={"class": "form-control"}),
             "longitud": forms.NumberInput(attrs={"class": "form-control"}),
@@ -72,15 +72,9 @@ class IncidenciaForm(forms.ModelForm):
         #cambios barbara
         # Filtrar cuadrillas según el departamento
         if self.instance and self.instance.pk and self.instance.departamento:
-            # Si la instancia ya existe y tiene departamento, filtrar por ese departamento
-            cuadrillas_disponibles = JefeCuadrilla.objects.filter(
-                departamento=self.instance.departamento
-            )
-            # Si la instancia tiene una cuadrilla asignada, incluirla aunque no esté en el filtro
+            cuadrillas_disponibles = JefeCuadrilla.objects.filter(departamento=self.instance.departamento)
             if self.instance.cuadrilla and self.instance.cuadrilla not in cuadrillas_disponibles:
-                cuadrillas_disponibles = cuadrillas_disponibles | JefeCuadrilla.objects.filter(
-                    pk=self.instance.cuadrilla.pk
-                )
+                cuadrillas_disponibles |= JefeCuadrilla.objects.filter(pk=self.instance.cuadrilla.pk)
             self.fields['cuadrilla'].queryset = cuadrillas_disponibles
         else:
             # Para nuevas incidencias, mostrar todas las cuadrillas
@@ -144,6 +138,7 @@ class IncidenciaForm(forms.ModelForm):
         incidencia.titulo = incidencia.titulo.strip()
      #cambios barbara
      #Preservar la cuadrilla si no se cambió en el formulario
+        
         if self.instance.pk and 'cuadrilla' not in self.changed_data:
             # Si la cuadrilla no cambió, mantener la original
             if self.instance.cuadrilla:

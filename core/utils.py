@@ -21,7 +21,6 @@ def es_admin_o_territorial(u):
 
 #----------------------------------
 
-
 def solo_admin(function):
     """
     Decorador que solo permite el acceso a Administradores.
@@ -64,7 +63,39 @@ def admin_o_territorial(function):
     def wrap(request, *args, **kwargs):
         if es_admin_o_territorial(request.user):
             return function(request, *args, **kwargs)
-        
         messages.error(request, "No tienes permisos para acceder a esta página.")
         return redirect('home')
     return wrap
+
+# mas decoradores
+def solo_direccion(function):
+    @wraps(function)
+    def wrap(request, *args, **kwargs):
+        grupos = set(request.user.groups.values_list("name", flat=True))
+        if "Dirección" in grupos or request.user.is_superuser:
+            return function(request, *args, **kwargs)
+        
+        messages.error(request, "No tienes permisos para acceder a este dashboard.")
+        return redirect('home')
+    return wrap
+
+def solo_cuadrilla(function):
+    @wraps(function)
+    def wrap(request, *args, **kwargs):
+        grupos = set(request.user.groups.values_list("name", flat=True))
+        if "Jefe de Cuadrilla" in grupos or request.user.is_superuser:
+            return function(request, *args, **kwargs)
+        
+        messages.error(request, "No tienes permisos para acceder a este dashboard.")
+        return redirect('home')
+    return wrap
+
+def admin_territorial_cuadrilla(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        grupos = request.user.groups.values_list("name", flat=True)
+        if set(grupos) & {"Administrador", "Territorial", "Jefe de Cuadrilla"}:
+            return view_func(request, *args, **kwargs)
+        messages.error(request, "No tienes permisos para acceder a este dashboard.")
+        return redirect('home')
+    return wrapper

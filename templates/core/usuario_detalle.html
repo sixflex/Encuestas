@@ -31,7 +31,7 @@
                     <dt class="col-sm-3">Rol (Grupo)</dt>
                     <dd class="col-sm-9">
                         {% for group in groups %}
-                            <span class="badge bg-secondary">{{ group.name }}</span>
+                            <span class="badge bg-secondary">{{ group }}</span>
                         {% empty %}
                             <span class="text-muted">Sin rol asignado</span>
                         {% endfor %}

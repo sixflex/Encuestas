@@ -6,7 +6,7 @@ from django.db.models import Q
 from core.models import Incidencia, JefeCuadrilla, Departamento, Encuesta, PreguntaEncuesta, TipoIncidencia, PreguntaBase, RespuestaEncuesta, Multimedia
 from .forms import RechazarIncidenciaForm, ReasignarIncidenciaForm, EncuestaForm, FinalizarIncidenciaForm, PreguntaEncuestaForm
 from incidencias.forms import SubirEvidenciaForm
-from core.utils import solo_admin, admin_o_territorial
+from core.utils import solo_admin, admin_o_territorial, admin_territorial_cuadrilla
 from django.forms import formset_factory, modelformset_factory
 from django.http import JsonResponse
 
@@ -121,6 +121,17 @@ def finalizar_incidencia(request, pk):
         messages.error(request, "No puedes finalizar una incidencia que no pertenece a tu cuadrilla.")
         return redirect('territorial_app:incidencias_lista')
 
+    encuesta = getattr(incidencia, 'encuesta', None)
+    if encuesta:
+        preguntas = encuesta.preguntaencuesta_set.all()
+        incompletas = [p for p in preguntas if not p.respuestas.exists()]
+        if incompletas:
+            messages.error(
+                request, 
+                "No puedes completar la incidencia porque la encuesta asociada tiene preguntas sin responder."
+            )
+            return redirect('incidencias:incidencia_detalle', pk=incidencia.id)
+    
     if request.method == 'POST':
         form = FinalizarIncidenciaForm(request.POST, request.FILES, instance=incidencia)
         if form.is_valid():
@@ -164,11 +175,30 @@ def encuestas_lista(request):
         qs = qs.filter(estado=True)
     elif estado == 'inactivo':
         qs = qs.filter(estado=False)
+
+    user = request.user
+    is_admin = user.is_superuser or user.groups.filter(name="Administrador").exists()
+    is_territorial = user.groups.filter(name="Territorial").exists()
+    is_jefe = user.groups.filter(name="Jefe de Cuadrilla").exists()
+
+    
+    profile = request.user.profile 
+    if is_jefe:
+        profile = request.user.profile
+        for encuesta in qs:
+            encuesta.incidencia = encuesta.incidencia_set.filter(cuadrilla__usuario=profile).first()
+    else:   
+        for encuesta in qs:
+            encuesta.incidencia = None
+
     
     ctx = {
         "encuestas": qs,
         "q": q,
         "estado_seleccionado": estado,
+        "is_admin": is_admin,
+        "is_territorial": is_territorial,
+        "is_jefe": is_jefe,
     }
     return render(request, "territorial_app/encuestas_lista.html", ctx)
 
@@ -277,6 +307,7 @@ def encuesta_crear(request):
         'encuesta_form': encuesta_form,
         'formset': formset,
         'preguntas_base': preguntas_base,
+        'modo':'crear',
     })
 
 
@@ -307,7 +338,7 @@ def pregunta_agregar(request, encuesta_id):
     return render(request, "territorial_app/pregunta_form.html", {"encuesta": encuesta})
 
 @login_required
-#@admin_o_territorial
+@admin_territorial_cuadrilla
 def responder_encuesta(request, encuesta_id, incidencia_id):
     """
     Permite responder las preguntas de una encuesta.
@@ -334,16 +365,29 @@ def responder_encuesta(request, encuesta_id, incidencia_id):
             archivo = evidencia_form.cleaned_data['archivo']
             nombre= evidencia_form.cleaned_data.get('nombre') or archivo.name
 
+            def detectar_tipo_archivo(nombre):
+                ext = nombre.split('.')[-1].lower()
+                if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
+                    return 'imagen'
+                if ext in ['mp4', 'mpeg', 'avi', 'mov']:
+                    return 'video'
+                if ext in ['mp3', 'wav', 'ogg', 'm4a']:
+                    return 'audio'
+                if ext in ['pdf', 'doc', 'docx', 'txt']:
+                    return 'documento'
+                return 'otro'
+
             Multimedia.objects.create(
                 incidencia=incidencia,
                 nombre=nombre,
-                url= archivo.url,
-                tipo = 'archivo',
-                formato=archivo.name.split('.'[-1])
-            )
-
-        messages.success(request, "Encuesta enviada correctamente.")
-        return redirect(request.path)
+                archivo = archivo,
+                tipo=detectar_tipo_archivo(archivo.name),  # ✔️ Mejorado
+                formato=archivo.name.split('.')[-1],
+                tamanio=archivo.size,
+                encuesta=encuesta
+                )
+            messages.success(request, "Encuesta enviada correctamente.")
+            return redirect(request.path)
            
     return render(request, "territorial_app/responder_encuesta.html", {
         "encuesta": encuesta,
@@ -376,9 +420,11 @@ def encuesta_editar(request, pk):
     PreguntaFormSet = formset_factory(PreguntaEncuestaForm, extra=1, can_delete=True)
 
     if request.method == 'POST':
+        encuesta_form = EncuestaForm(request.POST, instance=encuesta)  
         formset = PreguntaFormSet(request.POST, prefix='manual')
 
-        if formset.is_valid():
+        if encuesta_form.is_valid() and formset.is_valid():
+            encuesta_form.save()
             # Guardar/Actualizar preguntas existentes
             for i, f in enumerate(formset.cleaned_data):
                 if not f:
@@ -407,8 +453,7 @@ def encuesta_editar(request, pk):
         # Inicializamos el formset con preguntas existentes
         initial_data = [{'texto_pregunta': p.texto_pregunta} for p in preguntas_manual]
         formset = PreguntaFormSet(initial=initial_data, prefix='manual')
-
-    encuesta_form = EncuestaForm(instance=encuesta)
+        encuesta_form = EncuestaForm(instance=encuesta)
 
     return render(request, "territorial_app/encuesta_form.html", {
         'encuesta_form': encuesta_form,
@@ -464,12 +509,25 @@ def encuesta_eliminar(request, pk):
 
 @login_required
 @admin_o_territorial
+@admin_territorial_cuadrilla
 def evidencia_subir(request, encuesta_id):
     """
     Sube una evidencia (imagen, video, audio, documento) a una encuesta.
     Usa AJAX para subida dinámica sin recargar la página.
     """
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
+    if encuesta.estado:
+        messages.error(request, "No se puede subir evidencia en una encuesta activa. Debes desactivarla primero.")
+        return redirect("territorial_app:encuesta_detalle", encuesta_id=encuesta_id)
+    
+    incidencia = encuesta.incidencia_set.first()
+
+    if incidencia is None:
+        messages.error(
+            request,
+            "No se puede subir evidencia porque esta encuesta no tiene una incidencia asociada."
+        )
+        return redirect("territorial_app:encuesta_detalle", encuesta_id=encuesta_id)
     
     if request.method == 'POST':
         form = EvidenciaForm(request.POST, request.FILES)
