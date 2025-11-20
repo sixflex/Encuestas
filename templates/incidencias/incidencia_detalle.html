@@ -165,39 +165,52 @@
         <h5 class="card-title">Acciones Disponibles</h5>
 
         <div class="mt-3 d-flex flex-wrap gap-2">
+            
 
-            {% if user.is_superuser or user|has_group:"Administrador" %}
-                <a href="{% url 'incidencias:incidencia_editar' obj.pk %}" class="btn btn-info">
-                    <i class="bi bi-pencil-fill"></i> Editar
-                </a>
+    {% if user.is_superuser or user|has_group:"Administrador" %}
+        <a href="{% url 'incidencias:incidencia_editar' obj.pk %}" class="btn btn-info">
+            <i class="bi bi-pencil-fill"></i> Editar
+        </a>
+        <a href="{% url 'incidencias:incidencia_eliminar' obj.pk %}" class="btn btn-danger">
+            <i class="bi bi-trash"></i> Eliminar
+        </a>
+    {% endif %}
 
-                <a href="{% url 'incidencias:incidencia_eliminar' obj.pk %}" class="btn btn-danger">
-                    <i class="bi bi-trash"></i> Eliminar
+    
+    {% if is_territorial %}
+        {% if obj.estado == 'Completada' %}
+            <a href="{% url 'territorial_app:validar_incidencia' obj.id %}" class="btn btn-success">Validar</a>
+            <a href="{% url 'territorial_app:rechazar_incidencia' obj.id %}" class="btn btn-danger">Rechazar</a>
+        {% endif %}
+        {% if obj.estado == 'Rechazada' or obj.estado == 'Pendiente' %}
+             <a href="{% url 'territorial_app:reasignar_incidencia' obj.id %}" class="btn btn-warning">Reasignar</a>
+        {% endif %}
+    {% endif %}
+
+  
+    {% if is_departamento %}
+        {% if obj.estado == 'Pendiente' or obj.estado == 'Rechazada' %}
+            <a href="{% url 'organizacion:asignar_cuadrilla' obj.id %}" class="btn btn-primary">Asignar Cuadrilla</a>
+            <a href="{% url 'territorial_app:rechazar_incidencia' obj.id %}" class="btn btn-danger">Rechazar</a>
+        {% endif %}
+    {% endif %}
+
+  
+    {% if is_jefe %}
+        {% if obj.estado == 'En Progreso' %}
+            <a href="{% url 'incidencias:subir_evidencia' obj.pk %}" class="btn btn-success">Subir evidencia</a>
+            {% if obj.multimedias.exists %}
+                <a href="{% url 'incidencias:finalizar_incidencia' obj.pk %}" class="btn btn-primary">
+                   <i class="bi bi-check-circle"></i> Finalizar Tarea
                 </a>
             {% endif %}
-
-            {% if obj.estado == 'en_progreso' and obj.cuadrilla %}
-                {% if user.is_superuser or user|has_group:"Administrador" or user|has_group:"Jefe de Cuadrilla" or user|has_group:"Cuadrilla" %}
-                    <a href="{% url 'incidencias:subir_evidencia' obj.pk %}" class="btn btn-success">
-                        <i class="bi bi-upload"></i> Subir evidencia
-                    </a>
-
-                    {% if obj.multimedias.exists %}
-                        <a href="{% url 'incidencias:finalizar_incidencia' obj.pk %}" 
-                           class="btn btn-primary"
-                           onclick="return confirm('¿Estás seguro de finalizar esta incidencia? El territorial podrá validar o rechazar tu trabajo.')">
-                           <i class="bi bi-check-circle"></i> Finalizar incidencia
-                        </a>
-                    {% endif %}
-                {% endif %}
-            {% endif %}
-
-            <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-secondary ms-auto">
-                <i class="bi bi-arrow-left"></i> Volver a la lista
-            </a>
-
-        </div>
+        {% endif %}
+    {% endif %}
+    
+    <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-secondary ms-auto">
+        <i class="bi bi-arrow-left"></i> Volver a la lista
+    </a>
+</div>
     </div>
 </div>
-
 {% endblock %}

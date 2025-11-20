@@ -206,20 +206,100 @@ def incidencia_crear(request):
         form = IncidenciaForm()
     return render(request, "incidencias/incidencia_form.html", {"form": form})
 
-'''
 @login_required
 def incidencia_editar(request, pk):
     incidencia = get_object_or_404(Incidencia, pk=pk)
+    estado_anterior = incidencia.estado
+    motivo_rechazo = request.POST.get('motivo_rechazo')
+    roles = set(request.user.groups.values_list("name", flat=True))
+
     if request.method == "POST":
         form = IncidenciaForm(request.POST, instance=incidencia)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Incidencia actualizada correctamente.")
+            nueva_incidencia = form.save(commit=False)
+            nuevo_estado = nueva_incidencia.estado
+            
+            puede_guardar = False
+            
+            # 1. ADMIN/SUPERUSER: Poder absoluto
+            if request.user.is_superuser or 'Administrador' in roles:
+                puede_guardar = True
+            
+            # 2. TERRITORIAL:
+            elif 'Territorial' in roles:
+                # Puede editar si está Pendiente/Rechazada. Completada -> Validada/Rechazada
+                if estado_anterior in ['Pendiente', 'Rechazada']:
+                    puede_guardar = True
+                elif estado_anterior == 'Completada' and nuevo_estado in ['Validada', 'Rechazada']:
+                    puede_guardar = True
+            
+            # 3. DEPARTAMENTO:
+            elif 'Departamento' in roles:
+                # Transición: Pendiente -> En Progreso o Rechazada. También puede editar si está Rechazada.
+                if estado_anterior in ['Pendiente', 'Rechazada']:
+                    if nuevo_estado in ['En Progreso', 'Rechazada', estado_anterior]:
+                         puede_guardar = True
+                    else:
+                         messages.error(request, f"Departamento solo puede cambiar a 'En Progreso' o 'Rechazada' desde Pendiente/Rechazada.")
+                         return redirect("incidencias:incidencias_lista")
+                
+            # 4. CUADRILLA:
+            elif 'Jefe de Cuadrilla' in roles:
+                # Transición: En Progreso -> Completada
+                if estado_anterior == 'En Progreso' and nuevo_estado == 'Completada':
+                    puede_guardar = True
+            
+            # Si el estado NO cambia, y el usuario tiene permiso de "turno", permitir guardar datos.
+            if estado_anterior == nuevo_estado:
+                 puede_guardar = True
+            
+            if not puede_guardar:
+                messages.error(request, f"No tienes permisos para cambiar el estado de '{estado_anterior}' a '{nuevo_estado}' o editar en esta etapa.")
+                return redirect("incidencias:incidencias_lista")
+            
+            # Manejo de Rechazo (Actualiza el estado de la incidencia y la desasigna si es necesario)
+            if nuevo_estado == 'Rechazada':
+                if estado_anterior == 'Completada' and 'Territorial' in roles:
+                    # Rechazo de Territorial: Devuelve a Pendiente, desasigna cuadrilla y avisa a Depto
+                    nueva_incidencia.estado = 'Pendiente'
+                    nueva_incidencia.cuadrilla = None
+                    messages.warning(request, "Incidencia rechazada y devuelta a Pendiente para reasignación.")
+                elif estado_anterior == 'Pendiente' and 'Departamento' in roles:
+                    # Rechazo de Depto: Se queda Pendiente, avisa a Territorial para reasignar a otro Depto
+                    nueva_incidencia.estado = 'Pendiente'
+                    messages.warning(request, "Incidencia rechazada por el Departamento.")
+
+
+            if nueva_incidencia.estado == 'Rechazada' and motivo_rechazo:
+                nueva_incidencia.motivo_rechazo = motivo_rechazo
+            
+            nueva_incidencia.save()
+
+            if nueva_incidencia.estado != estado_anterior:
+                # Lógica de Notificación por Correo
+                departamento = nueva_incidencia.departamento
+                destinatario = "soporte@municipalidad.local"
+                if departamento and departamento.encargado and departamento.encargado.user.email:
+                    destinatario = departamento.encargado.user.email
+                
+                remitente = request.user.email if request.user.email else "no-reply@municipalidad.local"
+                asunto = f"[Notificación] Estado actualizado: {nueva_incidencia.titulo}"
+                cuerpo = f"El estado cambió de {estado_anterior} a {nueva_incidencia.estado}."
+
+                try:
+                    send_mail(asunto, cuerpo, remitente, [destinatario], fail_silently=True)
+                except:
+                    pass 
+
+                messages.success(request, f"Incidencia actualizada a '{nueva_incidencia.estado}'.")
+            else:
+                messages.success(request, "Incidencia actualizada correctamente.")
+
             return redirect("incidencias:incidencias_lista")
     else:
         form = IncidenciaForm(instance=incidencia)
+
     return render(request, "incidencias/incidencia_form.html", {"form": form})
-'''
 #----------cambios barbara, nuevo incidencia_editar
 @login_required
 def incidencia_editar(request, pk):

@@ -6,7 +6,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from .forms import UsuarioCrearForm, UsuarioEditarForm
 from .utils import solo_admin
-
+from django.db import IntegrityError, transaction
 
 
 @login_required
@@ -76,9 +76,14 @@ def usuario_crear(request):
     if request.method == "POST":
         form = UsuarioCrearForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            messages.success(request, f"Usuario '{user.username}' creado.")
-            return redirect("core:usuarios_lista")
+            try: 
+                with transaction.atomic():
+                    user = form.save()
+                    messages.success(request, f"Usuario '{user.username}' creado.")
+                    return redirect("core:usuarios_lista")
+            except IntegrityError:
+                form.add_error('email', 'Ya existe un usuario asociado a este correo. Por favor ingrese uno diferente')
+                messages.error (request, "Hubo un error de duplicidad. Por favor revise el formulario")
     else:
         # Puedes quitar is_staff del initial si ya no lo usas en el form
         form = UsuarioCrearForm(initial={"is_active": True, "is_staff": False})
