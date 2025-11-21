@@ -414,26 +414,6 @@ def subir_evidencia(request, pk):
     incidencia = get_object_or_404(Incidencia, pk=pk)
     roles = set(request.user.groups.values_list("name", flat=True))
     
-    # DEBUG: Agregar información de depuración
-    print(f"\n{'='*60}")
-    print(f"DEBUG - SUBIR EVIDENCIA")
-    print(f"Usuario: {request.user.username}")
-    print(f"Grupos del usuario: {list(roles)}")
-    print(f"Es superuser: {request.user.is_superuser}")
-    print(f"Incidencia: #{incidencia.id} - {incidencia.titulo}")
-    print(f"Estado incidencia: {incidencia.estado}")
-    print(f"Cuadrilla asignada: {incidencia.cuadrilla}")
-    try:
-        print(f"Profile del usuario: {request.user.profile}")
-        if incidencia.cuadrilla:
-            print(f"Usuario de cuadrilla: {incidencia.cuadrilla.usuario}")
-            print(f"Encargado de cuadrilla: {incidencia.cuadrilla.encargado}")
-            print(f"¿Coincide con usuario?: {incidencia.cuadrilla.usuario == request.user.profile}")
-            print(f"¿Coincide con encargado?: {incidencia.cuadrilla.encargado == request.user.profile}")
-    except Exception as e:
-        print(f"ERROR al obtener profile: {e}")
-    print(f"{'='*60}\n")
-    
     # Validación 1: Solo usuarios con rol "Jefe de Cuadrilla", "Cuadrilla" o "Administrador" pueden acceder
     if not (request.user.is_superuser or "Jefe de Cuadrilla" in roles or "Cuadrilla" in roles or "Administrador" in roles):
         messages.error(request, f"No tienes permisos para subir evidencia. Tus grupos son: {list(roles)}")
@@ -444,7 +424,7 @@ def subir_evidencia(request, pk):
         if not incidencia.cuadrilla:
             messages.error(request, "Esta incidencia no tiene cuadrilla asignada.")
             return redirect("incidencias:incidencias_lista")
-        # Verificar que el usuario pertenece a la cuadrilla asignada
+        
         try:
             usuario_es_de_cuadrilla = (
                 incidencia.cuadrilla.usuario == request.user.profile or
@@ -457,16 +437,15 @@ def subir_evidencia(request, pk):
         if not usuario_es_de_cuadrilla:
             messages.error(
                 request,
-                f"Solo la cuadrilla '{incidencia.cuadrilla.nombre_cuadrilla}' puede subir evidencia. "
-                f"Tu perfil no coincide con el usuario o encargado de esta cuadrilla."
+                f"Solo la cuadrilla '{incidencia.cuadrilla.nombre_cuadrilla}' puede subir evidencia."
             )
             return redirect("incidencias:incidencias_lista")
     
-    # Validación 3: Solo se puede subir evidencia si está en estado "en_progreso"
+    # Validación 3: Solo se puede subir evidencia si está en estado "En Progreso"
     if incidencia.estado != "En Progreso":
         messages.warning(
             request,
-            f"Solo se puede subir evidencia cuando la incidencia está 'En proceso'. Estado actual: {incidencia.estado}"
+            f"Solo se puede subir evidencia cuando la incidencia está 'En Progreso'. Estado actual: {incidencia.estado}"
         )
         return redirect("incidencias:incidencia_detalle", pk=pk)
     
@@ -476,33 +455,39 @@ def subir_evidencia(request, pk):
             archivo = form.cleaned_data['archivo']
             nombre = form.cleaned_data.get('nombre') or archivo.name
             
-            # Crear directorio si no existe
-            upload_path = 'evidencias/'
-            os.makedirs(os.path.join(settings.MEDIA_ROOT, upload_path), exist_ok=True)
-            
-            # Guardar archivo con un nombre único
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            nombre_archivo = f"{timestamp}_{archivo.name}"
-            ruta_completa = os.path.join(upload_path, nombre_archivo)
-            ruta_guardada = default_storage.save(ruta_completa, archivo)
+            # Detectar tipo de archivo
+            def detectar_tipo_archivo(nombre_archivo):
+                ext = nombre_archivo.split('.')[-1].lower()
+                if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
+                    return 'imagen'
+                elif ext in ['mp4', 'mpeg', 'avi', 'mov']:
+                    return 'video'
+                elif ext in ['mp3', 'wav', 'ogg', 'm4a']:
+                    return 'audio'
+                elif ext in ['pdf', 'doc', 'docx', 'txt']:
+                    return 'documento'
+                return 'otro'
             
             # Crear registro en Multimedia
             multimedia = Multimedia.objects.create(
                 nombre=nombre,
-                url=settings.MEDIA_URL + ruta_guardada,
-                tipo=archivo.content_type.split('/')[0],
-                formato=archivo.name.split('.')[-1],
+                archivo=archivo,  # Usar FileField directamente
+                tipo=detectar_tipo_archivo(archivo.name),
+                formato=archivo.name.split('.')[-1].lower(),
+                tamanio=archivo.size,
                 incidencia=incidencia
             )
-            
-            # NO cambiar automáticamente a Completada - permitir subir múltiples evidencias
-            # La cuadrilla debe finalizar manualmente cuando termine
             
             messages.success(
                 request,
                 f"Evidencia '{nombre}' subida correctamente. Puedes subir más evidencias o finalizar la incidencia cuando termines."
             )
             return redirect("incidencias:incidencia_detalle", pk=pk)
+        else:
+            # Mostrar errores del formulario
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
     else:
         form = SubirEvidenciaForm()
     

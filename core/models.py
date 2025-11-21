@@ -107,9 +107,23 @@ class Multimedia(models.Model):
     formato = models.CharField(max_length=50)
     tamanio = models.IntegerField(help_text="Tamaño en bytes", null=True, blank=True)
     creadoEl = models.DateTimeField(auto_now_add=True)
-    incidencia = models.ForeignKey("Incidencia", on_delete=models.CASCADE, related_name="multimedias")
-    encuesta = models.ForeignKey("Encuesta", on_delete=models.CASCADE, related_name="evidencias", 
-                                 null=True, blank=True)
+    
+    # CORREGIDO: Hacer ambas relaciones opcionales
+    incidencia = models.ForeignKey(
+        "Incidencia", 
+        on_delete=models.CASCADE, 
+        related_name="multimedias",
+        null=True,
+        blank=True
+    )
+    
+    encuesta = models.ForeignKey(
+        "Encuesta", 
+        on_delete=models.CASCADE, 
+        related_name="evidencias", 
+        null=True, 
+        blank=True
+    )
 
     class Meta:
         ordering = ['-creadoEl']
