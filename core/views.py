@@ -12,7 +12,8 @@ from django.contrib.auth.decorators import login_required
 
 @solo_admin
 def dashboard_admin(request):
-    ultimos_usuarios = Profile.objects.order_by('-id')[:5]
+    """Dashboard del administrador con estadísticas"""
+    ultimos_usuarios = Profile.objects.order_by('-id')[:5] 
     ultimas_direcciones = Direccion.objects.order_by('-creadoEl')[:5]
     ultimos_departamentos = Departamento.objects.order_by('-creadoEl')[:5]
     ultimas_incidencias = Incidencia.objects.order_by('-creadoEl')[:5]
@@ -23,14 +24,15 @@ def dashboard_admin(request):
     contexto = {
         'ultimos_usuarios': ultimos_usuarios,
         'ultimas_direcciones': ultimas_direcciones,
-        'ultimos_departamentos': ultimos_departamentos,
+        'ultimas_departamentos': ultimos_departamentos,
         'ultimas_incidencias': ultimas_incidencias,
         'total_usuarios': total_usuarios,
         'total_incidencias_creadas': total_incidencias_creadas,
         'total_incidencias_finalizadas': total_incidencias_finalizadas,
     }
 
-    return render(request, "core/dashboard_admin.html", contexto)
+    return render(request, "personas/dashboards/admin.html", contexto)
+
 
 
 @solo_admin
