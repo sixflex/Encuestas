@@ -6,6 +6,14 @@
 {% block dashboard_content %}
 <h1 class="h3 mb-4">Gestión de Usuarios</h1>
 
+<div class="d-flex justify-content-end mb-3">
+    {% if request.user.is_superuser or request.user|has_group:"Administrador" %}
+        <a href="{% url 'core:dashboard_admin' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left-circle"></i> Volver al dashboard
+        </a>
+    {% endif %}
+</div>
+
 <div class="card shadow-sm border-0 rounded-3 mb-4">
     <div class="card-body">
         <form method="get" action="{% url 'core:usuarios_lista' %}" class="row g-3 align-items-end">
@@ -19,7 +27,7 @@
                 <select name="rol" id="id_rol" class="form-select form-select-sm">
                     <option value="">Todos los Roles</option>
                     {% for rol in roles %}
-                        <option value="{{ rol}}" 
+                        <option value="{{ rol }}"
                             {% if rol == rol_seleccionado %}selected{% endif %}>
                             {{ rol }}
                         </option>
@@ -89,7 +97,7 @@
                         </td>
                         <td class="d-flex flex-wrap gap-2">
                             <a href="{% url 'core:usuario_detalle' u.id %}" class="btn btn-sm btn-secondary">Ver</a>
-                            
+
                             {% if request.user.is_superuser or request.user|has_group:"Administrador" %}
                                 <a href="{% url 'core:usuario_editar' u.id %}" class="btn btn-sm btn-info">Editar</a>
                                 <form action="{% url 'core:usuario_toggle_activo' u.id %}" method="post" class="d-inline">
