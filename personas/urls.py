@@ -20,4 +20,5 @@ urlpatterns = [
     path("usuarios/<int:pk>/toggle-activo/", views.usuario_toggle_activo, name="usuario_toggle_activo"),
     path("cerrar_sesion/", views.cerrar_sesion, name="cerrar_sesion"),
     
+    
 ]

@@ -87,7 +87,7 @@
 
                 <a href="{% url 'personas:usuarios_lista' %}" 
                    class="list-group-item list-group-item-action 
-                   {% if request.resolver_match.url_name == 'usuarios_lista' %}active{% endif %}">
+                    {% if request.resolver_match.url_name == 'usuarios_lista' %}active{% endif %}">
                     Usuarios
                 </a>
 
@@ -175,7 +175,7 @@
             </ul>
         {% endif %}
 
-        <main class="container-fluid mt-4">
+        <main class="container-fluid">
             {% block dashboard_content %}
             {% endblock %}
         </main>
