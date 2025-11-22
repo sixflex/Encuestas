@@ -4,7 +4,7 @@ from registration.models import Profile
 from django.forms import modelformset_factory
 from django.core.exceptions import ValidationError #ESTO SE USA PARA VALIDAR EL TAMAÑO Y TIPO DE ARCHIVO (nuevo)
 from django.conf import settings #ESTO SE USA PARA ACCEDER A LAS CONFIGURACIONES DE SETTINGS.PY (nuevo)
-
+import re
 class RechazarIncidenciaForm(forms.Form):
     motivo = forms.CharField(
         label="Motivo de rechazo",
@@ -58,9 +58,66 @@ class EncuestaForm(forms.ModelForm):
             'estado': forms.CheckboxInput(),
         }
 
+    def clean_titulo(self):
+        titulo = self.cleaned_data.get("titulo", "").strip()
+
+        if not titulo:
+            raise ValidationError("El título es obligatorio.")
+
+        if titulo.isdigit():
+            raise ValidationError("El título no puede ser solo números.")
+
+        if not re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$', titulo):
+            raise ValidationError("El título solo puede contener letras y espacios.")
+
+        return titulo
+    
+    def clean_descripcion(self):
+        descripcion = self.cleaned_data.get("descripcion", "").strip()
+
+        if not descripcion:
+            raise ValidationError("La descripción es obligatoria.")
+        if descripcion.isdigit():
+            raise ValidationError("La descripción no puede ser solo números.")
+        
+        if not re.match(r'^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ¡!¿?\.,;:\-()\'" ]+$', descripcion):
+            raise ValidationError("La descripción contiene caracteres no válidos.")
+
+        return descripcion
+
+    def clean_ubicacion(self):
+        ubicacion = self.cleaned_data.get("ubicacion", "").strip()
+
+        if not ubicacion:
+            raise ValidationError("La ubicación es obligatoria.")
+
+        if ubicacion.isdigit():
+            raise ValidationError("La ubicación no puede ser solo números.")
+
+        if not re.match(r'^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ ,\-#]+$', ubicacion):
+            raise ValidationError("La ubicación contiene caracteres no válidos.")
+
+        return ubicacion
+    
 class PreguntaEncuestaForm(forms.Form):
     texto_pregunta = forms.CharField(label='Pregunta', widget=forms.TextInput(attrs={'class':'form-control'}))
 
+    def clean_texto_pregunta(self):
+        texto = self.cleaned_data.get("texto_pregunta", "").strip()
+
+        if not texto:
+            raise ValidationError("La pregunta es obligatoria.")
+
+        if texto.isdigit():
+            raise ValidationError("La pregunta no puede ser solo números.")
+
+        if "?" not in texto and "¿" not in texto:
+            raise ValidationError("La pregunta debe contener un signo de interrogación.")
+
+        if not re.match(r'^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ¡!¿?\.,;:\-() ]+$', texto):
+            raise ValidationError("La pregunta contiene caracteres no válidos.")
+
+        return texto
 
 
 # FORMULARIO DE EVIDENCIAS - NUEVO

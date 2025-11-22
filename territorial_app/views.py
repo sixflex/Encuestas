@@ -341,7 +341,7 @@ def pregunta_agregar(request, encuesta_id):
 @admin_territorial_cuadrilla
 def responder_encuesta(request, encuesta_id, incidencia_id):
     """
-    Permite responder las preguntas de una encuesta.
+    Permite responder las preguntas de una encuesta y subir evidencias.
     """
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
     incidencia = get_object_or_404(Incidencia, pk=incidencia_id)
@@ -349,6 +349,7 @@ def responder_encuesta(request, encuesta_id, incidencia_id):
     evidencia_form = SubirEvidenciaForm(request.POST or None, request.FILES or None)
 
     if request.method == "POST":
+        # Guardar respuestas de la encuesta
         for pregunta in preguntas:
             texto = request.POST.get(f"respuesta_{pregunta.id}", "").strip()
             if texto:
@@ -361,39 +362,46 @@ def responder_encuesta(request, encuesta_id, incidencia_id):
                     respuesta.texto_respuesta = texto
                     respuesta.save()
 
+        # Subir evidencia si se proporcionó
         if evidencia_form.is_valid() and evidencia_form.cleaned_data.get('archivo'):
             archivo = evidencia_form.cleaned_data['archivo']
-            nombre= evidencia_form.cleaned_data.get('nombre') or archivo.name
+            nombre = evidencia_form.cleaned_data.get('nombre') or archivo.name
 
-            def detectar_tipo_archivo(nombre):
-                ext = nombre.split('.')[-1].lower()
+            def detectar_tipo_archivo(nombre_archivo):
+                ext = nombre_archivo.split('.')[-1].lower()
                 if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
                     return 'imagen'
-                if ext in ['mp4', 'mpeg', 'avi', 'mov']:
+                elif ext in ['mp4', 'mpeg', 'avi', 'mov']:
                     return 'video'
-                if ext in ['mp3', 'wav', 'ogg', 'm4a']:
+                elif ext in ['mp3', 'wav', 'ogg', 'm4a']:
                     return 'audio'
-                if ext in ['pdf', 'doc', 'docx', 'txt']:
+                elif ext in ['pdf', 'doc', 'docx', 'txt']:
                     return 'documento'
                 return 'otro'
 
+            # Crear el registro de multimedia correctamente
             Multimedia.objects.create(
                 incidencia=incidencia,
                 nombre=nombre,
-                archivo = archivo,
-                tipo=detectar_tipo_archivo(archivo.name),  # ✔️ Mejorado
-                formato=archivo.name.split('.')[-1],
+                archivo=archivo,  # Usar FileField directamente
+                tipo=detectar_tipo_archivo(archivo.name),
+                formato=archivo.name.split('.')[-1].lower(),
                 tamanio=archivo.size,
                 encuesta=encuesta
-                )
-            messages.success(request, "Encuesta enviada correctamente.")
-            return redirect(request.path)
+            )
+            
+            messages.success(request, f"Encuesta respondida y evidencia '{nombre}' subida correctamente.")
+        else:
+            messages.success(request, "Encuesta respondida correctamente.")
+        
+        # Redirigir a la misma página para ver las evidencias actualizadas
+        return redirect(request.path)
            
     return render(request, "territorial_app/responder_encuesta.html", {
         "encuesta": encuesta,
         "preguntas": preguntas,
-        "incidencia":incidencia,
-        "form":evidencia_form,
+        "incidencia": incidencia,
+        "form": evidencia_form,
     })
 
 @login_required
@@ -516,12 +524,15 @@ def evidencia_subir(request, encuesta_id):
     Usa AJAX para subida dinámica sin recargar la página.
     """
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
+    
+    # CORRECCIÓN 1: Cambiar la lógica - permitir subir si está BLOQUEADA (estado=False)
     if encuesta.estado:
         messages.error(request, "No se puede subir evidencia en una encuesta activa. Debes desactivarla primero.")
         return redirect("territorial_app:encuesta_detalle", encuesta_id=encuesta_id)
     
+    # CORRECCIÓN 2: Obtener o crear incidencia asociada
     incidencia = encuesta.incidencia_set.first()
-
+    
     if incidencia is None:
         messages.error(
             request,
@@ -535,11 +546,7 @@ def evidencia_subir(request, encuesta_id):
         if form.is_valid():
             evidencia = form.save(commit=False)
             evidencia.encuesta = encuesta
-            
-            # Si hay una incidencia asociada, también la vinculamos
-            incidencia = encuesta.incidencia_set.first()
-            if incidencia:
-                evidencia.incidencia = incidencia
+            evidencia.incidencia = incidencia  # CRÍTICO: Asignar la incidencia
             
             evidencia.save()
             
@@ -562,7 +569,7 @@ def evidencia_subir(request, encuesta_id):
             messages.success(request, f'Evidencia "{evidencia.nombre}" subida correctamente.')
             return redirect('territorial_app:encuesta_detalle', encuesta_id=encuesta.id)
         else:
-            # Errores del formulario
+            # CORRECCIÓN 3: Mostrar los errores específicos del formulario
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 errors = {}
                 for field, error_list in form.errors.items():
@@ -571,6 +578,11 @@ def evidencia_subir(request, encuesta_id):
                     'success': False,
                     'errors': errors
                 }, status=400)
+            
+            # Mostrar errores en mensajes
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
             
             messages.error(request, 'Error al subir la evidencia. Verifica el formulario.')
     

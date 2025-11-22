@@ -1,4 +1,4 @@
-{% extends "main_base.html" %}
+ {% extends "main_base.html" %}
 {% load auth_extras %}
 
 {% block title %}Panel de Incidencias | Gestión Municipal{% endblock %}
@@ -148,53 +148,59 @@
               </td>
 
               <!-- ACCIONES CON BOTONES ALINEADOS -->
-              <td>
-                <div class="d-flex gap-2" style="flex-wrap:nowrap; overflow-x:auto; min-width:260px; align-items:center;">
-                <!-- Ver -->
-                  <a href="{% url 'incidencias:incidencia_detalle' incidencia.id %}" class="btn btn-sm btn-secondary">Ver</a>
+<td>
+  <div class="d-flex gap-2" style="flex-wrap:nowrap; overflow-x:auto; min-width:260px; align-items:center;">
 
-                  {% if is_admin %}
-                    <a href="{% url 'incidencias:incidencia_editar' incidencia.id %}" class="btn btn-sm btn-info">Editar</a>
-                    <a href="{% url 'territorial_app:validar_incidencia' incidencia.id %}" class="btn btn-sm btn-success">Validar</a>
-                    <a href="{% url 'territorial_app:rechazar_incidencia' incidencia.id %}" class="btn btn-sm btn-danger">Rechazar</a>
-                    <a href="{% url 'territorial_app:reasignar_incidencia' incidencia.id %}" class="btn btn-sm btn-warning">Reasignar</a>
-                  {% endif %}
+    <!-- Ver -->
+    <a href="{% url 'incidencias:incidencia_detalle' incidencia.id %}" class="btn btn-sm btn-secondary">Ver</a>
 
-                {% if is_departamento %}
-                  <a href="{% url 'territorial_app:rechazar_incidencia' incidencia.id %}" class="btn btn-sm btn-danger">Rechazar</a>
-                  <a href="{% url 'territorial_app:reasignar_incidencia' incidencia.id %}" class="btn btn-sm btn-warning">Asignar Cuadrilla</a>
-                {% endif %}
+    <!-- ADMIN -->
+    {% if is_admin %}
+      <a href="{% url 'incidencias:incidencia_editar' incidencia.id %}" class="btn btn-sm btn-info">Editar</a>
+      <a href="{% url 'territorial_app:validar_incidencia' incidencia.id %}" class="btn btn-sm btn-success">Validar</a>
+      <a href="{% url 'territorial_app:rechazar_incidencia' incidencia.id %}" class="btn btn-sm btn-danger">Rechazar</a>
+      <a href="{% url 'territorial_app:reasignar_incidencia' incidencia.id %}" class="btn btn-sm btn-warning">Reasignar</a>
+    {% endif %}
 
-                {% if is_territorial %}
-                  <a href="{% url 'incidencias:incidencia_editar' incidencia.id %}" class="btn btn-sm btn-info">Editar</a>
-                  <a href="{% url 'territorial_app:validar_incidencia' incidencia.id %}" class="btn btn-sm btn-success">Validar</a>
-                  <a href="{% url 'territorial_app:rechazar_incidencia' incidencia.id %}" class="btn btn-sm btn-danger">Rechazar</a>
-                  <a href="{% url 'territorial_app:reasignar_incidencia' incidencia.id %}" class="btn btn-sm btn-warning">Reasignar</a>
+    <!-- DEPARTAMENTO -->
+    {% if is_departamento %}
+      <a href="{% url 'territorial_app:rechazar_incidencia' incidencia.id %}" class="btn btn-sm btn-danger">Rechazar</a>
+      <a href="{% url 'territorial_app:reasignar_incidencia' incidencia.id %}" class="btn btn-sm btn-warning">Asignar Cuadrilla</a>
+    {% endif %}
 
-                  {% if incidencia.encuesta %}
-                    <a href="{% url 'territorial_app:responder_encuesta' incidencia.encuesta.id incidencia.id %}" class="btn btn-sm btn-outline-primary">
-                      Responder encuesta
-                    </a>
-                  {% endif %}
-                {% endif %}
+    <!-- TERRITORIAL -->
+    {% if is_territorial %}
+      {% if incidencia.estado == 'Completada' %}
+        <a href="{% url 'territorial_app:validar_incidencia' incidencia.id %}" class="btn btn-sm btn-success">Validar</a>
+        <a href="{% url 'territorial_app:rechazar_incidencia' incidencia.id %}" class="btn btn-sm btn-danger">Rechazar</a>
+      {% endif %}
 
-                {% if is_jefe and incidencia.encuesta %}
-                  <a href="{% url 'territorial_app:finalizar_incidencia' incidencia.id %}" class="btn btn-sm btn-warning">Completar</a>
-                  <a href="{% url 'territorial_app:responder_encuesta' incidencia.encuesta.id incidencia.id %}" class="btn btn-sm btn-outline-primary">Responder encuesta</a>
-                {% endif %}
+      {% if incidencia.estado == 'Rechazada' %}
+        <a href="{% url 'territorial_app:reasignar_incidencia' incidencia.id %}" class="btn btn-sm btn-warning">Reasignar Depto</a>
+      {% endif %}
+    {% endif %}
 
-                {% if incidencia.estado == 'en_progreso' and incidencia.cuadrilla %}
-                  {% if user.is_superuser or is_admin or is_jefe %}
-                    <a href="{% url 'incidencias:subir_evidencia' incidencia.id %}" class="btn btn-sm btn-success">Subir evidencia</a>
+    <!-- ENCUESTA -->
+    {% if incidencia.encuesta %}
+      <a href="{% url 'territorial_app:responder_encuesta' incidencia.encuesta.id incidencia.id %}" class="btn btn-sm btn-outline-primary">
+        Responder encuesta
+      </a>
+    {% endif %}
 
-                    {% if incidencia.multimedias.exists %}
-                      <a href="{% url 'territorial_app:finalizar_incidencia' incidencia.id %}" class="btn btn-sm btn-primary" onclick="return confirm('¿Finalizar esta incidencia?')">Finalizar</a>
-                    {% endif %}
-                  {% endif %}
-                {% endif %}
+    <!-- JEFE -->
+    {% if is_jefe %}
+      {% if incidencia.estado == 'En Progreso' %}
+        <a href="{% url 'incidencias:subir_evidencia' incidencia.id %}" class="btn btn-sm btn-success">Subir Evidencia</a>
 
-              </td>
-            </tr>
+        {% if incidencia.multimedias.exists %}
+          <a href="{% url 'incidencias:finalizar_incidencia' incidencia.id %}" class="btn btn-sm btn-primary">Finalizar Tarea</a>
+        {% endif %}
+      {% endif %}
+    {% endif %}
+
+  </div>
+</td>
+
             {% empty %}
             <tr><td colspan="9" class="text-center">No hay incidencias asignadas.</td></tr>
             {% endfor %}
@@ -207,4 +213,5 @@
   </div>
 
 </div>
+
 {% endblock %}

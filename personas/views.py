@@ -242,6 +242,66 @@ def usuarios_lista(request):
 @login_required
 @solo_admin
 def usuario_crear(request):
+    # =====================================================
+    # ======== CREACIÓN MASIVA DE USUARIOS ================
+    # =====================================================
+    if request.method == "POST" and "crear_multiples" in request.POST:
+        bulk_data = request.POST.get("bulk_users", "").strip()
+        lines = bulk_data.split("\n")
+
+        creados = 0
+        errores = []
+
+        for linea in lines:
+            if not linea.strip():
+                continue
+            try:
+                # Formato esperado: Nombre,Apellido,correo,Rol
+                nombre, apellido, correo, rol = [x.strip() for x in linea.split(",")]
+
+                # Generar username automáticamente a partir del correo
+                username = correo.split("@")[0]
+
+                # Evitar duplicados de usuario
+                user = User.objects.filter(email=correo).first()
+                if user:
+                    errores.append(f"Usuario ya existe: {correo}")
+                    continue
+
+                # Crear usuario
+                user = User.objects.create_user(
+                    username=username,
+                    password="Temp1234!",  # contraseña temporal
+                    first_name=nombre,
+                    last_name=apellido,
+                    email=correo,
+                    is_active=True
+                )
+
+                # Asignar grupo
+                group, _ = Group.objects.get_or_create(name=rol)
+                user.groups.add(group)
+
+                # Crear profile solo si no existe
+                Profile.objects.get_or_create(
+                    user=user,
+                    defaults={"cargo": rol, "group": group}
+                )
+
+                creados += 1
+
+            except Exception as e:
+                errores.append(f"Error en línea '{linea}': {e}")
+
+        messages.success(request, f"Usuarios creados correctamente: {creados}")
+        for err in errores:
+            messages.error(request, err)
+
+        return redirect("personas:usuarios_lista")
+
+    # =====================================================
+    # ======== CREACIÓN INDIVIDUAL (NORMAL) =============
+    # =====================================================
     if request.method == "POST":
         form = UsuarioCrearForm(request.POST)
         if form.is_valid():
@@ -250,8 +310,12 @@ def usuario_crear(request):
             return redirect("personas:usuarios_lista")
     else:
         form = UsuarioCrearForm(initial={"is_active": True, "is_staff": False})
-    return render(request, "personas/usuario_form.html", {"form": form, "modo": "crear"})
 
+    return render(
+        request, 
+        "personas/usuario_form.html", 
+        {"form": form, "modo": "crear"}
+    )
 @login_required
 @solo_admin
 def usuario_editar(request, pk):

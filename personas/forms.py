@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
 from registration.models import Profile
+from core.models import JefeCuadrilla
 
 # Definimos los roles disponibles
 ROL_CHOICES = [
@@ -130,7 +131,7 @@ class UsuarioEditarForm(forms.ModelForm):
 
         if commit:
             user.save()
-
+            
             rol = self.cleaned_data.get("rol")
             group, _ = Group.objects.get_or_create(name=rol)
             user.groups.clear()
@@ -140,7 +141,15 @@ class UsuarioEditarForm(forms.ModelForm):
             cargo = self.cleaned_data.get("cargo", "").strip()
             profile, created = Profile.objects.get_or_create(user=user)
             profile.cargo = cargo
-            profile.group = group
+            profile.group = group 
             profile.save()
+            
+            if rol == "Jefe de Cuadrilla":
+                JefeCuadrilla.objects.get_or_create(
+                    usuario=profile,
+                    defaults={'nombre_cuadrilla': f"Cuadrilla de {user.get_full_name()}", 'encargado': profile}
+                )
+            else:
+                JefeCuadrilla.objects.filter(usuario=profile).delete()
 
         return user

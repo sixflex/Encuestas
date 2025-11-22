@@ -2,6 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from core.models import Direccion, Departamento, JefeCuadrilla
 from registration.models import Profile
+import re
 
 
 # ==========================
@@ -27,8 +28,15 @@ class DireccionForm(forms.ModelForm):
 
     def clean_nombre_direccion(self):
         nombre = self.cleaned_data.get("nombre_direccion", "").strip()
+
         if not nombre:
             raise ValidationError("El nombre de la dirección es obligatorio.")
+        
+        if nombre.isdigit():
+            raise ValidationError("El nombre de la dirección no puede ser solo números.")
+
+        if not re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$', nombre):
+            raise ValidationError("El nombre solo puede contener letras y espacios.")
         if Direccion.objects.filter(nombre_direccion__iexact=nombre).exclude(pk=self.instance.pk).exists():
             raise ValidationError("Ya existe una dirección con ese nombre.")
         return nombre
@@ -51,19 +59,24 @@ class DepartamentoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # 🔹 Mostrar perfiles de usuarios activos que pertenezcan a los grupos permitidos
         self.fields["encargado"].queryset = Profile.objects.filter(
             user__is_active=True,
             user__groups__name__in=["Departamento", "Dirección", "Administrador"]
         ).distinct()
 
-        # 🔹 Mostrar solo direcciones activas
         self.fields["direccion"].queryset = Direccion.objects.filter(estado=True)
 
     def clean_nombre_departamento(self):
         nombre = self.cleaned_data.get("nombre_departamento", "").strip()
         if not nombre:
             raise ValidationError("El nombre del departamento es obligatorio.")
+        
+        if nombre.isdigit():
+            raise ValidationError("El nombre del departamento no puede ser solo números.")
+
+        if not re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$', nombre):
+            raise ValidationError("El nombre solo puede contener letras y espacios.")
+
         if Departamento.objects.filter(nombre_departamento__iexact=nombre).exclude(pk=self.instance.pk).exists():
             raise ValidationError("Ya existe un departamento con ese nombre.")
         return nombre

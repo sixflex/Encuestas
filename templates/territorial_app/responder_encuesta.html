@@ -64,25 +64,129 @@
                 </div>
 
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-success"> Completar Encuesta</button>
+                    <button type="submit" class="btn btn-success">✅ Completar Encuesta</button>
                     <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-secondary">Cancelar</a>
                 </div>
             </form>
-
-            <!-- Listado de evidencias existentes -->
-            {% if incidencia.multimedias.exists %}
-                <hr>
-                <h6>Evidencias previas:</h6>
-                <ul class="list-group mt-2">
-                    {% for multimedia in incidencia.multimedias.all %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            {{ multimedia.nombre }} - {{ multimedia.tipo }}
-                            <a href="{{ multimedia.url }}" target="_blank" class="btn btn-sm btn-outline-primary">Ver</a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
         </div>
+    </div>
+
+    <!-- Listado de evidencias existentes con visualización -->
+    {% if incidencia.multimedias.exists %}
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">📎 Evidencias previas ({{ incidencia.multimedias.count }})</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    {% for multimedia in incidencia.multimedias.all %}
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span>
+                                        {% if multimedia.tipo == 'imagen' %}
+                                            🖼️ {{ multimedia.nombre }}
+                                        {% elif multimedia.tipo == 'video' %}
+                                            🎥 {{ multimedia.nombre }}
+                                        {% elif multimedia.tipo == 'audio' %}
+                                            🎵 {{ multimedia.nombre }}
+                                        {% elif multimedia.tipo == 'documento' %}
+                                            📄 {{ multimedia.nombre }}
+                                        {% else %}
+                                            📎 {{ multimedia.nombre }}
+                                        {% endif %}
+                                    </span>
+                                    <span class="badge bg-info">{{ multimedia.tipo }}</span>
+                                </div>
+                                <div class="card-body text-center">
+                                    {% if multimedia.tipo == 'imagen' %}
+                                        <!-- Vista previa de imagen -->
+                                        <img src="{{ multimedia.archivo.url }}" 
+                                             alt="{{ multimedia.nombre }}" 
+                                             class="img-fluid rounded mb-2" 
+                                             style="max-height: 300px; max-width: 100%; object-fit: contain;">
+                                        <br>
+                                        <a href="{{ multimedia.archivo.url }}" 
+                                           target="_blank" 
+                                           class="btn btn-sm btn-primary mt-2">
+                                            Ver imagen completa
+                                        </a>
+                                        
+                                    {% elif multimedia.tipo == 'video' %}
+                                        <!-- Reproductor de video -->
+                                        <video controls 
+                                               class="rounded w-100" 
+                                               style="max-height: 300px;">
+                                            <source src="{{ multimedia.archivo.url }}" type="video/{{ multimedia.formato }}">
+                                            Tu navegador no soporta reproducción de video.
+                                        </video>
+                                        <br>
+                                        <a href="{{ multimedia.archivo.url }}" 
+                                           target="_blank" 
+                                           class="btn btn-sm btn-primary mt-2">
+                                            Descargar video
+                                        </a>
+                                        
+                                    {% elif multimedia.tipo == 'audio' %}
+                                        <!-- Reproductor de audio -->
+                                        <audio controls class="w-100">
+                                            <source src="{{ multimedia.archivo.url }}" type="audio/{{ multimedia.formato }}">
+                                            Tu navegador no soporta reproducción de audio.
+                                        </audio>
+                                        
+                                    {% elif multimedia.formato|lower == 'pdf' %}
+                                        <!-- Enlace a PDF -->
+                                        <i class="bi bi-filetype-pdf" style="font-size: 4rem;"></i>
+                                        <br>
+                                        <a href="{{ multimedia.archivo.url }}" 
+                                           target="_blank" 
+                                           class="btn btn-primary mt-2">
+                                            📄 Abrir PDF
+                                        </a>
+                                        
+                                    {% else %}
+                                        <!-- Descarga genérica -->
+                                        <i class="bi bi-file-earmark-arrow-down" style="font-size: 4rem;"></i>
+                                        <br>
+                                        <a href="{{ multimedia.archivo.url }}" 
+                                           target="_blank" 
+                                           class="btn btn-primary mt-2">
+                                            ⬇️ Descargar archivo
+                                        </a>
+                                    {% endif %}
+                                    
+                                    <!-- Información adicional -->
+                                    <div class="mt-2">
+                                        <small class="text-muted d-block">
+                                            Formato: {{ multimedia.formato|upper }}
+                                        </small>
+                                        {% if multimedia.tamanio %}
+                                            <small class="text-muted d-block">
+                                                Tamaño: {{ multimedia.tamanio|filesizeformat }}
+                                            </small>
+                                        {% endif %}
+                                        <small class="text-muted d-block">
+                                            Subido: {{ multimedia.creadoEl|date:"d/m/Y H:i" }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No hay evidencias previas asociadas a esta incidencia.
+        </div>
+    {% endif %}
+    
+    <!-- Botón para volver -->
+    <div class="mt-3">
+        <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-secondary">
+            ← Volver a incidencias
+        </a>
     </div>
 </div>
 {% endblock %}

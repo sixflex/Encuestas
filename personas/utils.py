@@ -1,7 +1,20 @@
-from django.contrib.auth.decorators import user_passes_test
+# personas/utils.py
+# Importamos todos los decoradores desde core.utils para mantener consistencia
 
-def es_admin(u):
-    # Admin por grupo o superusuario Django
-    return u.is_authenticated and (u.is_superuser or u.groups.filter(name="Administrador").exists())
+from core.utils import (
+    es_admin,
+    es_territorial,
+    es_admin_o_territorial,
+    es_direccion,
+    es_departamento,
+    es_cuadrilla,
+    solo_admin,
+    solo_territorial,
+    admin_o_territorial,
+    solo_direccion,
+    solo_departamento,
+    solo_cuadrilla,
+    admin_territorial_cuadrilla,
+)
 
-solo_admin = user_passes_test(es_admin, login_url="/accounts/login/", redirect_field_name=None)
+# Cualquier decorador adicional específico de personas se puede agregar aquí
