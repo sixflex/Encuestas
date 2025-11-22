@@ -9,8 +9,10 @@ from django.views.decorators.http import require_POST
 from .forms import UsuarioCrearForm, UsuarioEditarForm
 from .utils import solo_admin
 from core.utils import solo_direccion, solo_cuadrilla, solo_territorial
-from core.models import Incidencia, Departamento, Direccion
+from core.models import Incidencia, Departamento, Direccion, JefeCuadrilla
 from registration.models import Profile
+from core.models import Incidencia, JefeCuadrilla, Departamento
+from django.db.models import Q, Count
 
 @login_required
 def dashboard_admin(request):
@@ -37,7 +39,6 @@ def dashboard_admin(request):
 @login_required
 @solo_territorial
 def dashboard_territorial(request):
-    # Obtener las últimas 10 incidencias para mostrar en el dashboard
     incidencias = Incidencia.objects.all().order_by('-creadoEl')[:10]
     return render(request, "personas/dashboards/territorial.html", {
         'incidencias': incidencias
@@ -46,19 +47,11 @@ def dashboard_territorial(request):
 
 @solo_cuadrilla
 def dashboard_jefe(request):
-    """
-    Dashboard para Jefe de Cuadrilla.
-    Muestra las incidencias asignadas a su cuadrilla.
-    """
-    # Obtener el profile del usuario actual
     try:
         profile = request.user.profile
     except:
         profile = None
-    
-    # Buscar las cuadrillas donde el usuario es el encargado o el usuario asignado
-    from core.models import JefeCuadrilla
-    
+        
     if profile:
         cuadrillas = JefeCuadrilla.objects.filter(
             Q(usuario=profile) | Q(encargado=profile)
@@ -66,13 +59,11 @@ def dashboard_jefe(request):
     else:
         cuadrillas = JefeCuadrilla.objects.none()
     
-    # Obtener las incidencias asignadas a las cuadrillas del usuario
     incidencias_pendientes = []
     incidencias_en_progreso = []
     incidencias_Completadas = []
     
     if cuadrillas.exists():
-        # Filtrar incidencias por las cuadrillas del usuario
         incidencias_pendientes = Incidencia.objects.filter(
             cuadrilla__in=cuadrillas,
             estado='Pendiente'
@@ -86,7 +77,7 @@ def dashboard_jefe(request):
         incidencias_Completadas = Incidencia.objects.filter(
             cuadrilla__in=cuadrillas,
             estado__in=['Completada', 'Validada', 'Rechazada']
-        ).order_by('-actualizadoEl')[:10]  # Últimas 10 Completadas
+        ).order_by('-actualizadoEl')[:10]  
     
     return render(request, "personas/dashboards/jefeCuadrilla.html", {
         'cuadrillas': cuadrillas,
@@ -94,34 +85,25 @@ def dashboard_jefe(request):
         'incidencias_en_progreso': incidencias_en_progreso,
         'incidencias_Completadas': incidencias_Completadas,
     })
-#----------------------------------------------------------------------
+
 @login_required
 @solo_direccion
 def dashboard_direccion(request):
     return render(request, "personas/dashboards/direccion.html")
 
 @login_required
-def dashboard_departamento(request):
-    """
-    Dashboard para usuarios del grupo Departamento.
-    Muestra incidencias pendientes para asignar a cuadrillas.
-    """
-    from core.models import Incidencia, JefeCuadrilla, Departamento
-    from django.db.models import Q, Count
-    
+def dashboard_departamento(request):    
     roles = set(request.user.groups.values_list("name", flat=True))
     
     if not ("Departamento" in roles or request.user.is_superuser or "Administrador" in roles):
         messages.error(request, "No tienes acceso a este dashboard")
         return check_profile(request)
     
-    # Obtener departamento del usuario
     try:
         departamento = Departamento.objects.get(encargado=request.user.profile)
     except:
         departamento = None
     
-    # Incidencias del departamento
     if departamento:
         incidencias_pendientes = Incidencia.objects.filter(
             departamento=departamento,
@@ -138,10 +120,8 @@ def dashboard_departamento(request):
             estado='Completada'
         ).order_by('-creadoEl')
         
-        # Cuadrillas del departamento
         cuadrillas = JefeCuadrilla.objects.filter(departamento=departamento)
     else:
-        # Si es admin, ver todas
         incidencias_pendientes = Incidencia.objects.filter(estado='Pendiente').order_by('-creadoEl')
         incidencias_en_progreso = Incidencia.objects.filter(estado='En Progreso').order_by('-creadoEl')
         incidencias_Completadas = Incidencia.objects.filter(estado='Completada').order_by('-creadoEl')
@@ -159,7 +139,6 @@ def dashboard_departamento(request):
     }
     
     return render(request, 'personas/dashboards/departamento.html', ctx)
-#--------------------------------------------------------------------
 
 @login_required
 def check_profile(request):
@@ -168,7 +147,6 @@ def check_profile(request):
     """
     user = request.user
     
-    # Si es superusuario, va directo al admin
     if user.is_superuser:
         return redirect("personas:dashboard_admin")
     
@@ -181,7 +159,6 @@ def check_profile(request):
         logout(request)
         return redirect("login")
 
-    # Obtener el nombre del grupo y limpiarlo
     if not profile.group:
         messages.error(request, "Tu usuario no tiene un grupo/rol asignado. Contacta al administrador.")
         logout(request)
@@ -189,10 +166,8 @@ def check_profile(request):
     
     rol = profile.group.name.strip()
     
-    # Debug: puedes comentar esto después de probar
     print(f"Usuario: {user.username}, Rol: '{rol}'")
     
-    # Redirección según el rol
     if "Administrador" in grupos:
         return redirect("personas:dashboard_admin")
     elif "Territorial" in grupos:
@@ -216,7 +191,6 @@ def usuarios_lista(request):
     rol_seleccionado = request.GET.get("rol", "").strip()
     qs = User.objects.all().order_by("id")
     
-    #filtro por texto
     if q:
         qs = qs.filter(
             Q(username__icontains=q) |
@@ -224,7 +198,6 @@ def usuarios_lista(request):
             Q(last_name__icontains=q) |
             Q(email__icontains=q)
         )
-    #filtro por rol
     if rol_seleccionado:
         qs = qs.filter(profile_group__name=rol_seleccionado)
     
@@ -242,9 +215,8 @@ def usuarios_lista(request):
 @login_required
 @solo_admin
 def usuario_crear(request):
-    # =====================================================
-    # ======== CREACIÓN MASIVA DE USUARIOS ================
-    # =====================================================
+    ROL_VALIDOS = ["Administrador", "Dirección", "Departamento", "Jefe de Cuadrilla", "Territorial"]
+
     if request.method == "POST" and "crear_multiples" in request.POST:
         bulk_data = request.POST.get("bulk_users", "").strip()
         lines = bulk_data.split("\n")
@@ -256,37 +228,35 @@ def usuario_crear(request):
             if not linea.strip():
                 continue
             try:
-                # Formato esperado: Nombre,Apellido,correo,Rol
-                nombre, apellido, correo, rol = [x.strip() for x in linea.split(",")]
-
-                # Generar username automáticamente a partir del correo
-                username = correo.split("@")[0]
-
-                # Evitar duplicados de usuario
-                user = User.objects.filter(email=correo).first()
-                if user:
-                    errores.append(f"Usuario ya existe: {correo}")
+                nombre, apellido, correo, rol, telefono = [x.strip() for x in linea.split(",")]
+                if rol not in ROL_VALIDOS:
+                    errores.append(f"Línea '{linea}': Rol inválido '{rol}'")
                     continue
 
-                # Crear usuario
-                user = User.objects.create_user(
-                    username=username,
-                    password="Temp1234!",  # contraseña temporal
-                    first_name=nombre,
-                    last_name=apellido,
-                    email=correo,
-                    is_active=True
-                )
+                form_data = {
+                    "username": correo.split("@")[0],
+                    "first_name": nombre,
+                    "last_name": apellido,
+                    "email": correo,
+                    "password1": "P@ssw0rd2025!",
+                    "password2": "P@ssw0rd2025!",
+                    "rol": rol,
+                    "cargo": rol,
+                }
 
-                # Asignar grupo
+                form = UsuarioCrearForm(form_data)
+                if not form.is_valid():
+                    errores.append(f"Línea '{linea}': {form.errors.as_json()}")
+                    continue
+
+                user = form.save()
+
                 group, _ = Group.objects.get_or_create(name=rol)
                 user.groups.add(group)
 
-                # Crear profile solo si no existe
-                Profile.objects.get_or_create(
-                    user=user,
-                    defaults={"cargo": rol, "group": group}
-                )
+                profile = user.profile
+                profile.telefono = telefono
+                profile.save()
 
                 creados += 1
 
@@ -299,9 +269,6 @@ def usuario_crear(request):
 
         return redirect("personas:usuarios_lista")
 
-    # =====================================================
-    # ======== CREACIÓN INDIVIDUAL (NORMAL) =============
-    # =====================================================
     if request.method == "POST":
         form = UsuarioCrearForm(request.POST)
         if form.is_valid():

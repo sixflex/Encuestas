@@ -12,7 +12,6 @@ from django.contrib.auth.decorators import login_required
 
 @solo_admin
 def dashboard_admin(request):
-    """Dashboard del administrador con estadísticas"""
     ultimos_usuarios = Profile.objects.order_by('-id')[:5] 
     ultimas_direcciones = Direccion.objects.order_by('-creadoEl')[:5]
     ultimos_departamentos = Departamento.objects.order_by('-creadoEl')[:5]
@@ -24,7 +23,7 @@ def dashboard_admin(request):
     contexto = {
         'ultimos_usuarios': ultimos_usuarios,
         'ultimas_direcciones': ultimas_direcciones,
-        'ultimas_departamentos': ultimos_departamentos,
+        'ultimos_departamentos': ultimos_departamentos,
         'ultimas_incidencias': ultimas_incidencias,
         'total_usuarios': total_usuarios,
         'total_incidencias_creadas': total_incidencias_creadas,
@@ -32,7 +31,6 @@ def dashboard_admin(request):
     }
 
     return render(request, "personas/dashboards/admin.html", contexto)
-
 
 
 @solo_admin
@@ -75,6 +73,8 @@ def usuarios_lista(request):
 @login_required
 @solo_admin
 def usuario_crear(request):
+    ROL_VALIDOS = ["Administrador", "Dirección", "Departamento", "Jefe de Cuadrilla", "Territorial"]
+
     if request.method == "POST" and "crear_multiples" in request.POST:
         bulk_data = request.POST.get("bulk_users", "").strip()
         lines = bulk_data.split("\n")
@@ -86,30 +86,35 @@ def usuario_crear(request):
             if not linea.strip():
                 continue
             try:
-                nombre, apellido, correo, rol = [x.strip() for x in linea.split(",")]
-                username = correo.split("@")[0]
-
-                user = User.objects.filter(email=correo).first()
-                if user:
-                    errores.append(f"Usuario ya existe: {correo}")
+                nombre, apellido, correo, rol, telefono = [x.strip() for x in linea.split(",")]
+                if rol not in ROL_VALIDOS:
+                    errores.append(f"Línea '{linea}': Rol inválido '{rol}'")
                     continue
 
-                user = User.objects.create_user(
-                    username=username,
-                    password="Temp1234!",
-                    first_name=nombre,
-                    last_name=apellido,
-                    email=correo,
-                    is_active=True
-                )
+                form_data = {
+                    "username": correo.split("@")[0],
+                    "first_name": nombre,
+                    "last_name": apellido,
+                    "email": correo,
+                    "password1": "P@ssw0rd2025!",
+                    "password2": "P@ssw0rd2025!",
+                    "rol": rol,
+                    "cargo": rol,
+                }
+
+                form = UsuarioCrearForm(form_data)
+                if not form.is_valid():
+                    errores.append(f"Línea '{linea}': {form.errors.as_json()}")
+                    continue
+
+                user = form.save()
 
                 group, _ = Group.objects.get_or_create(name=rol)
                 user.groups.add(group)
 
-                Profile.objects.get_or_create(
-                    user=user,
-                    defaults={"cargo": rol, "group": group}
-                )
+                profile = user.profile
+                profile.telefono = telefono
+                profile.save()
 
                 creados += 1
 
@@ -120,23 +125,22 @@ def usuario_crear(request):
         for err in errores:
             messages.error(request, err)
 
-        return redirect("core:usuarios_lista")
+        return redirect("personas:usuarios_lista")
 
     if request.method == "POST":
         form = UsuarioCrearForm(request.POST)
         if form.is_valid():
             user = form.save()
             messages.success(request, f"Usuario '{user.username}' creado.")
-            return redirect("core:usuarios_lista")
+            return redirect("personas:usuarios_lista")
     else:
         form = UsuarioCrearForm(initial={"is_active": True, "is_staff": False})
 
     return render(
-        request,
-        "personas/usuario_form.html",
+        request, 
+        "personas/usuario_form.html", 
         {"form": form, "modo": "crear"}
     )
-
 
 @solo_admin
 def usuario_editar(request, pk):
