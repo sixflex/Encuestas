@@ -81,7 +81,7 @@
                         <td class="d-flex flex-wrap gap-2">
                             <a href="{% url 'territorial_app:encuesta_detalle' encuesta.id %}" class="btn btn-sm btn-secondary">Ver</a>
                             <a href="{% url 'territorial_app:encuesta_editar' encuesta.id %}" class="btn btn-sm btn-info">Editar</a>
-                            
+
                             <form method="post" action="{% url 'territorial_app:encuesta_toggle_estado' encuesta.id %}" class="d-inline">
                                 {% csrf_token %}
                                 {% if encuesta.estado %}
@@ -90,7 +90,7 @@
                                     <button type="submit" class="btn btn-sm btn-success">Activar</button>
                                 {% endif %}
                             </form>
-                            
+
                             <a href="{% url 'territorial_app:encuesta_eliminar' encuesta.id %}" class="btn btn-sm btn-danger">
                                 <i class="bi bi-trash"></i>
                             </a>

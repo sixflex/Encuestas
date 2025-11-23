@@ -7,7 +7,7 @@
 
 {% block extra_head %}
 <style>
-    /* Estilo para el contenedor de cada pregunta (formset) */
+
     .pregunta-form {
         background: #f8f9fa;
         border: 1px solid #dee2e6;
@@ -15,10 +15,10 @@
         padding: 1.25rem;
         margin-bottom: 1rem;
         position: relative;
-        overflow: hidden; /* Oculta el contenido que se desborda durante la animación */
+        overflow: hidden;
     }
 
-    /* Animación de entrada */
+
     @keyframes slideDown {
         from {
             opacity: 0;
@@ -28,7 +28,7 @@
         to {
             opacity: 1;
             transform: translateY(0);
-            max-height: 500px; /* Suficientemente grande para cualquier pregunta */
+            max-height: 500px;
         }
     }
 
@@ -36,14 +36,14 @@
         animation: slideDown 0.5s ease-out;
     }
 
-    /* Botón para eliminar la pregunta */
+
     .btn-eliminar-pregunta {
         position: absolute;
         top: 10px;
         right: 10px;
     }
-    
-    /* Plantilla vacía (oculta) */
+
+
     #empty-form {
         display: none;
     }
@@ -56,13 +56,13 @@
 
 <form method="post">
     {% csrf_token %}
-    
+
     <div class="row">
         <div class="col-lg-7">
             <div class="card shadow-sm border-0 rounded-3">
                 <div class="card-body">
                     <h5 class="card-title mb-3">Datos del Tipo de Incidencia</h5>
-                    
+
                     {% if form.non_field_errors %}
                         <div class="alert alert-danger">{{ form.non_field_errors }}</div>
                     {% endif %}
@@ -98,12 +98,12 @@
         </div>
 
         <div class="col-lg-5">
-            
+
             {{ formset.management_form }}
             {% if formset.non_form_errors %}
                 <div class="alert alert-danger">{{ formset.non_form_errors }}</div>
             {% endif %}
-            
+
             <div id="preguntas-container">
                 {% for pregunta_form in formset %}
                 <div class="pregunta-form">
@@ -125,7 +125,7 @@
                         {{ pregunta_form.texto_pregunta }}
                         {% if pregunta_form.texto_pregunta.errors %}<div class="text-danger small mt-1">{{ pregunta_form.texto_pregunta.errors|striptags }}</div>{% endif %}
                     </div>
-                    
+
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="{{ pregunta_form.tipo_pregunta.id_for_label }}" class="form-label">{{ pregunta_form.tipo_pregunta.label }}</label>
@@ -138,7 +138,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="mb-0 mt-3">
                         <label for="{{ pregunta_form.opciones.id_for_label }}" class="form-label">{{ pregunta_form.opciones.label }}</label>
                         {{ pregunta_form.opciones }}
@@ -166,7 +166,7 @@
     <button type"button" class="btn btn-sm btn-outline-danger btn-eliminar-pregunta" onclick="eliminarForm(this)">
         <i class="bi bi-trash"></i>
     </button>
-    
+
     {{ formset.empty_form.id }}
     {% if formset.empty_form.DELETE %} {{ formset.empty_form.DELETE }} {% endif %}
 
@@ -174,7 +174,7 @@
         <label for="{{ formset.empty_form.texto_pregunta.id_for_label }}" class="form-label">{{ formset.empty_form.texto_pregunta.label }}</label>
         {{ formset.empty_form.texto_pregunta }}
     </div>
-    
+
     <div class="row g-3">
         <div class="col-md-6">
             <label for="{{ formset.empty_form.tipo_pregunta.id_for_label }}" class="form-label">{{ formset.empty_form.tipo_pregunta.label }}</label>
@@ -187,7 +187,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="mb-0 mt-3">
         <label for="{{ formset.empty_form.opciones.id_for_label }}" class="form-label">{{ formset.empty_form.opciones.label }}</label>
         {{ formset.empty_form.opciones }}
@@ -199,34 +199,34 @@
 
 {% block extrajs %}
 <script>
-// --- 1. OBTENEMOS EL PREFIJO CORRECTO ---
-// El prefijo (ej: 'preguntas_default') que Django le da al formset.
+
+
 const formsetPrefix = '{{ formset.prefix }}';
 
 document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById('preguntas-container');
     const addButton = document.getElementById('add-pregunta-btn');
     const emptyFormTemplate = document.getElementById('empty-form').innerHTML;
-    
-    // --- 2. BUSCAMOS EL ID CORRECTO ---
-    // Usamos el prefijo para encontrar el input 'TOTAL_FORMS'
+
+
+
     const totalFormsInput = document.getElementById(`id_${formsetPrefix}-TOTAL_FORMS`);
-    
+
     addButton.addEventListener('click', function() {
-        // Obtiene el número actual de formularios
+
         let formNum = parseInt(totalFormsInput.value);
-        
-        // Reemplaza el prefijo '__prefix__' con el nuevo número de formulario
+
+
         let newFormHTML = emptyFormTemplate.replace(/__prefix__/g, formNum);
-        
-        // Crea un div temporal para añadir el HTML
+
+
         let tempDiv = document.createElement('div');
         tempDiv.innerHTML = newFormHTML;
-        
-        // Añade el nuevo formulario al contenedor
+
+
         container.appendChild(tempDiv.firstElementChild);
-        
-        // Incrementa el contador total de formularios
+
+
         totalFormsInput.value = formNum + 1;
     });
 });
@@ -234,19 +234,19 @@ document.addEventListener('DOMContentLoaded', function() {
 function eliminarForm(button) {
     let formWrapper = button.closest('.pregunta-form');
     let deleteInput = formWrapper.querySelector('input[id$="-DELETE"]');
-    
-    // --- 3. BUSCAMOS EL ID CORRECTO TAMBIÉN AQUÍ ---
+
+
     let totalFormsInput = document.getElementById(`id_${formsetPrefix}-TOTAL_FORMS`);
 
     if (deleteInput) {
-        // Si el formulario ya estaba guardado, lo marcamos para borrar
+
         deleteInput.checked = true;
-        formWrapper.style.display = 'none'; // Lo ocultamos
+        formWrapper.style.display = 'none';
     } else {
-        // Si es un formulario nuevo (no guardado), simplemente lo borramos
+
         formWrapper.remove();
-        
-        // Y decrementamos el TOTAL_FORMS
+
+
         totalFormsInput.value = parseInt(totalFormsInput.value) - 1;
     }
 }

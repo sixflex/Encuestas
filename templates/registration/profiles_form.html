@@ -11,7 +11,7 @@
 {% block auth_content %}
     <form action="" method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        
+
         {% if form.non_field_errors %}
             <div class="alert alert-danger">
                 {{ form.non_field_errors|striptags }}
@@ -30,7 +30,7 @@
             <label for="id_avatar" class="form-label">Subir nueva foto</label>
             <input type="file" name="avatar" id="id_avatar" class="form-control">
         </div>
-        
+
         {% if request.user.profile.avatar %}
         <div class="mb-3">
             <div class="form-check">
@@ -59,7 +59,7 @@
             <button type="submit" class="btn btn-success btn-lg">Actualizar Foto</button>
         </div>
     </form>
-    
+
     <p class="text-center mt-4 mb-0">
          <a href="{% url 'check_profile' %}" class="text-decoration-none">Volver</a>
     </p>

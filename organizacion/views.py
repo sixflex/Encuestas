@@ -160,7 +160,7 @@ def asignar_cuadrilla_view(request, pk):
             cuadrilla = JefeCuadrilla.objects.get(pk=cuadrilla_id)
             
             incidencia.cuadrilla = cuadrilla
-            #cambiar estado es 'en_progreso' no 'en_proceso'
+                                                            
             incidencia.estado = 'en_progreso'
             incidencia.save()
             

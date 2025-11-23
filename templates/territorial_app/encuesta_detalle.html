@@ -20,19 +20,19 @@
 
                     <dt class="col-sm-3">Descripción</dt>
                     <dd class="col-sm-9">{{ encuesta.descripcion|linebreaksbr }}</dd>
-                    
+
                     <dt class="col-sm-3">Ubicación</dt>
                     <dd class="col-sm-9">{{ encuesta.ubicacion }}</dd>
-                    
+
                     <dt class="col-sm-3">Prioridad</dt>
                     <dd class="col-sm-9">{{ encuesta.prioridad }}</dd>
-                    
+
                     <dt class="col-sm-3">Departamento</dt>
                     <dd class="col-sm-9">{{ encuesta.departamento.nombre_departamento }}</dd>
-                    
+
                     <dt class="col-sm-3">Dirección</dt>
                     <dd class="col-sm-9">{{ encuesta.departamento.direccion.nombre_direccion }}</dd>
-                    
+
                     <dt class="col-sm-3">Estado</dt>
                     <dd class="col-sm-9">
                         {% if encuesta.estado %}
@@ -50,10 +50,10 @@
                             <span class="text-muted">N/A</span>
                         {% endif %}
                     </dd>
-                    
+
                     <dt class="col-sm-3">Fecha de Creación</dt>
                     <dd class="col-sm-9">{{ encuesta.creadoEl|date:"d/m/Y H:i:s" }}</dd>
-                    
+
                     <dt class="col-sm-3">Última Actualización</dt>
                     <dd class="col-sm-9">{{ encuesta.actualizadoEl|date:"d/m/Y H:i:s" }}</dd>
                 </dl>

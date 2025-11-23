@@ -40,9 +40,9 @@ def es_cuadrilla(u):
     )
 
 
-# ============================================
-# DECORADORES PERSONALIZADOS
-# ============================================
+                                              
+                            
+                                              
 
 def solo_admin(function):
     """
@@ -52,18 +52,18 @@ def solo_admin(function):
     """
     @wraps(function)
     def wrap(request, *args, **kwargs):
-        # Verificar autenticación
+                                 
         if not request.user.is_authenticated:
             messages.warning(request, "Debes iniciar sesión para acceder.")
             return redirect('/accounts/login/')
         
-        # Verificar permisos de administrador
+                                             
         if es_admin(request.user):
             return function(request, *args, **kwargs)
         
-        # Usuario autenticado pero sin permisos
+                                               
         messages.error(request, "No tienes acceso a este dashboard")
-        return redirect('personas:check_profile')  # Redirige a su dashboard correspondiente
+        return redirect('personas:check_profile')                                           
     
     return wrap
 

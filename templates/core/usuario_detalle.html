@@ -28,6 +28,15 @@
                     <dt class="col-sm-3">Email</dt>
                     <dd class="col-sm-9">{{ obj.email|default:"-" }}</dd>
 
+                    <dt class="col-sm-3">Teléfono</dt>
+                    <dd class="col-sm-9">
+                        {% if obj.profile %}
+                            {{ obj.profile.telefono|default:"-" }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </dd>
+
                     <dt class="col-sm-3">Rol (Grupo)</dt>
                     <dd class="col-sm-9">
                         {% for group in groups %}

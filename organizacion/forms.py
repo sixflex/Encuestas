@@ -5,9 +5,9 @@ from registration.models import Profile
 import re
 
 
-# ==========================
-# ======== DIRECCIÓN =======
-# ==========================
+                            
+                            
+                            
 class DireccionForm(forms.ModelForm):
     class Meta:
         model = Direccion
@@ -20,7 +20,7 @@ class DireccionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Mostrar solo perfiles activos del grupo "Dirección"
+                                                             
         self.fields["encargado"].queryset = Profile.objects.filter(
             user__is_active=True,
             user__groups__name__in=["Dirección", "Administrador"]
@@ -42,9 +42,9 @@ class DireccionForm(forms.ModelForm):
         return nombre
 
 
-# ==========================
-# ======= DEPARTAMENTO =====
-# ==========================
+                            
+                            
+                            
 class DepartamentoForm(forms.ModelForm):
     class Meta:
         model = Departamento
@@ -82,9 +82,9 @@ class DepartamentoForm(forms.ModelForm):
         return nombre
 
 
-# ==========================
-# ====== CUADRILLA =========
-# ==========================
+                            
+                            
+                            
 class JefeCuadrillaForm(forms.ModelForm):
     class Meta:
         model = JefeCuadrilla
@@ -104,7 +104,7 @@ class JefeCuadrillaForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # 🔹 Mostrar solo perfiles activos con grupo "Jefe de Cuadrilla" o "Cuadrilla"
+                                                                                     
         cuadrilla_profiles = Profile.objects.filter(
             user__is_active=True,
             user__groups__name__in=["Jefe de Cuadrilla", "Cuadrilla"]
@@ -113,7 +113,7 @@ class JefeCuadrillaForm(forms.ModelForm):
         self.fields["usuario"].queryset = cuadrilla_profiles
         self.fields["encargado"].queryset = cuadrilla_profiles
 
-        # 🔹 Mostrar solo departamentos activos
+                                              
         self.fields["departamento"].queryset = Departamento.objects.filter(estado=True)
         self.fields["departamento"].required = True
 

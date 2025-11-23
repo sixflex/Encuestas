@@ -57,7 +57,7 @@ def usuarios_lista(request):
     elif activo_seleccionado == "0":
         qs = qs.filter(is_active=False)
     
-    roles = User.objects.values_list("groups__name", flat=True).distinct() 
+    roles = Group.objects.values_list('name', flat=True).distinct()
 
     ctx = {
         "usuarios": qs,

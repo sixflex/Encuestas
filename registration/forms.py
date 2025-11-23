@@ -1,4 +1,4 @@
-#Registration/forms.py -->Validaciones cotta
+                                            
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
@@ -9,13 +9,13 @@ from django.contrib.auth.password_validation import validate_password
 from .models import Profile
 
 
-# Validator: usernames allow letters, digits and @/./+/-/_ (similar to Django default)
+                                                                                      
 username_validator = RegexValidator(
     regex=r'^[\w.@+-]+$',
     message='El nombre de usuario sólo puede contener letras, números y @/./+/-/_'
 )
 
-# Validator for phone numbers: optional leading + and 7-15 digits
+                                                                 
 phone_validator = RegexValidator(
     regex=r'^\+?\d{7,15}$',
     message='Teléfono inválido. Use formato +569XXXXXXXX o sólo dígitos (7-15 caracteres).'
@@ -36,12 +36,12 @@ class UserCreationFormWithEmail(UserCreationForm):
 
     def clean_username(self):
         username = self.cleaned_data.get('username', '').strip()
-        # longitud mínima
+                         
         if len(username) < 3:
             raise ValidationError('El nombre de usuario debe tener al menos 3 caracteres.')
-        # patrón
+                
         username_validator(username)
-        # unicidad (case-insensitive)
+                                     
         if User.objects.filter(username__iexact=username).exists():
             raise ValidationError('El nombre de usuario ya existe.')
         return username
@@ -50,7 +50,7 @@ class UserCreationFormWithEmail(UserCreationForm):
         password1 = self.cleaned_data.get('password1')
         if password1:
             try:
-                # usa validadores de contraseña definidos en settings
+                                                                     
                 validate_password(password1, user=None)
             except ValidationError as e:
                 raise forms.ValidationError(e.messages)

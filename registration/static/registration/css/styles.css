@@ -12,8 +12,8 @@ body {
     border-radius: 10px;
     background-color: transparent;
     color: #ffffff;
-    border: 2px solid #ffffff; /* Cambia el color y grosor del borde */
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* Cambia el color y la intensidad de la sombra */
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
     opacity: 0.8;
 }
 

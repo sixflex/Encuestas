@@ -22,11 +22,11 @@
                     {% endif %}
 
                     {% for field in form %}
-                        {# Comprobamos si el campo es un checkbox #}
+
                         {% if field.field.widget.input_type == 'checkbox' %}
                             <div class="mb-3">
                                 <div class="form-check form-switch">
-                                    {# Añadimos la clase 'form-check-input' #}
+
                                     {{ field|add_class:"form-check-input" }}
                                     <label for="{{ field.id_for_label }}" class="form-check-label">
                                         {{ field.label }}
@@ -41,15 +41,15 @@
                                     </div>
                                 {% endif %}
                             </div>
-                        
-                        {# Si no es checkbox, lo tratamos como campo de texto, select, etc. #}
+
+
                         {% else %}
                             <div class="mb-3">
                                 <label for="{{ field.id_for_label }}" class="form-label">
                                     {{ field.label }}
                                 </label>
-                                
-                                {# Añadimos 'form-control' o 'form-select' según el widget #}
+
+
                                 {% if field.field.widget.input_type == 'select' %}
                                     {{ field|add_class:"form-select" }}
                                 {% else %}

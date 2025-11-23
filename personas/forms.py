@@ -3,8 +3,9 @@ from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
 from registration.models import Profile
 from core.models import JefeCuadrilla
+from django.core.validators import RegexValidator
 
-# Definimos los roles disponibles
+                                 
 ROL_CHOICES = [
     ("Administrador", "Administrador"),
     ("Dirección", "Dirección"),
@@ -19,6 +20,11 @@ def validar_email_unico_ci(value, usuario=None):
         qs = qs.exclude(pk=usuario.pk)
     if qs.exists():
         raise ValidationError("Ya existe un usuario con este correo (no distingue mayúsculas/minúsculas).")
+
+validar_telefono = RegexValidator(
+    regex=r'^\+569\d{8}$',
+    message="Formato inválido. Debe ser +569 seguido de 8 dígitos. Ejemplo: +56912345678."
+)
 
 class UsuarioCrearForm(forms.ModelForm):
     cargo = forms.CharField(max_length=100, required=False, label="Cargo")
@@ -93,6 +99,13 @@ class UsuarioEditarForm(forms.ModelForm):
     )
     rol = forms.ChoiceField(choices=ROL_CHOICES, required=True, label="Rol (grupo)")
 
+    telefono = forms.CharField(
+    label="Teléfono",
+    required=False,
+    max_length=20,
+    validators=[validar_telefono],
+    help_text="Opcional — Formato válido: +56912345678"
+)
     class Meta:
         model = User
         fields = ["username", "first_name", "last_name", "email", "is_active", "is_staff"]
@@ -104,7 +117,10 @@ class UsuarioEditarForm(forms.ModelForm):
             self.fields["rol"].initial = groups[0]
         if hasattr(self.instance, "profile"):
             self.fields["cargo"].initial = self.instance.profile.cargo
-
+        perfil, created = Profile.objects.get_or_create(user=self.instance)
+        self.fields["telefono"].initial = perfil.telefono
+    
+    
     def clean_email(self):
         email = self.cleaned_data.get("email", "").strip()
         if not email:
@@ -142,6 +158,7 @@ class UsuarioEditarForm(forms.ModelForm):
             profile, created = Profile.objects.get_or_create(user=user)
             profile.cargo = cargo
             profile.group = group 
+            profile.telefono = self.cleaned_data.get("telefono", "").strip()
             profile.save()
             
             if rol == "Jefe de Cuadrilla":

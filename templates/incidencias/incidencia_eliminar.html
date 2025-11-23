@@ -21,14 +21,14 @@
                     <strong>"{{ obj.titulo }}"</strong>
                 </p>
                 <p class="text-danger">Esta acción no se puede deshacer.</p>
-                
+
                 <form method="post" class="mt-4">
                     {% csrf_token %}
-                    
+
                     <a href="{% url 'incidencias:incidencias_lista' %}" class="btn btn-secondary">
                         <i class="bi bi-x-lg"></i> No, cancelar
                     </a>
-                    
+
                     <button type="submit" class="btn btn-danger">
                         <i class="bi bi-trash-fill"></i> Sí, eliminar permanentemente
                     </button>

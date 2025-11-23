@@ -1,12 +1,12 @@
 from django import forms
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator#cotta
+from django.core.validators import RegexValidator      
 
 from registration.models import Profile
 from core.models import JefeCuadrilla, Departamento
 
-# Los nombres deben coincidir EXACTO con los Group.name creados en tu DB
+                                                                        
 ROL_CHOICES = [
     ("Administrador", "Administrador"),
     ("Dirección", "Dirección"),
@@ -15,7 +15,7 @@ ROL_CHOICES = [
     ("Territorial", "Territorial"),
 ]
 
-# ---------- Validadores utilitarios ----------
+                                               
 
 def validar_email_unico_ci(value: str, exclude_pk: int | None = None):
     qs = User.objects.filter(email__iexact=value)
@@ -34,24 +34,32 @@ def validar_username_unico_ci(value: str, exclude_pk: int | None = None):
         raise ValidationError(
             "Ya existe un usuario con este nombre de usuario (no distingue mayúsculas/minúsculas)."
         )
-#cambios cotta
-# ---------- VALIDACIONES GLOBALES (Reutilizables) ----------
+
+              
+                                                             
 
 def validar_email_unico_ci(value: str, exclude_pk: int | None = None):
-    # ... código actual para validar unicidad de email)
-    pass # Asumir que esta función está definida fuera de la clase
+                                                       
+    pass                                                          
 
 def validar_username_unico_ci(value: str, exclude_pk: int | None = None):
-    # ... (Tu código actual para validar unicidad de username)
+                                                              
     pass 
 
-# NUEVA VALIDACIÓN: Permite letras, acentos, Ñ/ñ y espacios.
+                                                            
 validar_solo_letras = RegexValidator(
     r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$', 
     'Este campo solo puede contener letras y espacios.'
 )
-#---------------------------------------------------------------------
-# ---------- Creación ----------
+
+validar_telefono = RegexValidator(
+    regex=r'^\+569\d{8}$',
+    message="Formato inválido. Debe ser +569 seguido de 8 dígitos. Ejemplo: +56912345678."
+)
+
+
+                                                                      
+                                
 
 class UsuarioCrearForm(forms.ModelForm):
     """
@@ -70,24 +78,24 @@ class UsuarioCrearForm(forms.ModelForm):
         required=True,
     )
     rol = forms.ChoiceField(choices=ROL_CHOICES, required=True, label="Rol (grupo)")
-#cambios cotta
+              
     first_name = forms.CharField(
         label="Nombre",
         max_length=150,
-        required=True, # Aseguramos que sea obligatorio
-        validators=[validar_solo_letras], # Aplica Regex
+        required=True,                                 
+        validators=[validar_solo_letras],               
     )
     last_name = forms.CharField(
         label="Apellido",
         max_length=150,
-        required=True, # Aseguramos que sea obligatorio
-        validators=[validar_solo_letras], # Aplica Regex
+        required=True,                                 
+        validators=[validar_solo_letras],               
     )
-    #--------------------------------------------------------
+                                                             
 
     departamento = forms.ModelChoiceField(
         queryset=Departamento.objects.all(),
-        required=False,  # Solo obligatorio si el rol es Jefe de Cuadrilla
+        required=False,                                                   
         label="Departamento",
         empty_label="Seleccione un departamento"
     )
@@ -95,9 +103,15 @@ class UsuarioCrearForm(forms.ModelForm):
     telefono = forms.CharField(
         label="Teléfono",
         required=False,
-        max_length=20,
-        help_text="Opcional, formato: +56912345678"
+        max_length=12,
+        validators=[validar_telefono],
+        help_text="Opcional — Formato válido: +56912345678"
     )
+    def clean_telefono(self):
+        telefono = (self.cleaned_data.get("telefono") or "").strip()
+        if telefono and not validar_telefono.regex.match(telefono):
+            raise ValidationError(validar_telefono.message)
+        return telefono
 
     class Meta:
         model = User
@@ -164,7 +178,7 @@ class UsuarioCrearForm(forms.ModelForm):
             profile.telefono = self.cleaned_data.get("telefono", "")
             profile.save()
 
-            # Si el rol es "Jefe de Cuadrilla", asegurar el registro asociado
+                                                                             
             if group.name == "Jefe de Cuadrilla":
                 depto = self.cleaned_data.get("departamento")
                 JefeCuadrilla.objects.get_or_create(
@@ -177,7 +191,7 @@ class UsuarioCrearForm(forms.ModelForm):
                 )
         return user
 
-# ---------- Edición ----------
+                               
 
 class UsuarioEditarForm(forms.ModelForm):
     """
@@ -207,8 +221,15 @@ class UsuarioEditarForm(forms.ModelForm):
         label="Teléfono",
         required=False,
         max_length=20,
-        help_text="Opcional, formato: +56912345678"
+        validators=[validar_telefono],
+        help_text="Opcional — Formato válido: +56912345678"
     )
+
+    def clean_telefono(self):
+        telefono = (self.cleaned_data.get("telefono") or "").strip()
+        if telefono and not validar_telefono.regex.match(telefono):
+            raise ValidationError(validar_telefono.message)
+        return telefono
 
     class Meta:
         model = User
@@ -220,17 +241,13 @@ class UsuarioEditarForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Inicializar rol
+                         
         groups = list(self.instance.groups.values_list("name", flat=True))
         if groups:
             self.fields["rol"].initial = groups[0]
 
-        # Inicializar departamento si es Jefe de Cuadrilla
-        try:
-            perfil = self.instance.profile
-            self.fields["telefono"].initial = perfil.telefono
-        except Profile.DoesNotExist:
-         perfil = None
+        perfil, created = Profile.objects.get_or_create(user=self.instance)
+        self.fields["telefono"].initial = perfil.telefono or ""
 
         if perfil:
             try:
@@ -239,7 +256,7 @@ class UsuarioEditarForm(forms.ModelForm):
             except JefeCuadrilla.DoesNotExist:
                 pass
 
-    # Validaciones
+                  
     def clean_username(self):
         username = (self.cleaned_data.get("username") or "").strip()
         if not username:
@@ -267,29 +284,29 @@ class UsuarioEditarForm(forms.ModelForm):
         rol = cleaned.get("rol")
         depto = cleaned.get("departamento")
 
-        # Validar cambio de contraseña opcional
+                                               
         if p1 or p2:
             if not p1 or not p2:
                 self.add_error("password2", "Debes completar ambas contraseñas si vas a cambiarla.")
             elif p1 != p2:
                 self.add_error("password2", "Las contraseñas no coinciden.")
 
-        # Validar departamento si es Jefe de Cuadrilla
+                                                      
         if rol == "Jefe de Cuadrilla" and not depto:
             self.add_error("departamento", "Debe seleccionar un departamento para un Jefe de Cuadrilla.")
 
         return cleaned
 
-    # Guardar usuario y sincronizar perfil y Jefe de Cuadrilla
+                                                              
     def save(self, commit=True):
         user = super().save(commit=False)
 
-        # Cambiar contraseña si se proporcionó
+                                              
         p1 = self.cleaned_data.get("password1")
         if p1:
             user.set_password(p1)
 
-        # Limpiar datos
+                       
         user.username = user.username.strip()
         user.first_name = (user.first_name or "").strip()
         user.last_name = (user.last_name or "").strip()
@@ -298,18 +315,18 @@ class UsuarioEditarForm(forms.ModelForm):
         if commit:
             user.save()
 
-            # Actualizar grupo
+                              
             user.groups.clear()
             group, _ = Group.objects.get_or_create(name=self.cleaned_data["rol"])
             user.groups.add(group)
 
-            # Sincronizar profile
+                                 
             profile, _ = Profile.objects.get_or_create(user=user)
             profile.group = group
             profile.telefono = self.cleaned_data.get("telefono", "")
             profile.save()
 
-            # Actualizar o crear Jefe de Cuadrilla
+                                                  
             if group.name == "Jefe de Cuadrilla":
                 depto = self.cleaned_data.get("departamento")
                 JefeCuadrilla.objects.update_or_create(
@@ -321,13 +338,13 @@ class UsuarioEditarForm(forms.ModelForm):
                     },
                 )
             else:
-                # Si cambió a otro rol, eliminar registro de Jefe de Cuadrilla si existía
+                                                                                         
                 JefeCuadrilla.objects.filter(usuario=profile).delete()
 
         return user
 
-#------------------------------------------------------
-# ---------- Confirmación Activar/Desactivar ----------
+                                                       
+                                                       
 
 class UsuarioToggleActivoForm(forms.Form):
     """

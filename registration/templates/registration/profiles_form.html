@@ -7,7 +7,7 @@
         <form action="" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div>
-                    <div>  
+                    <div>
                         <div>
                             {% if request.user.profile.avatar %}
                                 <img src="{{request.user.profile.avatar.url}}">
@@ -24,16 +24,16 @@
                                 </div>
                                 <div>
                                     <input type="submit" value="Actualizar">
-                                </div>     
+                                </div>
                                 <div>
                                     <a href="{% url 'check_group_main' %}">
                                         Volver
                                     </a>
-                                </div>     
+                                </div>
                             </div>
 
                         </div>
-                    </div>  
+                    </div>
                 </div>
             </div>
             </form>

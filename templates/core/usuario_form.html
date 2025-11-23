@@ -10,7 +10,7 @@
 
 <div class="row">
     <div class="col-lg-8">
-        {# ================= FORMULARIO INDIVIDUAL ================= #}
+
         <div class="card shadow-sm border-0 rounded-3 mb-4">
             <div class="card-body">
                 <form method="post">
@@ -22,7 +22,7 @@
                         </div>
                     {% endif %}
 
-                    {# Render de campos, excepto telefono #}
+
                     {% for field in form %}
                         {% if field.name != "telefono" %}
                             {% if field.field.widget.input_type == 'checkbox' %}
@@ -79,7 +79,8 @@
             </div>
         </div>
 
-        {# ================= FORMULARIO DE CARGA MASIVA ================= #}
+    {% if modo == "crear" %}
+
         <div class="card shadow-sm border-0 rounded-3">
             <div class="card-body">
                 <h3>Carga Masiva de Usuarios</h3>
@@ -104,6 +105,7 @@ Maria,Gonzalez,maria@dominio.com,Jefe de Cuadrilla, 56937824321"></textarea>
         </div>
     </div>
 </div>
+{% endif %}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

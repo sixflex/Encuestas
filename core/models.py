@@ -1,6 +1,6 @@
 from django.db import models
 from registration.models import Profile
-from django.core.validators import FileExtensionValidator #ESTO SE USA PARA VALIDAR EXTENSIONES DE ARCHIVOS (NUEVO)
+from django.core.validators import FileExtensionValidator                                                          
 
 class Perfil(models.Model):
     rol = models.CharField(max_length=50)
@@ -95,10 +95,10 @@ class Multimedia(models.Model):
         validators=[
             FileExtensionValidator(
                 allowed_extensions=[
-                    'jpg', 'jpeg', 'png', 'gif', 'webp',  # Imágenes
-                    'mp4', 'mpeg', 'avi', 'mov',          # Videos
-                    'mp3', 'wav', 'ogg', 'm4a',           # Audios
-                    'pdf', 'doc', 'docx', 'txt'           # Documentos
+                    'jpg', 'jpeg', 'png', 'gif', 'webp',            
+                    'mp4', 'mpeg', 'avi', 'mov',                  
+                    'mp3', 'wav', 'ogg', 'm4a',                   
+                    'pdf', 'doc', 'docx', 'txt'                       
                 ]
             )
         ]
@@ -108,7 +108,7 @@ class Multimedia(models.Model):
     tamanio = models.IntegerField(help_text="Tamaño en bytes", null=True, blank=True)
     creadoEl = models.DateTimeField(auto_now_add=True)
     
-    # CORREGIDO: Hacer ambas relaciones opcionales
+                                                  
     incidencia = models.ForeignKey(
         "Incidencia", 
         on_delete=models.CASCADE, 
@@ -170,10 +170,10 @@ class JefeCuadrilla(models.Model):
     def __str__(self):
         return self.nombre_cuadrilla
 
-#-------------------------------------------------
+                                                  
 class Incidencia(models.Model):
-    #Cambios cotta
-# 1. DEFINICIÓN DE CHOICES (Opciones de Estado)
+                  
+                                               
     ESTADO_CHOICES = (
     ('Pendiente', 'Pendiente'),
     ('En Progreso', 'En Progreso'),
@@ -184,12 +184,12 @@ class Incidencia(models.Model):
 
     titulo = models.CharField(max_length=200)
     descripcion = models.TextField()
-    #Cambios cotta
-    #estado = models.CharField(max_length=50)
-     # 2. CAMBIO CLAVE: Asignar el valor por defecto
+                  
+                                             
+                                                    
     estado = models.CharField(
-        max_length=50, choices=ESTADO_CHOICES, default='Pendiente')     # <--- ESTO MARCA EL VALOR POR DEFECTO
-    #-----------------------------------------------------------
+        max_length=50, choices=ESTADO_CHOICES, default='Pendiente')                                           
+                                                                
     prioridad = models.CharField(max_length=50)
     creadoEl = models.DateTimeField(auto_now_add=True)
     actualizadoEl = models.DateTimeField(auto_now=True)

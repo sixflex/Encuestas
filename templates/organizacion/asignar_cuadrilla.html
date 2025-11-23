@@ -21,17 +21,17 @@
                                 <option value="">-- Seleccionar cuadrilla --</option>
                                 {% for cuadrilla in cuadrillas %}
                                     <option value="{{ cuadrilla.id }}">
-                                        {{ cuadrilla.nombre_cuadrilla }} 
+                                        {{ cuadrilla.nombre_cuadrilla }}
                                         (Usuario: {{ cuadrilla.usuario }}, Encargado: {{ cuadrilla.encargado }})
                                     </option>
                                 {% endfor %}
                             </select>
                         </div>
-                        
+
                         <div class="alert alert-info">
                             <strong><i class="bi bi-info-circle-fill"></i> Nota:</strong> Al asignar una cuadrilla, la incidencia pasará automáticamente al estado "En proceso".
                         </div>
-                        
+
                         <hr class="my-4">
                         <div class="d-flex justify-content-end gap-2">
                             <a href="{% url 'personas:dashboard_departamento' %}" class="btn btn-secondary">Cancelar</a>
@@ -62,7 +62,7 @@
                 <dl class="row mb-0">
                     <dt class="col-sm-4">Estado actual</dt>
                     <dd class="col-sm-8"><span class="badge bg-warning text-dark">{{ incidencia.estado|capfirst }}</span></dd>
-                    
+
                     <dt class="col-sm-4">Prioridad</dt>
                     <dd class="col-sm-8"><span class="badge bg-danger">{{ incidencia.prioridad }}</span></dd>
 
@@ -73,12 +73,12 @@
 
                     <dt class="col-sm-12">Descripción</dt>
                     <dd class="col-sm-12">{{ incidencia.descripcion|truncatewords:40 }}</dd>
-                    
+
                     <hr class="my-2">
-                    
+
                     <dt class="col-sm-4">Vecino</dt>
                     <dd class="col-sm-8">{{ incidencia.nombre_vecino }}</dd>
-                    
+
                     <dt class="col-sm-4">Correo</dt>
                     <dd class="col-sm-8">{{ incidencia.correo_vecino }}</dd>
                 </dl>

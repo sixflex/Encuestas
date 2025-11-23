@@ -1,5 +1,5 @@
-# personas/utils.py
-# Importamos todos los decoradores desde core.utils para mantener consistencia
+                   
+                                                                              
 
 from core.utils import (
     es_admin,
@@ -17,4 +17,4 @@ from core.utils import (
     admin_territorial_cuadrilla,
 )
 
-# Cualquier decorador adicional específico de personas se puede agregar aquí
+                                                                            

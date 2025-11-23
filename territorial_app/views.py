@@ -10,15 +10,15 @@ from core.utils import solo_admin, admin_o_territorial, admin_territorial_cuadri
 from django.forms import formset_factory, modelformset_factory
 from django.http import JsonResponse
 
-#imports necesarios para evidencias
+                                   
 from django.http import JsonResponse
 from .forms import EvidenciaForm
 from core.models import Multimedia
 import os
 
-# ---------------------------------
-# Lista de incidencias
-# ---------------------------------
+                                   
+                      
+                                   
 
 
 @login_required
@@ -34,9 +34,9 @@ def lista_incidencias(request):
         {'incidencias': incidencias}
     )
 
-# ---------------------------------
-# Validar incidencia
-# ---------------------------------
+                                   
+                    
+                                   
 @login_required
 def validar_incidencia(request, pk):
     incidencia = get_object_or_404(Incidencia, pk=pk)
@@ -46,9 +46,9 @@ def validar_incidencia(request, pk):
     messages.success(request, f"Incidencia '{incidencia.titulo}' validada.")
     return redirect('territorial_app:incidencias_lista')
 
-# ---------------------------------
-# Rechazar incidencia
-# ---------------------------------
+                                   
+                     
+                                   
 @login_required
 def rechazar_incidencia(request, pk):
     incidencia = get_object_or_404(Incidencia, pk=pk)
@@ -71,7 +71,7 @@ def rechazar_incidencia(request, pk):
     )
 
 
-# Reasignar incidencia
+                      
 @login_required
 def reasignar_incidencia(request, pk):
     incidencia = get_object_or_404(Incidencia, pk=pk)
@@ -85,7 +85,7 @@ def reasignar_incidencia(request, pk):
         form = ReasignarIncidenciaForm(request.POST, instance=incidencia)
         if form.is_valid():
             incidencia_obj = form.save(commit=False)
-            # directamente asignar la cuadrilla seleccionada
+                                                            
             incidencia_obj.cuadrilla = form.cleaned_data['cuadrilla']
             incidencia_obj.save()
 
@@ -106,7 +106,7 @@ def reasignar_incidencia(request, pk):
 
     return render(request,'territorial_app/reasignar_incidencia.html', ctx)
 
-# Finalizar incidencia
+                      
 @login_required
 def finalizar_incidencia(request, pk):
     incidencia = get_object_or_404(Incidencia, pk=pk)
@@ -158,11 +158,11 @@ def encuestas_lista(request):
     Territorial y Admin pueden verlas todas.
     """
     q = request.GET.get("q", "").strip()
-    estado = request.GET.get("estado")  # 'activo' | 'inactivo' | None
+    estado = request.GET.get("estado")                                
     
     qs = Encuesta.objects.all().select_related('departamento').order_by('-creadoEl')
     
-    # Filtro por búsqueda de texto
+                                  
     if q:
         qs = qs.filter(
             Q(titulo__icontains=q) | 
@@ -170,7 +170,7 @@ def encuestas_lista(request):
             Q(departamento__nombre_departamento__icontains=q)
         )
     
-    # Filtro por estado
+                       
     if estado == 'activo':
         qs = qs.filter(estado=True)
     elif estado == 'inactivo':
@@ -204,7 +204,7 @@ def encuestas_lista(request):
 
 
 @login_required
-#@admin_o_territorial
+                     
 def encuesta_detalle(request, encuesta_id):
     """
     Muestra los detalles de una encuesta, sus preguntas y evidencias.
@@ -213,7 +213,7 @@ def encuesta_detalle(request, encuesta_id):
     preguntas = encuesta.preguntaencuesta_set.all().prefetch_related('respuestas')
     evidencias = encuesta.evidencias.all().order_by('-creadoEl')
     
-    # Formulario para subir evidencias
+                                      
     evidencia_form = EvidenciaForm()
 
     preguntas_con_respuestas = []
@@ -263,15 +263,15 @@ def encuesta_crear(request):
         if tipo_incidencia_id:
             preguntas_base = PreguntaBase.objects.filter(tipo_incidencia_id=tipo_incidencia_id)
 
-        # Botón agregar pregunta
+                                
         if 'agregar' in request.POST:
-            # reconstruimos el formset conservando los datos del POST
+                                                                     
             initial_list = []
             i = 0
             while f'manual-{i}-texto_pregunta' in request.POST:
                 initial_list.append({'texto_pregunta': request.POST.get(f'manual-{i}-texto_pregunta')})
                 i += 1
-            # agregamos un formulario vacío
+                                           
             initial_list.append({'texto_pregunta': ''})
             formset = PreguntaFormSet(initial=initial_list, prefix='manual')
 
@@ -279,7 +279,7 @@ def encuesta_crear(request):
             if encuesta_form.is_valid() and formset.is_valid():
                 encuesta = encuesta_form.save()
 
-                # Guardar preguntas base
+                                        
                 for pb in preguntas_base:
                     PreguntaEncuesta.objects.create(
                         encuesta=encuesta,
@@ -288,7 +288,7 @@ def encuesta_crear(request):
                         descripcion=''
                     )
 
-                # Guardar preguntas manuales
+                                            
                 for f in formset.cleaned_data:
                     if f and f.get('texto_pregunta'):
                         PreguntaEncuesta.objects.create(
@@ -349,11 +349,11 @@ def responder_encuesta(request, encuesta_id, incidencia_id):
     evidencia_form = SubirEvidenciaForm(request.POST or None, request.FILES or None)
 
     if request.method == "POST":
-        # Guardar respuestas de la encuesta
+                                           
         for pregunta in preguntas:
             texto = request.POST.get(f"respuesta_{pregunta.id}", "").strip()
             if texto:
-                # Guarda la respuesta: crea si no existe, actualiza si ya existe
+                                                                                
                 respuesta, created = RespuestaEncuesta.objects.get_or_create(
                     pregunta=pregunta,
                     defaults={"texto_respuesta": texto, "tipo": pregunta.tipo}
@@ -362,7 +362,7 @@ def responder_encuesta(request, encuesta_id, incidencia_id):
                     respuesta.texto_respuesta = texto
                     respuesta.save()
 
-        # Subir evidencia si se proporcionó
+                                           
         if evidencia_form.is_valid() and evidencia_form.cleaned_data.get('archivo'):
             archivo = evidencia_form.cleaned_data['archivo']
             nombre = evidencia_form.cleaned_data.get('nombre') or archivo.name
@@ -379,11 +379,11 @@ def responder_encuesta(request, encuesta_id, incidencia_id):
                     return 'documento'
                 return 'otro'
 
-            # Crear el registro de multimedia correctamente
+                                                           
             Multimedia.objects.create(
                 incidencia=incidencia,
                 nombre=nombre,
-                archivo=archivo,  # Usar FileField directamente
+                archivo=archivo,                               
                 tipo=detectar_tipo_archivo(archivo.name),
                 formato=archivo.name.split('.')[-1].lower(),
                 tamanio=archivo.size,
@@ -394,7 +394,7 @@ def responder_encuesta(request, encuesta_id, incidencia_id):
         else:
             messages.success(request, "Encuesta respondida correctamente.")
         
-        # Redirigir a la misma página para ver las evidencias actualizadas
+                                                                          
         return redirect(request.path)
            
     return render(request, "territorial_app/responder_encuesta.html", {
@@ -421,10 +421,10 @@ def encuesta_editar(request, pk):
         messages.error(request, "No se puede editar una encuesta activa. Debes desactivarla primero.")
         return redirect("territorial_app:encuesta_detalle", encuesta_id=pk)
 
-    # Solo preguntas manuales
+                             
     preguntas_manual = list(encuesta.preguntaencuesta_set.filter(tipo='texto').order_by('id'))
 
-    # Creamos formset con opción de eliminar
+                                            
     PreguntaFormSet = formset_factory(PreguntaEncuestaForm, extra=1, can_delete=True)
 
     if request.method == 'POST':
@@ -433,22 +433,22 @@ def encuesta_editar(request, pk):
 
         if encuesta_form.is_valid() and formset.is_valid():
             encuesta_form.save()
-            # Guardar/Actualizar preguntas existentes
+                                                     
             for i, f in enumerate(formset.cleaned_data):
                 if not f:
                     continue
                 if f.get('DELETE'):
-                    # Si está marcado para borrar, eliminamos la pregunta correspondiente si existe
+                                                                                                   
                     if i < len(preguntas_manual):
                         preguntas_manual[i].delete()
                 else:
                     if i < len(preguntas_manual):
-                        # Actualizar pregunta existente
+                                                       
                         pregunta = preguntas_manual[i]
                         pregunta.texto_pregunta = f['texto_pregunta']
                         pregunta.save()
                     else:
-                        # Crear nueva pregunta manual
+                                                     
                         if f.get('texto_pregunta'):
                             PreguntaEncuesta.objects.create(
                                 encuesta=encuesta,
@@ -458,7 +458,7 @@ def encuesta_editar(request, pk):
             messages.success(request, f"Encuesta '{encuesta.titulo}' actualizada correctamente.")
             return redirect("territorial_app:encuesta_detalle", encuesta_id=encuesta.id)
     else:
-        # Inicializamos el formset con preguntas existentes
+                                                           
         initial_data = [{'texto_pregunta': p.texto_pregunta} for p in preguntas_manual]
         formset = PreguntaFormSet(initial=initial_data, prefix='manual')
         encuesta_form = EncuestaForm(instance=encuesta)
@@ -500,7 +500,7 @@ def encuesta_eliminar(request, pk):
     """
     encuesta = get_object_or_404(Encuesta, pk=pk)
     
-    # Opcional: solo permitir eliminar si está bloqueada
+                                                        
     if encuesta.estado:
         messages.error(request, "No se puede eliminar una encuesta activa. Debes desactivarla primero.")
         return redirect("territorial_app:encuesta_detalle", encuesta_id=pk)
@@ -513,7 +513,7 @@ def encuesta_eliminar(request, pk):
     
     return render(request, "territorial_app/encuesta_eliminar.html", {"encuesta": encuesta})
 
-#Funciones para manejar evidencias
+                                  
 
 @login_required
 @admin_o_territorial
@@ -525,12 +525,12 @@ def evidencia_subir(request, encuesta_id):
     """
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
     
-    # CORRECCIÓN 1: Cambiar la lógica - permitir subir si está BLOQUEADA (estado=False)
+                                                                                       
     if encuesta.estado:
         messages.error(request, "No se puede subir evidencia en una encuesta activa. Debes desactivarla primero.")
         return redirect("territorial_app:encuesta_detalle", encuesta_id=encuesta_id)
     
-    # CORRECCIÓN 2: Obtener o crear incidencia asociada
+                                                       
     incidencia = encuesta.incidencia_set.first()
     
     if incidencia is None:
@@ -546,11 +546,11 @@ def evidencia_subir(request, encuesta_id):
         if form.is_valid():
             evidencia = form.save(commit=False)
             evidencia.encuesta = encuesta
-            evidencia.incidencia = incidencia  # CRÍTICO: Asignar la incidencia
+            evidencia.incidencia = incidencia                                  
             
             evidencia.save()
             
-            # Respuesta para AJAX
+                                 
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': True,
@@ -569,7 +569,7 @@ def evidencia_subir(request, encuesta_id):
             messages.success(request, f'Evidencia "{evidencia.nombre}" subida correctamente.')
             return redirect('territorial_app:encuesta_detalle', encuesta_id=encuesta.id)
         else:
-            # CORRECCIÓN 3: Mostrar los errores específicos del formulario
+                                                                          
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 errors = {}
                 for field, error_list in form.errors.items():
@@ -579,7 +579,7 @@ def evidencia_subir(request, encuesta_id):
                     'errors': errors
                 }, status=400)
             
-            # Mostrar errores en mensajes
+                                         
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f'{field}: {error}')
@@ -601,7 +601,7 @@ def evidencia_eliminar(request, evidencia_id):
     if request.method == 'POST':
         nombre = evidencia.nombre
         
-        # Eliminar archivo físico
+                                 
         if evidencia.archivo:
             try:
                 if os.path.isfile(evidencia.archivo.path):
@@ -611,7 +611,7 @@ def evidencia_eliminar(request, evidencia_id):
         
         evidencia.delete()
         
-        # Respuesta para AJAX
+                             
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
                 'success': True,

@@ -14,14 +14,14 @@
                     ¿Seguro que deseas {% if obj.is_active %}<strong class="text-danger">desactivar</strong>{% else %}<strong class="text-success">activar</strong>{% endif %} al usuario
                     <strong>{{ obj.username }}</strong>?
                 </p>
-                
+
                 <form method="post" class="mt-4">
                     {% csrf_token %}
-                    
+
                     <a href="{% url 'core:usuarios_lista' %}" class="btn btn-secondary">
                         <i class="bi bi-x-lg"></i> No, volver
                     </a>
-                    
+
                     {% if obj.is_active %}
                         <button type="submit" class="btn btn-danger">
                             <i class="bi bi-trash"></i> Sí, desactivar

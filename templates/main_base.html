@@ -5,10 +5,10 @@
 {% block extra_head %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 <style>
-    /* Paleta de color base */
+
     .app-blue,
     .btn-app-blue {
-        background-color: #5bc0de !important; 
+        background-color: #5bc0de !important;
         color: white !important;
         border-color: #5bc0de !important;
     }
@@ -17,13 +17,13 @@
         border-color: #4fb3c9 !important;
     }
 
-    /* Navbar fija */
+
     .header-brand {
         height: 70px;
         z-index: 1030;
     }
 
-    /* Sidebar debajo de navbar */
+
     .sidebar {
         min-height: calc(100vh - 70px);
         margin-top: 70px;
@@ -37,14 +37,14 @@
         background-color: transparent;
         color: #495057;
     }
-    .sidebar .list-group-item.active { 
+    .sidebar .list-group-item.active {
         background-color: #f0f0f0 !important;
         color: #212529 !important;
         font-weight: 500;
     }
 
-    /* Logo */
-    .logo-circle { 
+
+    .logo-circle {
         width: 25px;
         height: 25px;
         border-radius: 50%;
@@ -53,18 +53,18 @@
         margin-right: 8px;
     }
 
-    /* Contenido principal */
+
     #page-content-wrapper {
         background-color: #f5f5f5;
-        padding-top: 70px; 
+        padding-top: 70px;
         padding-left: 15px;
         padding-right: 15px;
     }
-    #page-content-wrapper main { 
-        padding: 20px; 
+    #page-content-wrapper main {
+        padding: 20px;
     }
 
-    /* Barra de búsqueda más pequeña */
+
     .form-control-sm {
         height: calc(1.5em + 0.5rem + 2px);
         font-size: 0.875rem;
@@ -75,60 +75,60 @@
 {% block layout %}
 <div class="d-flex" id="wrapper">
 
-    <!-- Sidebar -->
+
     <div class="sidebar" id="sidebar-wrapper" style="width: 220px;">
         <h6 class="text-uppercase text-muted small fw-bold mb-1 px-3">Módulos</h6>
         <div class="list-group list-group-flush">
 
-            {# ----------------------------------------------------------- #}
-            {#   SI NO ES JEFE DE CUADRILLA → PUEDE VER TODO EL SISTEMA   #}
-            {# ----------------------------------------------------------- #}
+
+
+
             {% if not user|has_group:"Jefe de Cuadrilla" %}
 
-                <a href="{% url 'personas:usuarios_lista' %}" 
-                   class="list-group-item list-group-item-action 
+                <a href="{% url 'personas:usuarios_lista' %}"
+                   class="list-group-item list-group-item-action
                     {% if request.resolver_match.url_name == 'usuarios_lista' %}active{% endif %}">
                     Usuarios
                 </a>
 
-                <a href="{% url 'personas:dashboard_direccion' %}" 
-                   class="list-group-item list-group-item-action 
+                <a href="{% url 'personas:dashboard_direccion' %}"
+                   class="list-group-item list-group-item-action
                    {% if request.resolver_match.url_name == 'dashboard_direccion' %}active{% endif %}">
                     Direcciones
                 </a>
 
-                <a href="{% url 'personas:dashboard_departamento' %}" 
-                   class="list-group-item list-group-item-action 
+                <a href="{% url 'personas:dashboard_departamento' %}"
+                   class="list-group-item list-group-item-action
                    {% if request.resolver_match.url_name == 'dashboard_departamento' %}active{% endif %}">
                     Departamentos
                 </a>
 
-                <!-- Tipos de incidencia -->
+
                 <a href="{% url 'incidencias:tipo_lista' %}"
                    class="list-group-item list-group-item-action
                    {% if 'tipo_' in request.resolver_match.url_name %}active{% endif %}">
                     Tipos de Incidencia
                 </a>
 
-                
+
             {% endif %}
 
-            {# ----------------------------------------------------------- #}
-            {#       ESTO LO PUEDE VER CUALQUIER USUARIO, INCLUIDO        #}
-            {#               EL JEFE DE CUADRILLA                         #}
-            {# ----------------------------------------------------------- #}
 
-            <!-- Incidencias (SIEMPRE visible) -->
+
+
+
+
+
             <a href="{% url 'incidencias:incidencias_lista' %}"
                class="list-group-item list-group-item-action
                {% if request.resolver_match.app_name == 'incidencias' %}active{% endif %}">
                 Incidencias
             </a>
 
-            <!-- Organización de cuadrillas (visible también para jefe) -->
+
             {% if not user|has_group:"Jefe de Cuadrilla" %}
                 <a href="{% url 'territorial_app:encuestas_lista' %}"
-                   class="list-group-item list-group-item-action 
+                   class="list-group-item list-group-item-action
                    {% if request.resolver_match.app_name == 'territorial_app' %}active{% endif %}">
                     Encuesta
                 </a>
@@ -137,10 +137,10 @@
         </div>
     </div>
 
-    <!-- Contenido principal -->
+
     <div id="page-content-wrapper" class="w-100">
 
-        <!-- Navbar fija -->
+
         <nav class="header-brand navbar navbar-light bg-white border-bottom shadow-sm fixed-top">
             <div class="container-fluid d-flex justify-content-between align-items-center">
                 <a class="navbar-brand d-flex align-items-center p-0" href="#">
@@ -153,7 +153,7 @@
 
                 <div class="d-flex align-items-center">
                     <input class="form-control me-2 form-control-sm" type="search" placeholder="Buscar..." aria-label="Buscar" style="width: 150px;">
-                    
+
                     {% if user.is_authenticated %}
                         <span class="me-2 d-flex align-items-center small">Hola, {{ user.username }}!</span>
                         <form action="{% url 'personas:cerrar_sesion' %}" method="post" class="d-flex">
@@ -166,7 +166,7 @@
                 </div>
             </div>
         </nav>
-        
+
         {% if messages %}
             <ul class="list-unstyled p-4">
                 {% for m in messages %}
@@ -179,7 +179,7 @@
             {% block dashboard_content %}
             {% endblock %}
         </main>
-        
+
     </div>
 </div>
 

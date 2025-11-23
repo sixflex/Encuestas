@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('evidenciaForm');
     const btnSubir = document.getElementById('btnSubir');
 
-    // Drag and drop
+
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         uploadZone.addEventListener(eventName, preventDefaults, false);
     });
@@ -47,10 +47,10 @@ document.addEventListener('DOMContentLoaded', function() {
         fileName.innerHTML = `<i class="fas fa-file"></i> ${file.name} (${size} MB)`;
     }
 
-    // Subida con AJAX
+
     form.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         const formData = new FormData(form);
         btnSubir.disabled = true;
         btnSubir.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...';
@@ -65,16 +65,16 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Agregar nueva evidencia al DOM
+
                 agregarEvidenciaAlDOM(data.evidencia);
                 form.reset();
                 fileName.innerHTML = '';
-                
-                // Ocultar mensaje de "No hay evidencias"
+
+
                 const noEvidencias = document.getElementById('noEvidencias');
                 if (noEvidencias) noEvidencias.remove();
-                
-                // Mostrar mensaje de éxito
+
+
                 mostrarMensaje('Evidencia subida correctamente', 'success');
             } else {
                 let errorMsg = 'Error al subir la evidencia';
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const card = document.createElement('div');
         card.className = 'evidencia-card';
         card.dataset.evidenciaId = evidencia.id;
-        
+
         let preview = '';
         if (evidencia.tipo === 'imagen') {
             preview = `<img src="${evidencia.url}" class="evidencia-preview" alt="${evidencia.nombre}">`;
@@ -111,13 +111,13 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             preview = `<div class="evidencia-icono">${evidencia.icono}</div><a href="${evidencia.url}" target="_blank" class="btn btn-sm btn-outline-primary w-100"><i class="fas fa-download"></i> Descargar ${evidencia.formato.toUpperCase()}</a>`;
         }
-        
+
         const tamanioStr = evidencia.tamanio ? ` • ${formatBytes(evidencia.tamanio)}` : '';
-        
+
         card.innerHTML = `
             <div class="d-flex justify-content-between align-items-start mb-2">
                 <h6 class="mb-0">${evidencia.icono} ${evidencia.nombre}</h6>
-                <button class="btn btn-sm btn-danger btn-eliminar" 
+                <button class="btn btn-sm btn-danger btn-eliminar"
                         data-evidencia-id="${evidencia.id}"
                         data-evidencia-nombre="${evidencia.nombre}">
                     <i class="fas fa-trash"></i>
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </small>
             </div>
         `;
-        
+
         container.insertBefore(card, container.firstChild);
     }
 
@@ -151,28 +151,28 @@ document.addEventListener('DOMContentLoaded', function() {
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
         document.body.appendChild(alertDiv);
-        
+
         setTimeout(() => {
             alertDiv.remove();
         }, 5000);
     }
 
-    // Eliminar evidencia
+
     document.addEventListener('click', function(e) {
         if (e.target.closest('.btn-eliminar')) {
             const btn = e.target.closest('.btn-eliminar');
             const evidenciaId = btn.dataset.evidenciaId;
             const evidenciaNombre = btn.dataset.evidenciaNombre;
-            
+
             const modal = new bootstrap.Modal(document.getElementById('modalEliminar'));
             document.getElementById('evidenciaNombre').textContent = evidenciaNombre;
-            
+
             const formEliminar = document.getElementById('formEliminar');
             formEliminar.action = `/territorial/evidencia/${evidenciaId}/eliminar/`;
-            
+
             formEliminar.onsubmit = function(e) {
                 e.preventDefault();
-                
+
                 fetch(formEliminar.action, {
                     method: 'POST',
                     body: new FormData(formEliminar),
@@ -183,11 +183,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Eliminar del DOM
+
                         const card = document.querySelector(`[data-evidencia-id="${evidenciaId}"]`);
                         if (card) card.remove();
-                        
-                        // Si no quedan evidencias, mostrar mensaje
+
+
                         const container = document.getElementById('evidenciasContainer');
                         if (container.children.length === 0) {
                             container.innerHTML = `
@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                             `;
                         }
-                        
+
                         modal.hide();
                         mostrarMensaje(data.message, 'success');
                     } else {
@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     mostrarMensaje('Error al eliminar la evidencia', 'danger');
                 });
             };
-            
+
             modal.show();
         }
     });

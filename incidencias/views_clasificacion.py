@@ -5,7 +5,7 @@ from core.utils import solo_admin
 from core.models import TipoIncidencia, PreguntaBase
 from .forms_clasificacion import TipoIncidenciaForm, PreguntaBaseForm
 
-# ----------------- CRUD Tipos de Incidencia -----------------
+                                                              
 @login_required
 @solo_admin
 def tipo_lista(request):
@@ -49,7 +49,7 @@ def tipo_eliminar(request, pk):
         return redirect('incidencias:tipo_lista')
     return render(request, 'tipo/tipo_eliminar.html', {'obj': tipo})
 
-# ----------------- CRUD Preguntas Base -----------------
+                                                         
 @login_required
 @solo_admin
 def preguntas_base_lista(request, tipo_id):

@@ -2,8 +2,8 @@ from django import forms
 from core.models import Incidencia, JefeCuadrilla, Departamento, Encuesta, TipoIncidencia, PreguntaEncuesta, Multimedia
 from registration.models import Profile
 from django.forms import modelformset_factory
-from django.core.exceptions import ValidationError #ESTO SE USA PARA VALIDAR EL TAMAÑO Y TIPO DE ARCHIVO (nuevo)
-from django.conf import settings #ESTO SE USA PARA ACCEDER A LAS CONFIGURACIONES DE SETTINGS.PY (nuevo)
+from django.core.exceptions import ValidationError                                                              
+from django.conf import settings                                                                       
 import re
 class RechazarIncidenciaForm(forms.Form):
     motivo = forms.CharField(
@@ -28,8 +28,8 @@ class ReasignarIncidenciaForm(forms.ModelForm):
             'departamento': forms.Select(attrs={'class': 'form-control'}),
         }
 
-#------cambios barbara
-#Solo temporal, hasta definir flujo de modulo de encuestas
+                      
+                                                          
 class FinalizarIncidenciaForm(forms.ModelForm):
     observaciones = forms.CharField(
         label="Observaciones",
@@ -120,7 +120,7 @@ class PreguntaEncuestaForm(forms.Form):
         return texto
 
 
-# FORMULARIO DE EVIDENCIAS - NUEVO
+                                  
 class EvidenciaForm(forms.ModelForm):
     """Formulario para subir evidencias (imágenes, videos, audios, documentos)"""
     
@@ -147,16 +147,16 @@ class EvidenciaForm(forms.ModelForm):
         archivo = self.cleaned_data.get('archivo')
         
         if archivo:
-            # Validar tamaño
+                            
             if archivo.size > settings.MAX_UPLOAD_SIZE:
                 raise ValidationError(
                     f'El archivo es demasiado grande. Tamaño máximo: {settings.MAX_UPLOAD_SIZE / (1024*1024):.0f}MB'
                 )
             
-            # Obtener tipo de contenido
+                                       
             content_type = archivo.content_type
             
-            # Validar tipo de archivo
+                                     
             allowed_types = (
                 settings.ALLOWED_IMAGE_TYPES + 
                 settings.ALLOWED_VIDEO_TYPES + 
@@ -176,7 +176,7 @@ class EvidenciaForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super().save(commit=False)
         
-        # Detectar tipo de archivo automáticamente
+                                                  
         archivo = self.cleaned_data.get('archivo')
         if archivo:
             content_type = archivo.content_type

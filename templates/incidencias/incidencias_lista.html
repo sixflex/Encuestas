@@ -7,7 +7,7 @@
 <div class="container-fluid">
   <h1 class="h3 mb-4">Panel de Incidencias</h1>
 
-  <!-- FILTROS -->
+
   <div class="card shadow-sm border-0 rounded-3 mb-4">
     <div class="card-body">
       <form method="get" class="row g-3 align-items-end">
@@ -60,7 +60,7 @@
     </div>
   </div>
 
-  <!-- Botón crear incidencia -->
+
   {% if is_admin or is_territorial %}
   <div class="mb-3">
     <a href="{% url 'incidencias:incidencia_crear' %}" class="btn btn-success">
@@ -69,7 +69,7 @@
   </div>
   {% endif %}
 
-  <!-- TABLA -->
+
   <div class="card shadow-sm border-0 rounded-3">
     <div class="card-body">
 
@@ -102,7 +102,7 @@
               <td>{{ incidencia.id }}</td>
               <td>{{ incidencia.titulo }}</td>
 
-              <!-- ESTADOS -->
+
               <td>
                 {% if incidencia.estado == 'pendiente' %}
                   <span class="badge bg-secondary">Pendiente</span>
@@ -122,7 +122,7 @@
               <td>{{ incidencia.prioridad }}</td>
               <td>{{ incidencia.departamento.nombre_departamento }}</td>
 
-              <!-- TIPO DE INCIDENCIA -->
+
               <td>
                 {% if incidencia.encuesta and incidencia.encuesta.tipo_incidencia %}
                   {{ incidencia.encuesta.tipo_incidencia }}
@@ -147,14 +147,14 @@
                 {% endif %}
               </td>
 
-              <!-- ACCIONES CON BOTONES ALINEADOS -->
+
 <td>
   <div class="d-flex gap-2" style="flex-wrap:nowrap; overflow-x:auto; min-width:260px; align-items:center;">
 
-    <!-- Ver -->
+
     <a href="{% url 'incidencias:incidencia_detalle' incidencia.id %}" class="btn btn-sm btn-secondary">Ver</a>
 
-    <!-- ADMIN -->
+
     {% if is_admin %}
       <a href="{% url 'incidencias:incidencia_editar' incidencia.id %}" class="btn btn-sm btn-info">Editar</a>
       <a href="{% url 'territorial_app:validar_incidencia' incidencia.id %}" class="btn btn-sm btn-success">Validar</a>
@@ -162,13 +162,13 @@
       <a href="{% url 'territorial_app:reasignar_incidencia' incidencia.id %}" class="btn btn-sm btn-warning">Reasignar</a>
     {% endif %}
 
-    <!-- DEPARTAMENTO -->
+
     {% if is_departamento %}
       <a href="{% url 'territorial_app:rechazar_incidencia' incidencia.id %}" class="btn btn-sm btn-danger">Rechazar</a>
       <a href="{% url 'territorial_app:reasignar_incidencia' incidencia.id %}" class="btn btn-sm btn-warning">Asignar Cuadrilla</a>
     {% endif %}
 
-    <!-- TERRITORIAL -->
+
     {% if is_territorial %}
       {% if incidencia.estado == 'Completada' %}
         <a href="{% url 'territorial_app:validar_incidencia' incidencia.id %}" class="btn btn-sm btn-success">Validar</a>
@@ -180,14 +180,14 @@
       {% endif %}
     {% endif %}
 
-    <!-- ENCUESTA -->
+
     {% if incidencia.encuesta %}
       <a href="{% url 'territorial_app:responder_encuesta' incidencia.encuesta.id incidencia.id %}" class="btn btn-sm btn-outline-primary">
         Responder encuesta
       </a>
     {% endif %}
 
-    <!-- JEFE -->
+
     {% if is_jefe %}
       {% if incidencia.estado == 'En Progreso' %}
         <a href="{% url 'incidencias:subir_evidencia' incidencia.id %}" class="btn btn-sm btn-success">Subir Evidencia</a>

@@ -5,7 +5,7 @@ app_name = "core"
 
 urlpatterns = [
 
-    path("dashboard/admin/", views.dashboard_admin, name="dashboard_admin"),#cambio barbara
+    path("dashboard/admin/", views.dashboard_admin, name="dashboard_admin"),               
     path("usuarios/", views.usuarios_lista, name="usuarios_lista"),
     path("usuarios/nuevo/", views.usuario_crear, name="usuario_crear"),
     path("usuarios/<int:pk>/", views.usuario_detalle, name="usuario_detalle"),

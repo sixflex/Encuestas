@@ -14,7 +14,7 @@ def desactivar_usuarios(modeladmin, request, queryset):
 class CustomUserAdmin(UserAdmin):
     actions = [activar_usuarios, desactivar_usuarios]
 
-# Reemplazar el admin por defecto del User
+                                          
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
 

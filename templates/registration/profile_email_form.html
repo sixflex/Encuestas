@@ -10,7 +10,7 @@
 {% block auth_content %}
     <form action="" method="post">
         {% csrf_token %}
-        
+
         {% if form.non_field_errors %}
             <div class="alert alert-danger">
                 {{ form.non_field_errors|striptags }}
@@ -38,9 +38,9 @@
             <button type="submit" class="btn btn-success btn-lg">Actualizar Email</button>
         </div>
     </form>
-    
+
     <p class="text-center mt-4 mb-0">
-         
+
         <a href="{% url 'check_profile' %}" class="text-decoration-none">Volver</a>
     </p>
 {% endblock %}

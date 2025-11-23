@@ -1,4 +1,4 @@
-#Incidencias/forms.py -> modificaciones cotta
+                                             
 from django import forms
 from core.models import Incidencia, Departamento, JefeCuadrilla, Encuesta
 from django.core.exceptions import ValidationError
@@ -9,7 +9,7 @@ class IncidenciaForm(forms.ModelForm):
         ('media', 'Media'),
         ('baja', 'Baja'),
     ]
-    #cambios barbara
+                    
     TRANSICIONES_PERMITIDAS = {
         'Pendiente': ['En Progreso'],
         'En Progreso': ['Completada'],
@@ -17,7 +17,7 @@ class IncidenciaForm(forms.ModelForm):
         'Validada': ['Pendiente'],
         'Rechazada': ['En Progreso'],
     }
-    #----------------------------------------------
+                                                   
 
     estado = forms.ChoiceField(
         choices=Incidencia.ESTADO_CHOICES,
@@ -33,7 +33,7 @@ class IncidenciaForm(forms.ModelForm):
     )
     encuesta = forms.ModelChoiceField(
         queryset=Encuesta.objects.filter(estado=True),
-        required=True,  # para que no se pueda crear incidencia si no esta asociado a una encuesta
+        required=True,                                                                            
         label="Encuesta asociada",
         widget=forms.Select(attrs={"class": "form-select"})
     )
@@ -42,14 +42,14 @@ class IncidenciaForm(forms.ModelForm):
         model = Incidencia
         fields = [
             "titulo", "descripcion", "estado", "prioridad", "fecha_cierre",
-            "latitud", "longitud", "departamento","nombre_vecino","correo_vecino","telefono_vecino", #cambios barbara 
+            "latitud", "longitud", "departamento","nombre_vecino","correo_vecino","telefono_vecino",                  
             "cuadrilla", "encuesta",
         ]
         widgets = {
             "titulo": forms.TextInput(attrs={"class": "form-control", "placeholder": "Título"}),
             "descripcion": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
-            #"fecha_cierre": forms.DateTimeInput(attrs={"type": "datetime-local", "class": "form-control"}),
-            "fecha_cierre": forms.DateTimeInput(format="%Y-%m-%dT%H:%M", attrs={"type": "datetime-local", "class": "form-control"}), #cambio bernardo
+                                                                                                            
+            "fecha_cierre": forms.DateTimeInput(format="%Y-%m-%dT%H:%M", attrs={"type": "datetime-local", "class": "form-control"}),                 
             "latitud": forms.NumberInput(attrs={"class": "form-control"}),
             "longitud": forms.NumberInput(attrs={"class": "form-control"}),
             "departamento": forms.Select(attrs={"class": "form-select"}),
@@ -69,23 +69,23 @@ class IncidenciaForm(forms.ModelForm):
         self.fields['correo_vecino'].required = True
         self.fields['cuadrilla'].required = False
         self.fields['encuesta'].queryset = Encuesta.objects.filter(estado=True)
-        #cambios barbara
-        # Filtrar cuadrillas según el departamento
+                        
+                                                  
         if self.instance and self.instance.pk and self.instance.departamento:
             cuadrillas_disponibles = JefeCuadrilla.objects.filter(departamento=self.instance.departamento)
             if self.instance.cuadrilla and self.instance.cuadrilla not in cuadrillas_disponibles:
                 cuadrillas_disponibles |= JefeCuadrilla.objects.filter(pk=self.instance.cuadrilla.pk)
             self.fields['cuadrilla'].queryset = cuadrillas_disponibles
         else:
-            # Para nuevas incidencias, mostrar todas las cuadrillas
+                                                                   
             self.fields['cuadrilla'].queryset = JefeCuadrilla.objects.all()
-        #-----------------------------------------------------------------------------
-        # Valores por defecto sólo al crear (instance sin pk)
+                                                                                      
+                                                             
         if not self.instance or not getattr(self.instance, 'pk', None):
-            # establecer valores iniciales
+                                          
             self.fields['estado'].initial = 'Pendiente'
             self.fields['prioridad'].initial = 'media'
-            self.fields.pop('estado', None)  #cambio bernardo
+            self.fields.pop('estado', None)                  
 
     
     def clean_titulo(self):
@@ -96,7 +96,7 @@ class IncidenciaForm(forms.ModelForm):
             raise ValidationError("Ya existe una incidencia con este título.")
         return titulo
 
-# cambios cotta
+               
     '''
     def clean_estado(self):
         estado = self.cleaned_data.get("estado")
@@ -104,7 +104,7 @@ class IncidenciaForm(forms.ModelForm):
             return "pendiente"
         return estado
 '''
-    #cambios barbara
+                    
     def clean_estado(self):
         nuevo_estado = self.cleaned_data.get("estado")
         if not nuevo_estado:
@@ -123,9 +123,9 @@ class IncidenciaForm(forms.ModelForm):
             )
         
         return nuevo_estado
-    #---------------------------------------------
+                                                  
     
-    #cambios cotta
+                  
     '''
     def clean_prioridad(self):
         prioridad = self.cleaned_data.get("prioridad")
@@ -136,19 +136,19 @@ class IncidenciaForm(forms.ModelForm):
     def save(self, commit=True):
         incidencia = super().save(commit=False)
         incidencia.titulo = incidencia.titulo.strip()
-     #cambios barbara
-     #Preservar la cuadrilla si no se cambió en el formulario
+                     
+                                                             
         
         if self.instance.pk and 'cuadrilla' not in self.changed_data:
-            # Si la cuadrilla no cambió, mantener la original
+                                                             
             if self.instance.cuadrilla:
                 incidencia.cuadrilla = self.instance.cuadrilla
-    #-----------------------------------------------------------------------
-    #cambios cotta
-     # Opcional: Agregar doble seguridad al estado antes de guardar
+                                                                            
+                  
+                                                                   
         if not incidencia.estado:
-             incidencia.estado = 'pendiente' # Asegurar que el estado sea 'pendiente' si el modelo no lo hace.
-    #------------------------------------------------------------------------------------------    
+             incidencia.estado = 'pendiente'                                                                  
+                                                                                                   
         if commit:
             incidencia.save()
         return incidencia
@@ -173,11 +173,11 @@ class SubirEvidenciaForm(forms.Form):
     def clean_archivo(self):
         archivo = self.cleaned_data.get('archivo')
         if archivo:
-            # Validar tamaño del archivo (10MB máximo)
+                                                      
             if archivo.size > 10 * 1024 * 1024:
                 raise ValidationError("El archivo no puede superar los 10MB")
             
-            # Validar tipo de archivo
+                                     
             tipo_permitido = [
                 'image/jpeg', 'image/png', 'image/gif', 'image/webp',
                 'video/mp4', 'video/mpeg', 'video/quicktime',
@@ -189,5 +189,5 @@ class SubirEvidenciaForm(forms.Form):
         return archivo
 
 
-#-----------------------------------------------
+                                                
 

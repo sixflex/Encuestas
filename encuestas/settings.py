@@ -66,9 +66,9 @@ WSGI_APPLICATION = "encuestas.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "muni7",
+        "NAME": "prueba",
         "USER": "postgres",
-        "PASSWORD": "3581321",
+        "PASSWORD": "mikrr0",
         "HOST": "localhost",
         "PORT": "5432",
         "CONN_MAX_AGE": 60,
@@ -101,7 +101,7 @@ LOGOUT_REDIRECT_URL = "/accounts/login/"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-MAX_UPLOAD_SIZE = 300 * 1024 * 1024  # 300 MB de límite de tamaño de archivo
+MAX_UPLOAD_SIZE = 300 * 1024 * 1024                                         
 
 ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/mpeg', 'video/quicktime', 'video/x-msvideo']
@@ -114,5 +114,5 @@ ALLOWED_DOCUMENT_TYPES = [
 
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "Sistema Municipal <no-reply@municipalidad.local>"#cambio barbara
+DEFAULT_FROM_EMAIL = "Sistema Municipal <no-reply@municipalidad.local>"               
 

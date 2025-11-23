@@ -4,7 +4,7 @@ from incidencias import views as incidencias_views
 
 app_name = "territorial_app"
 urlpatterns = [
-    #path("territorial/incidencias/", views.lista_incidencias, name="incidencias_lista"),
+                                                                                         
     path("territorial/<int:pk>/validar_incidencia/", views.validar_incidencia, name="validar_incidencia"),
     path("territorial/<int:pk>/rechazar_incidencia/", views.rechazar_incidencia, name="rechazar_incidencia"),
     path("territorial/<int:pk>/reasignar_incidencia/", views.reasignar_incidencia, name="reasignar_incidencia"),
@@ -12,37 +12,37 @@ urlpatterns = [
     path("incidencias/", incidencias_views.incidencias_lista, name="incidencias_lista"),
     path("incidencias/editar", incidencias_views.incidencia_editar, name="incidencia_editar"),
 
-    #-------cambios barbara
-    # ============================================
-    # RUTAS DE ENCUESTAS (CRUD)
-    # ============================================
-    # Listar encuestas
+                           
+                                                  
+                               
+                                                  
+                      
     path("encuestas/", views.encuestas_lista, name="encuestas_lista"),
     
-    # Crear encuesta
+                    
     path("encuestas/nueva/", views.encuesta_crear, name="encuesta_crear"),
     
-    # Ver detalle de encuesta,
+                              
     path('encuestas/<int:encuesta_id>/', views.encuesta_detalle, name='encuesta_detalle'),
 
-    # Editar encuesta
+                     
     path("encuestas/<int:pk>/editar/", views.encuesta_editar, name="encuesta_editar"),
     
-    # Activar/Bloquear encuesta (toggle estado)
+                                               
     path("encuestas/<int:pk>/toggle/", views.encuesta_toggle_estado, name="encuesta_toggle_estado"),
     
-    # Eliminar encuesta
+                       
     path("encuestas/<int:pk>/eliminar/", views.encuesta_eliminar, name="encuesta_eliminar"),
 
-    # Agregar pregunta manual
+                             
     path('encuestas/<int:encuesta_id>/pregunta/nueva/', views.pregunta_agregar, name='pregunta_agregar'),
 
     path('encuesta/<int:encuesta_id>/incidencia/<int:incidencia_id>/responder/', views.responder_encuesta, name='responder_encuesta'),
-#----------------------------------------------------------
+                                                           
     path('encuestas/json_preguntas/', views.json_preguntas, name='json_preguntas'),
 
-#=========================================================
-# RUTAS DE EVIDENCIAS (NUEVO)
+                                                          
+                             
 
     path('encuestas/<int:encuesta_id>/evidencia/subir/', 
          views.evidencia_subir, 
