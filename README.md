@@ -1,8 +1,8 @@
-# 🗳️ Proyecto Encuestas
+#  Proyecto Encuestas
 
 Sistema de **encuestas e incidencias** desarrollado con **Django + PostgreSQL**, que permite gestionar usuarios, roles y diferentes módulos de organización.
 
-## 🚀 Funcionalidades principales
+##  Funcionalidades principales
 - **Autenticación y Roles**: Administrador, Dirección, Departamento, Jefe de Cuadrilla, Territorial.
 - **Gestión de Usuarios (core/)**:
   - Listar usuarios con buscador.
@@ -18,7 +18,7 @@ Sistema de **encuestas e incidencias** desarrollado con **Django + PostgreSQL**,
   - Edición de perfil y registro de usuarios.
 - **Templates unificados**: Navbar dinámico, mensajes de estado y layout común en `main_base.html`.
 
-## 📂 Estructura del Proyecto
+##  Estructura del Proyecto
 - `core/` → Gestión de usuarios y vistas principales.
 - `organizacion/` → Módulo de Dirección y Departamento.
 - `encuestas_app/` → Módulo de encuestas.
@@ -28,7 +28,7 @@ Sistema de **encuestas e incidencias** desarrollado con **Django + PostgreSQL**,
 - `encuestas/` → Configuración principal del proyecto (settings, urls, wsgi/asgi).
 - `templates/` → Plantillas globales (`main_base.html`, `registration/`, `core/`, etc.).
 
-## ⚙️ Instalación rápida
+##  Instalación rápida
 
 ```bash
 # Crear entorno virtual con Anaconda
